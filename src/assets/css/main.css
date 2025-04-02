@@ -1,0 +1,150 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-body text-text bg-background;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-semibold text-text-dark;
+  }
+
+  h1 {
+    @apply text-4xl mb-6;
+  }
+
+  h2 {
+    @apply text-3xl mb-5;
+  }
+
+  h3 {
+    @apply text-2xl mb-4;
+  }
+
+  h4 {
+    @apply text-xl mb-3;
+  }
+
+  h5 {
+    @apply text-lg mb-2;
+  }
+
+  h6 {
+    @apply text-base mb-2;
+  }
+
+  p {
+    @apply mb-4;
+  }
+
+  a {
+    @apply text-primary transition-colors duration-200;
+  }
+
+  a:hover {
+    @apply text-primary-dark underline;
+  }
+}
+
+/* Custom component classes */
+@layer components {
+  .container {
+    @apply max-w-7xl mx-auto px-4;
+  }
+
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary-dark;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-white hover:bg-secondary-dark;
+  }
+
+  .btn-accent {
+    @apply bg-accent text-white hover:bg-accent-dark;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6;
+  }
+}
+
+/* PrimeVue customization */
+.p-component {
+  @apply font-body;
+}
+
+.p-button {
+  @apply rounded-md font-medium transition-all duration-200;
+}
+
+.p-button.p-button-primary {
+  @apply bg-primary border-primary hover:bg-primary-dark hover:border-primary-dark;
+}
+
+.p-inputtext {
+  @apply rounded-md font-body p-2;
+}
+
+.p-inputtext:focus {
+  @apply border-primary shadow-none;
+  box-shadow: 0 0 0 1px theme('colors.primary.light');
+}
+
+.p-card {
+  @apply rounded-lg shadow-md;
+}
+
+.p-dialog {
+  @apply rounded-lg;
+}
+
+.p-dialog .p-dialog-header {
+  @apply rounded-t-lg bg-background text-text-dark p-6;
+}
+
+.p-dialog .p-dialog-content {
+  @apply p-6 bg-background;
+}
+
+.p-dialog .p-dialog-footer {
+  @apply rounded-b-lg bg-background p-6;
+}
+
+.p-menu {
+  @apply rounded-md shadow-md;
+}
+
+.p-menu .p-menuitem-link:focus {
+  @apply shadow-none;
+  outline: 1px solid theme('colors.primary.DEFAULT');
+}
+
+.p-menu .p-menuitem-link:hover {
+  @apply bg-background-alt;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  h1 {
+    @apply text-3xl;
+  }
+  
+  h2 {
+    @apply text-2xl;
+  }
+  
+  h3 {
+    @apply text-xl;
+  }
+}
