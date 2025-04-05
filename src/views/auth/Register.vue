@@ -46,7 +46,8 @@
                 Intelligent Recruitment for Event Companies
               </h1>
               <p class="text-primary-100 mb-10 text-lg">
-                The smarter way to connect event staff with the right opportunities.
+                The smarter way to connect event staff with the right
+                opportunities.
               </p>
 
               <div class="space-y-5 mt-4">
@@ -56,9 +57,7 @@
                   >
                     <i class="pi pi-bolt text-lg"></i>
                   </span>
-                  <span class="text-lg"
-                    >AI-powered candidate matching</span
-                  >
+                  <span class="text-lg">AI-powered candidate matching</span>
                 </div>
                 <div class="flex items-center">
                   <span
@@ -66,9 +65,7 @@
                   >
                     <i class="pi pi-map-marker text-lg"></i>
                   </span>
-                  <span class="text-lg"
-                    >Geolocation-based job suggestions</span
-                  >
+                  <span class="text-lg">Geolocation-based job suggestions</span>
                 </div>
                 <div class="flex items-center">
                   <span
@@ -86,7 +83,9 @@
           <div class="w-full md:w-1/2 p-10">
             <!-- Mobile logo -->
             <div class="md:hidden text-center mb-6">
-              <h2 class="text-3xl font-bold text-primary-600">Event Recruitment</h2>
+              <h2 class="text-3xl font-bold text-primary-600">
+                Event Recruitment
+              </h2>
               <p class="text-gray-500 text-sm">Match. Recruit. Succeed.</p>
             </div>
 
@@ -129,7 +128,8 @@
                       <i class="pi pi-check text-sm"></i>
                     </span>
                     <span class="text-gray-700 text-base"
-                      >Receive job alerts based on your location and availability</span
+                      >Receive job alerts based on your location and
+                      availability</span
                     >
                   </li>
                   <li class="flex items-start">
@@ -169,7 +169,8 @@
                       <i class="pi pi-check text-sm"></i>
                     </span>
                     <span class="text-gray-700 text-base"
-                      >Find and score candidates based on experience and location</span
+                      >Find and score candidates based on experience and
+                      location</span
                     >
                   </li>
                   <li class="flex items-start">
@@ -203,20 +204,6 @@
               @click="$router.push('/register/recruiter')"
             />
 
-            <!-- OAuth options -->
-            <div class="relative my-8">
-              <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-gray-200"></div>
-              </div>
-              <div class="relative flex justify-center text-sm">
-                <span class="px-4 bg-white text-gray-500"
-                  >Or continue with</span
-                >
-              </div>
-            </div>
-
-            <OAuthButtons />
-
             <!-- Login link -->
             <div class="text-center mt-8">
               <p class="text-base text-gray-600">
@@ -237,7 +224,8 @@
     <!-- Footer -->
     <footer class="py-6 text-center">
       <p class="text-sm text-gray-500">
-        &copy; {{ currentYear }} Event Recruitment Platform. All rights reserved.
+        &copy; {{ currentYear }} Event Recruitment Platform. All rights
+        reserved.
       </p>
     </footer>
   </div>
@@ -246,7 +234,6 @@
 <script setup>
 import { ref, computed } from 'vue';
 import RegistrationToggle from '@/components/auth/RegistrationToggle.vue';
-import OAuthButtons from '@/components/auth/OAuthButtons.vue';
 
 // Default to candidate registration
 const userType = ref('candidate');

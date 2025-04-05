@@ -3,7 +3,7 @@
     class="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
   >
     <!-- Header with Logo -->
-    <header class="pt-8 pb-4">
+    <header class="pt-6 pb-2">
       <div class="container px-6">
         <router-link to="/" class="inline-block">
           <img src="@/assets/logo.png" alt="CrewLink Logo" class="h-14" />
@@ -12,10 +12,10 @@
     </header>
 
     <!-- Main content -->
-    <main class="flex-grow flex items-center justify-center px-4 py-10">
+    <main class="flex-grow flex items-center justify-center px-4 py-6">
       <div class="w-full max-w-xl">
         <!-- Navigation links above the card -->
-        <div class="flex justify-between items-center mb-5 px-2">
+        <div class="flex justify-between items-center mb-3 px-2">
           <router-link
             to="/"
             class="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors duration-200 flex items-center"
@@ -38,7 +38,7 @@
             class="h-3 bg-gradient-to-r from-primary-500 to-primary-300"
           ></div>
 
-          <div class="p-10">
+          <div class="p-8">
             <!-- Success message from the auth store -->
             <div
               v-if="authStore.successMessage"
@@ -77,8 +77,8 @@
             </div>
 
             <!-- Login form header -->
-            <div class="text-center mb-10">
-              <h1 class="text-3xl font-bold text-gray-800 mb-3">
+            <div class="text-center mb-6">
+              <h1 class="text-3xl font-bold text-gray-800 mb-2">
                 Welcome Back
               </h1>
               <p class="text-lg text-gray-600">
@@ -169,34 +169,6 @@
               />
             </form>
 
-            <!-- OR divider -->
-            <div class="relative my-10">
-              <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-gray-200"></div>
-              </div>
-              <div class="relative flex justify-center text-base">
-                <span class="px-4 bg-white text-gray-500"
-                  >Or continue with</span
-                >
-              </div>
-            </div>
-
-            <!-- Google Login button -->
-            <Button
-              type="button"
-              class="w-full p-button-outlined p-3 flex items-center justify-center border border-gray-300 hover:bg-gray-50 transition-colors duration-200 text-lg"
-              @click="handleGoogleLogin"
-            >
-              <img
-                src="@/assets/google-icon.svg"
-                alt="Google"
-                class="h-6 w-6 mr-2"
-              />
-              <span class="font-medium text-gray-700"
-                >Continue with Google</span
-              >
-            </Button>
-
             <!-- Register link -->
             <div class="text-center mt-10">
               <p class="text-base text-gray-600">
@@ -277,15 +249,6 @@ const handleSubmit = async () => {
       'Login failed. Please check your credentials.';
   } finally {
     isLoading.value = false;
-  }
-};
-
-// Handle Google login
-const handleGoogleLogin = async () => {
-  try {
-    await authStore.googleLogin();
-  } catch (err) {
-    error.value = 'Google login failed. Please try again.';
   }
 };
 
