@@ -1,163 +1,319 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import authService from '../services/auth.service'
-import router from '../router'
+// src/stores/auth.js
+import { defineStore } from 'pinia';
+import AuthService from '../services/auth.service';
+import router from '../router';
 
-export const useAuthStore = defineStore('auth', () => {
-  // State
-  const token = ref(localStorage.getItem('token') || '')
-  const refreshToken = ref(localStorage.getItem('refreshToken') || '')
-  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
-  const loading = ref(false)
-  const error = ref(null)
+export const useAuthStore = defineStore('auth', {
+  state: () => ({
+    // User data
+    user: null,
 
-  // Getters
-  const isAuthenticated = computed(() => !!token.value)
-  const isCandidate = computed(() => user.value?.userType === 'CANDIDATE')
-  const isRecruiter = computed(() => user.value?.userType === 'RECRUITER')
-  const userRole = computed(() => user.value?.userType || '')
-  const username = computed(() => user.value?.username || '')
-  const userId = computed(() => user.value?.userId || null)
+    // Authentication status
+    authenticated: false,
 
-  // Actions
-  async function login(credentials) {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await authService.login(credentials)
-      
-      // Store tokens and user info
-      setAuthData(response.data.data)
-      
-      // Redirect based on user type
-      if (isCandidate.value) {
-        router.push('/candidate/dashboard')
-      } else if (isRecruiter.value) {
-        router.push('/recruiter/dashboard')
-      } else {
-        router.push('/')
+    // Loading indicators
+    isLoading: false,
+
+    // Error handling
+    error: null,
+
+    // Success message
+    successMessage: null,
+
+    // Redirect paths
+    returnUrl: null,
+  }),
+
+  getters: {
+    /**
+     * Check if user is a candidate
+     * @returns {boolean} - True if user is a candidate
+     */
+    isCandidate: (state) => {
+      return state.user?.role === 'CANDIDATE';
+    },
+
+    /**
+     * Check if user is a recruiter
+     * @returns {boolean} - True if user is a recruiter
+     */
+    isRecruiter: (state) => {
+      return state.user?.role === 'RECRUITER';
+    },
+
+    /**
+     * Get user's display name
+     * @returns {string} - User's name or username
+     */
+    displayName: (state) => {
+      return state.user?.name || state.user?.username || 'User';
+    },
+  },
+
+  actions: {
+    /**
+     * Initialize auth store from localStorage
+     */
+    init() {
+      const user = localStorage.getItem('user');
+      const token = localStorage.getItem('accessToken');
+
+      if (user && token) {
+        this.user = JSON.parse(user);
+        this.authenticated = true;
       }
-      
-      return response
-    } catch (err) {
-      error.value = err.response?.data?.message || 'Login failed'
-      throw error.value
-    } finally {
-      loading.value = false
-    }
-  }
+    },
 
-  async function registerCandidate(candidateData) {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await authService.registerCandidate(candidateData)
-      return response
-    } catch (err) {
-      error.value = err.response?.data?.message || 'Registration failed'
-      throw error.value
-    } finally {
-      loading.value = false
-    }
-  }
+    /**
+     * Login as a candidate
+     * @param {string} username - Username or email
+     * @param {string} password - User password
+     * @param {boolean} rememberMe - Remember login status
+     */
+    async candidateLogin(username, password, rememberMe) {
+      this.isLoading = true;
+      this.error = null;
 
-  async function registerRecruiter(recruiterData) {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await authService.registerRecruiter(recruiterData)
-      return response
-    } catch (err) {
-      error.value = err.response?.data?.message || 'Registration failed'
-      throw error.value
-    } finally {
-      loading.value = false
-    }
-  }
+      try {
+        console.log('Starting candidate login...');
+        const response = await AuthService.candidateLogin(username, password);
+        console.log('Login response:', response);
+        this.user = response.user;
+        this.authenticated = true;
+        console.log('User authenticated:', this.user);
 
-  function logout() {
-    // Clear auth data
-    clearAuthData()
-    
-    // Redirect to home
-    router.push('/')
-  }
+        // Navigate to appropriate dashboard or return URL
+        const returnUrl = this.returnUrl || '/candidate/dashboard';
+        console.log('Redirecting to:', returnUrl);
+        router.push(returnUrl);
+        this.returnUrl = null;
 
-  async function refreshUserToken() {
-    if (!refreshToken.value) {
-      clearAuthData()
-      router.push('/login')
-      return
-    }
+        return response;
+      } catch (error) {
+        console.error('Login error:', error);
+        this.error = error.response?.data?.message || 'Login failed';
+        this.authenticated = false;
+        this.user = null;
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
 
-    try {
-      const response = await authService.refreshToken({ refreshToken: refreshToken.value })
-      setTokens(response.data.token, response.data.refreshToken)
-      return response
-    } catch (err) {
-      clearAuthData()
-      router.push('/login')
-      throw err
-    }
-  }
+    /**
+     * Login as a recruiter
+     * @param {string} username - Username or email
+     * @param {string} password - User password
+     * @param {boolean} rememberMe - Remember login status
+     */
+    async recruiterLogin(username, password, rememberMe) {
+      this.isLoading = true;
+      this.error = null;
 
-  function setAuthData(authData) {
-    token.value = authData.token
-    refreshToken.value = authData.refreshToken
-    user.value = {
-      userId: authData.userId,
-      username: authData.username,
-      userType: authData.userType
-    }
-    
-    // Persist to localStorage
-    localStorage.setItem('token', token.value)
-    localStorage.setItem('refreshToken', refreshToken.value)
-    localStorage.setItem('user', JSON.stringify(user.value))
-  }
+      try {
+        const response = await AuthService.recruiterLogin(username, password);
+        this.user = response.user;
+        this.authenticated = true;
 
-  function setTokens(newToken, newRefreshToken) {
-    token.value = newToken
-    refreshToken.value = newRefreshToken
-    
-    // Update localStorage
-    localStorage.setItem('token', newToken)
-    localStorage.setItem('refreshToken', newRefreshToken)
-  }
+        // Navigate to appropriate dashboard or return URL
+        const returnUrl = this.returnUrl || '/recruiter/dashboard';
+        router.push(returnUrl);
+        this.returnUrl = null;
 
-  function clearAuthData() {
-    token.value = ''
-    refreshToken.value = ''
-    user.value = null
-    
-    // Clear localStorage
-    localStorage.removeItem('token')
-    localStorage.removeItem('refreshToken')
-    localStorage.removeItem('user')
-  }
+        return response;
+      } catch (error) {
+        this.error = error.response?.data?.message || 'Login failed';
+        this.authenticated = false;
+        this.user = null;
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
 
-  return { 
-    // State
-    token,
-    user,
-    loading,
-    error,
-    
-    // Getters
-    isAuthenticated,
-    isCandidate,
-    isRecruiter,
-    userRole,
-    username,
-    userId,
-    
-    // Actions
-    login,
-    registerCandidate,
-    registerRecruiter,
-    logout,
-    refreshUserToken,
-    setAuthData,
-    clearAuthData
-  }
-})
+    /**
+     * Login with Google OAuth
+     */
+    async googleLogin() {
+      // Redirect to backend OAuth endpoint
+      window.location.href = `${
+        import.meta.env.VITE_API_BASE_URL
+      }/oauth2/authorization/google`;
+    },
+
+    /**
+     * Register new candidate
+     * @param {Object} candidateData - Candidate registration data
+     */
+    async registerCandidate(candidateData) {
+      this.isLoading = true;
+      this.error = null;
+
+      try {
+        await AuthService.registerCandidate(candidateData);
+        // Redirection is now handled by the component
+      } catch (error) {
+        this.error = error.response?.data?.message || 'Registration failed';
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    /**
+     * Register new recruiter
+     * @param {Object} recruiterData - Recruiter registration data
+     */
+    async registerRecruiter(recruiterData) {
+      this.isLoading = true;
+      this.error = null;
+
+      try {
+        await AuthService.registerRecruiter(recruiterData);
+        // Redirection is now handled by the component
+      } catch (error) {
+        this.error = error.response?.data?.message || 'Registration failed';
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    /**
+     * Logout current user
+     */
+    logout() {
+      AuthService.logout();
+      this.user = null;
+      this.authenticated = false;
+      router.push('/login');
+    },
+
+    /**
+     * Request password reset
+     * @param {string} email - User email
+     */
+    async requestPasswordReset(email) {
+      this.isLoading = true;
+      this.error = null;
+
+      try {
+        await AuthService.requestPasswordReset(email);
+      } catch (error) {
+        this.error =
+          error.response?.data?.message || 'Password reset request failed';
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    /**
+     * Reset password with token
+     * @param {string} token - Reset token
+     * @param {string} newPassword - New password
+     */
+    async resetPassword(token, newPassword) {
+      this.isLoading = true;
+      this.error = null;
+
+      try {
+        await AuthService.resetPassword(token, newPassword);
+      } catch (error) {
+        this.error = error.response?.data?.message || 'Password reset failed';
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    /**
+     * Update user profile data in store
+     * @param {Object} userData - Updated user data
+     */
+    updateUserData(userData) {
+      if (this.user) {
+        this.user = { ...this.user, ...userData };
+        // Update localStorage
+        localStorage.setItem('user', JSON.stringify(this.user));
+      }
+    },
+
+    /**
+     * Get default home page based on user role
+     * @returns {string} - Default home page route
+     */
+    getDefaultHomePage() {
+      if (this.user?.role === 'CANDIDATE') {
+        return '/candidate/dashboard';
+      } else if (this.user?.role === 'RECRUITER') {
+        return '/recruiter/dashboard';
+      } else {
+        return '/';
+      }
+    },
+
+    /**
+     * Check if current token is valid and refresh if needed
+     */
+    async checkTokenValidity() {
+      const token = localStorage.getItem('accessToken');
+      const refreshToken = localStorage.getItem('refreshToken');
+
+      if (!token) {
+        this.authenticated = false;
+        this.user = null;
+        return;
+      }
+
+      // Check if token is expired (this would typically be done by checking JWT expiry)
+      // This is a simple implementation - in production you might want to decode the JWT
+      try {
+        // Try to get user profile to verify token validity
+        await this.getUserProfile();
+      } catch (error) {
+        if (error.response?.status === 401 && refreshToken) {
+          try {
+            // Try to refresh the token
+            await AuthService.refreshToken(refreshToken);
+            // Retry getting user profile
+            await this.getUserProfile();
+          } catch (refreshError) {
+            // If refresh fails, logout
+            this.logout();
+          }
+        } else {
+          // For other errors, logout
+          this.logout();
+        }
+      }
+    },
+
+    /**
+     * Get user profile from backend
+     */
+    async getUserProfile() {
+      // This would be implemented by calling your user API service
+      // For now, we'll assume it's just for token validation
+    },
+
+    /**
+     * Set success message
+     * @param {string} message - Success message to display
+     */
+    setSuccessMessage(message) {
+      this.successMessage = message;
+      // Clear the success message after 5 seconds
+      setTimeout(() => {
+        this.successMessage = null;
+      }, 5000);
+    },
+
+    /**
+     * Clear success message
+     */
+    clearSuccessMessage() {
+      this.successMessage = null;
+    },
+  },
+});

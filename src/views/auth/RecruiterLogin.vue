@@ -23,10 +23,11 @@
             <i class="pi pi-arrow-left mr-1 text-xs"></i> Back to home
           </router-link>
           <router-link
-            to="/recruiter-login"
+            to="/login"
             class="text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200 flex items-center"
           >
-            Are you an employer? <i class="pi pi-arrow-right ml-1 text-xs"></i>
+            Looking for work? Sign in here
+            <i class="pi pi-arrow-right ml-1 text-xs"></i>
           </router-link>
         </div>
 
@@ -39,22 +40,9 @@
           ></div>
 
           <div class="p-10">
-            <!-- Success message from the auth store -->
+            <!-- Registration success message -->
             <div
-              v-if="authStore.successMessage"
-              class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg"
-            >
-              <div class="flex items-center">
-                <i class="pi pi-check-circle text-green-500 mr-2"></i>
-                <p class="text-green-700">
-                  {{ authStore.successMessage }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Registration success message from query param (fallback) -->
-            <div
-              v-else-if="registrationSuccess"
+              v-if="registrationSuccess"
               class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg"
             >
               <div class="flex items-center">
@@ -79,10 +67,10 @@
             <!-- Login form header -->
             <div class="text-center mb-10">
               <h1 class="text-3xl font-bold text-gray-800 mb-3">
-                Welcome Back
+                Employer Login
               </h1>
               <p class="text-lg text-gray-600">
-                Sign in to continue to CrewLink
+                Sign in to manage your recruitment
               </p>
             </div>
 
@@ -202,7 +190,7 @@
               <p class="text-base text-gray-600">
                 Don't have an account?
                 <router-link
-                  to="/register"
+                  to="/recruiter-register"
                   class="font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200"
                 >
                   Create one now
@@ -242,8 +230,10 @@ const isLoading = ref(false);
 const error = ref('');
 const currentYear = new Date().getFullYear();
 
-// Create ref for registration success
-const registrationSuccess = ref(false);
+// Check for registration success
+const registrationSuccess = computed(() => {
+  return route.query.registered === 'true';
+});
 
 // Form validation rules
 const rules = {
@@ -257,7 +247,7 @@ const rules = {
 
 const v$ = useVuelidate(rules, { username, password });
 
-// Handle form submission - Candidate login
+// Handle form submission - Recruiter login
 const handleSubmit = async () => {
   error.value = '';
 
@@ -268,8 +258,8 @@ const handleSubmit = async () => {
   isLoading.value = true;
 
   try {
-    // Login as candidate
-    await authStore.candidateLogin(username.value, password.value);
+    // Login as recruiter
+    await authStore.recruiterLogin(username.value, password.value);
     // Redirect will be handled by the store
   } catch (err) {
     error.value =
@@ -303,16 +293,6 @@ onMounted(() => {
   username.value = '';
   password.value = '';
   v$.value.$reset();
-
-  // Check for query params on mount
-  if (route.query.registered === 'true') {
-    registrationSuccess.value = true;
-  }
-
-  // This ensures we see any success message set by the registration process
-  setTimeout(() => {
-    // We don't immediately clear it in case it was just set during navigation
-  }, 500);
 });
 </script>
 

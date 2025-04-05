@@ -1,64 +1,292 @@
+/* src/assets/css/index.css */
+
+/* Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Custom component classes */
-@layer components {
-  .btn {
-    @apply px-4 py-2 rounded font-medium transition-colors duration-200;
-  }
+/* Custom theme overrides for PrimeVue */
+:root {
+  --primary-50: #f5f3ff;
+  --primary-100: #ede9fe;
+  --primary-200: #ddd6fe;
+  --primary-300: #c4b5fd;
+  --primary-400: #a78bfa;
+  --primary-500: #8a7eFF; /* CrewLink primary color */
+  --primary-600: #7c74e5;
+  --primary-700: #6c63FF; /* Darker shade for hover states */
+  --primary-800: #5b46c7;
+  --primary-900: #4c3799;
   
-  .btn-primary {
-    @apply bg-primary text-white hover:bg-opacity-90;
-  }
+  /* PrimeVue theme variables override */
+  --text-color: #333333;
+  --text-color-secondary: #6b7280;
+  --primary-color: var(--primary-700);
+  --primary-color-text: #ffffff;
+  --font-family: 'Inter', 'Helvetica', 'Arial', sans-serif;
   
-  .btn-secondary {
-    @apply bg-secondary text-white hover:bg-opacity-90;
-  }
+  /* Button styles */
+  --button-text-color: #ffffff;
+  --button-bg: var(--primary-700);
+  --button-border: var(--primary-700);
+  --button-hover-bg: var(--primary-800);
+  --button-hover-border: var(--primary-800);
   
-  .btn-outline {
-    @apply border border-primary text-primary hover:bg-primary hover:bg-opacity-10;
-  }
-  
-  .form-label {
-    @apply block text-sm font-medium text-text-primary mb-1;
-  }
-  
-  .form-input {
-    @apply block w-full rounded border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50;
-  }
-  
-  .card {
-    @apply bg-white rounded-lg shadow p-6;
-  }
-  
-  .section {
-    @apply py-12;
-  }
-  
-  .section-title {
-    @apply text-3xl font-bold text-text-heading mb-6;
-  }
+  /* Input styles */
+  --input-border: #d1d5db;
+  --input-focus-border: var(--primary-500);
+  --input-focus-shadow: 0 0 0 2px rgba(108, 99, 255, 0.25);
 }
 
-/* Custom styles for PrimeVue components */
+/* Custom button styles */
+.p-button.p-button-primary {
+  background-color: var(--button-bg);
+  border-color: var(--button-border);
+  color: var(--button-text-color);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.p-button.p-button-primary:hover {
+  background-color: var(--button-hover-bg);
+  border-color: var(--button-hover-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.p-button.p-button-outlined {
+  color: var(--primary-700);
+  background-color: transparent;
+  border: 1px solid var(--primary-700);
+}
+
+.p-button.p-button-outlined:hover {
+  background-color: rgba(108, 99, 255, 0.04);
+  border-color: var(--primary-600);
+}
+
+/* Input styling */
+.p-inputtext,
+.p-dropdown,
+.p-multiselect,
+.p-calendar .p-inputtext {
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--input-border);
+}
+
+.p-inputtext:enabled:hover,
+.p-dropdown:not(.p-disabled):hover,
+.p-multiselect:not(.p-disabled):hover,
+.p-calendar:not(.p-disabled):hover .p-inputtext {
+  border-color: var(--primary-400);
+}
+
+.p-inputtext:enabled:focus,
+.p-dropdown:not(.p-disabled).p-focus,
+.p-multiselect:not(.p-disabled).p-focus,
+.p-calendar:not(.p-disabled).p-focus .p-inputtext {
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.p-inputtext.p-invalid,
+.p-dropdown.p-invalid,
+.p-multiselect.p-invalid,
+.p-calendar.p-invalid .p-inputtext {
+  border-color: #ef4444;
+}
+
+.p-error {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* Link styling */
+a {
+  color: var(--primary-700);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--primary-800);
+}
+
+/* Checkbox styling */
+.p-checkbox .p-checkbox-box.p-highlight {
+  background-color: var(--primary-700);
+  border-color: var(--primary-700);
+}
+
+/* Password field styling */
+.p-password .p-password-panel {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.p-password .p-password-input {
+  width: 100%;
+}
+
+/* Button general styling */
 .p-button {
-  background-color: theme('colors.primary') !important;
-  border-color: theme('colors.primary') !important;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
 }
 
-.p-button:hover {
-  background-color: theme('colors.primary') !important;
-  border-color: theme('colors.primary') !important;
-  opacity: 0.9 !important;
+.p-button.p-button-lg {
+  padding: 0.875rem 1.75rem;
+  font-size: 1rem;
 }
 
-.p-inputtext:focus {
-  border-color: theme('colors.primary') !important;
-  box-shadow: 0 0 0 1px theme('colors.primary') !important;
+/* Input with icons */
+.p-input-icon-left > i,
+.p-input-icon-right > i {
+  margin-top: -0.5rem;
 }
 
-.p-dropdown:focus {
-  border-color: theme('colors.primary') !important;
-  box-shadow: 0 0 0 1px theme('colors.primary') !important;
+.p-input-icon-left > i {
+  left: 1rem;
+}
+
+.p-input-icon-left > .p-inputtext {
+  padding-left: 2.5rem;
+}
+
+/* Calendar styling */
+.p-datepicker {
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.p-datepicker .p-datepicker-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.75rem;
+}
+
+.p-datepicker table {
+  font-size: 0.875rem;
+  margin: 0.5rem 0;
+}
+
+.p-datepicker table td {
+  padding: 0.25rem;
+}
+
+.p-datepicker table td > span {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+}
+
+.p-datepicker table td > span.p-highlight {
+  background: var(--primary-color);
+}
+
+/* Steps component */
+.p-steps .p-steps-item .p-menuitem-link {
+  background: transparent;
+}
+
+.p-steps .p-steps-item.p-highlight .p-steps-title {
+  color: var(--primary-color);
+}
+
+.p-steps .p-steps-item.p-highlight .p-steps-number {
+  background-color: var(--primary-color);
+}
+
+.p-steps .p-steps-item .p-steps-number {
+  border-radius: 50%;
+}
+
+.p-steps .p-steps-item:before {
+  border-top: 1px solid #e5e7eb;
+}
+
+/* MultiSelect */
+.p-multiselect-panel {
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.p-multiselect-panel .p-multiselect-items {
+  padding: 0.5rem 0;
+}
+
+.p-multiselect-panel .p-multiselect-item {
+  padding: 0.75rem 1.25rem;
+  margin: 0;
+}
+
+.p-multiselect .p-multiselect-token {
+  background: var(--primary-100);
+  color: var(--primary-700);
+  padding: 0.25rem 0.75rem;
+  margin: 0.125rem;
+  border-radius: 0.375rem;
+}
+
+/* Animation classes */
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom utility classes */
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Form label styling */
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+.form-group {
+  @apply mb-4;
+}
+
+/* Custom sizing classes for PrimeVue components */
+.p-inputtext-lg {
+  @apply text-base py-3;
+}
+
+.p-dropdown-lg {
+  @apply text-base;
+}
+
+.p-dropdown-lg .p-dropdown-label {
+  @apply py-3;
+}
+
+.p-multiselect-lg {
+  @apply text-base;
+}
+
+.p-multiselect-lg .p-multiselect-label {
+  @apply py-3;
+}
+
+.p-password-lg .p-password-input {
+  @apply text-base py-3;
+}
+
+.p-calendar-lg .p-inputtext {
+  @apply text-base py-3;
 }

@@ -1,132 +1,175 @@
 <template>
-  <div>
-    <!-- Hero Section -->
-    <section class="bg-primary bg-opacity-5 py-16">
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="lg:flex lg:items-center lg:justify-between">
-          <div class="lg:w-1/2">
-            <h1 class="text-4xl font-bold text-text-heading sm:text-5xl">
-              Connect with <span class="text-primary">Event Jobs</span> and <span class="text-primary">Talent</span>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Hero section -->
+    <section class="bg-gradient-to-b from-primary-50 to-gray-50 py-16">
+      <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row items-center">
+          <div class="md:w-1/2 mb-10 md:mb-0">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Find the Perfect Staff for Your Events
             </h1>
-            <p class="mt-4 text-xl text-text-primary">
-              The intelligent platform that connects event companies with the perfect temporary staff, and helps job seekers find exciting event opportunities.
+            <p class="text-lg text-gray-700 mb-8">
+              Connect with experienced event staff and find exciting job opportunities in the event industry.
             </p>
-            <div class="mt-8 flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
-              <router-link 
-                to="/auth/register/candidate" 
-                class="btn btn-primary text-center"
-              >
-                Find Event Jobs
-              </router-link>
-              <router-link 
-                to="/auth/register/recruiter" 
-                class="btn btn-outline text-center"
-              >
-                Hire Event Staff
-              </router-link>
+            <div class="flex flex-col sm:flex-row gap-4">
+              <Button 
+                label="Sign Up" 
+                icon="pi pi-user-plus" 
+                class="p-button-primary" 
+                @click="$router.push('/register')"
+              />
+              <Button 
+                label="Log In" 
+                icon="pi pi-sign-in" 
+                class="p-button-outlined" 
+                @click="$router.push('/login')"
+              />
             </div>
           </div>
-          <div class="mt-10 lg:mt-0 lg:w-1/2 flex justify-center">
-            <img src="/src/assets/vue.svg" alt="Event recruitment illustration" class="h-64 w-auto" />
+          <div class="md:w-1/2">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+              <h2 class="text-2xl font-semibold text-gray-800 mb-4">Platform Highlights</h2>
+              <ul class="space-y-4">
+                <li class="flex">
+                  <span class="flex-shrink-0 flex items-center justify-center h-6 w-6 rounded-full bg-primary-100 text-primary-600">
+                    <i class="pi pi-check"></i>
+                  </span>
+                  <span class="ml-3 text-gray-700">Smart candidate matching using AI technology</span>
+                </li>
+                <li class="flex">
+                  <span class="flex-shrink-0 flex items-center justify-center h-6 w-6 rounded-full bg-primary-100 text-primary-600">
+                    <i class="pi pi-check"></i>
+                  </span>
+                  <span class="ml-3 text-gray-700">Automated job posting and management</span>
+                </li>
+                <li class="flex">
+                  <span class="flex-shrink-0 flex items-center justify-center h-6 w-6 rounded-full bg-primary-100 text-primary-600">
+                    <i class="pi pi-check"></i>
+                  </span>
+                  <span class="ml-3 text-gray-700">Built-in training and evaluation tools</span>
+                </li>
+                <li class="flex">
+                  <span class="flex-shrink-0 flex items-center justify-center h-6 w-6 rounded-full bg-primary-100 text-primary-600">
+                    <i class="pi pi-check"></i>
+                  </span>
+                  <span class="ml-3 text-gray-700">Real-time communication and status updates</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
     </section>
-
-    <!-- Features Section -->
-    <section class="py-16">
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-          <h2 class="text-3xl font-bold text-text-heading">Why Choose Our Platform?</h2>
-          <p class="mt-4 text-lg text-text-primary max-w-3xl mx-auto">
-            Our intelligent recruitment system brings together the best features to make event staffing efficient, reliable, and hassle-free.
-          </p>
-        </div>
-
-        <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          <!-- Feature 1 -->
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <div class="h-12 w-12 bg-primary bg-opacity-10 rounded-lg flex items-center justify-center mb-4">
-              <i class="pi pi-search text-primary text-xl"></i>
+    
+    <!-- How it works section -->
+    <section class="py-16 bg-white">
+      <div class="container mx-auto px-6">
+        <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">How It Works</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- For Recruiters -->
+          <div class="bg-gray-50 p-6 rounded-lg">
+            <div class="mb-4 text-primary-600">
+              <i class="pi pi-building text-3xl"></i>
             </div>
-            <h3 class="text-xl font-semibold text-text-heading">Smart Matching</h3>
-            <p class="mt-2 text-text-primary">
-              AI-powered matching connects the right candidates to your events based on location, skills, and availability.
-            </p>
+            <h3 class="text-xl font-semibold mb-3">For Recruiters</h3>
+            <ul class="space-y-2 text-gray-700">
+              <li class="flex items-start">
+                <span class="text-sm mr-2">1.</span>
+                <span>Create and post job listings for your events</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-sm mr-2">2.</span>
+                <span>Review AI-matched candidates based on experience and location</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-sm mr-2">3.</span>
+                <span>Upload training materials and track candidate preparation</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-sm mr-2">4.</span>
+                <span>Manage scheduling and find fast replacements if needed</span>
+              </li>
+            </ul>
           </div>
-
-          <!-- Feature 2 -->
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <div class="h-12 w-12 bg-primary bg-opacity-10 rounded-lg flex items-center justify-center mb-4">
-              <i class="pi pi-check-circle text-primary text-xl"></i>
+          
+          <!-- For Candidates -->
+          <div class="bg-gray-50 p-6 rounded-lg">
+            <div class="mb-4 text-primary-600">
+              <i class="pi pi-user text-3xl"></i>
             </div>
-            <h3 class="text-xl font-semibold text-text-heading">Verified Profiles</h3>
-            <p class="mt-2 text-text-primary">
-              Trusted verification system ensures you're connecting with reliable candidates and legitimate employers.
-            </p>
+            <h3 class="text-xl font-semibold mb-3">For Candidates</h3>
+            <ul class="space-y-2 text-gray-700">
+              <li class="flex items-start">
+                <span class="text-sm mr-2">1.</span>
+                <span>Create a profile highlighting your skills and experience</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-sm mr-2">2.</span>
+                <span>Set your availability and preferred work locations</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-sm mr-2">3.</span>
+                <span>Browse and apply for event jobs matching your profile</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-sm mr-2">4.</span>
+                <span>Complete training and confirm assignments easily</span>
+              </li>
+            </ul>
           </div>
-
-          <!-- Feature 3 -->
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <div class="h-12 w-12 bg-primary bg-opacity-10 rounded-lg flex items-center justify-center mb-4">
-              <i class="pi pi-calendar text-primary text-xl"></i>
+          
+          <!-- Platform Features -->
+          <div class="bg-gray-50 p-6 rounded-lg">
+            <div class="mb-4 text-primary-600">
+              <i class="pi pi-star text-3xl"></i>
             </div>
-            <h3 class="text-xl font-semibold text-text-heading">Streamlined Scheduling</h3>
-            <p class="mt-2 text-text-primary">
-              Efficient scheduling and availability management with automated reminders to reduce no-shows.
-            </p>
-          </div>
-
-          <!-- Feature 4 -->
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <div class="h-12 w-12 bg-primary bg-opacity-10 rounded-lg flex items-center justify-center mb-4">
-              <i class="pi pi-sync text-primary text-xl"></i>
-            </div>
-            <h3 class="text-xl font-semibold text-text-heading">Instant Replacements</h3>
-            <p class="mt-2 text-text-primary">
-              Smart backup system finds instant replacements when staff can't make it, ensuring your events are always fully staffed.
-            </p>
-          </div>
-
-          <!-- Feature 5 -->
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <div class="h-12 w-12 bg-primary bg-opacity-10 rounded-lg flex items-center justify-center mb-4">
-              <i class="pi pi-book text-primary text-xl"></i>
-            </div>
-            <h3 class="text-xl font-semibold text-text-heading">Digital Training</h3>
-            <p class="mt-2 text-text-primary">
-              Upload training materials and verify staff knowledge with automated quizzes before events begin.
-            </p>
-          </div>
-
-          <!-- Feature 6 -->
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <div class="h-12 w-12 bg-primary bg-opacity-10 rounded-lg flex items-center justify-center mb-4">
-              <i class="pi pi-star text-primary text-xl"></i>
-            </div>
-            <h3 class="text-xl font-semibold text-text-heading">Rating System</h3>
-            <p class="mt-2 text-text-primary">
-              Two-way feedback system helps identify the best talents and the most professional employers.
-            </p>
+            <h3 class="text-xl font-semibold mb-3">Platform Features</h3>
+            <ul class="space-y-2 text-gray-700">
+              <li class="flex items-start">
+                <span class="text-sm mr-2">•</span>
+                <span>AI-powered matching algorithm</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-sm mr-2">•</span>
+                <span>Real-time notification system</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-sm mr-2">•</span>
+                <span>Two-way rating and review system</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-sm mr-2">•</span>
+                <span>Data-driven recruitment analytics</span>
+              </li>
+              <li class="flex items-start">
+                <span class="text-sm mr-2">•</span>
+                <span>Mobile-friendly interface</span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
     </section>
-
+    
     <!-- CTA Section -->
-    <section class="bg-primary bg-opacity-5 py-16">
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-3xl font-bold text-text-heading">Ready to Transform Your Event Recruitment?</h2>
-        <p class="mt-4 text-xl text-text-primary max-w-3xl mx-auto">
-          Join thousands of event professionals who have simplified their staffing process with our platform.
+    <section class="py-16 bg-primary-600 text-white">
+      <div class="container mx-auto px-6 text-center">
+        <h2 class="text-3xl font-bold mb-4">Ready to get started?</h2>
+        <p class="text-xl mb-8 max-w-2xl mx-auto">
+          Join our platform today and transform your event staffing experience.
         </p>
-        <div class="mt-8 flex justify-center">
-          <router-link 
-            to="/auth/register/recruiter" 
-            class="btn btn-primary"
-          >
-            Get Started Today
-          </router-link>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <Button 
+            label="Sign Up Now" 
+            icon="pi pi-user-plus" 
+            class="p-button-lg p-button-outlined p-button-light" 
+            @click="$router.push('/register')"
+          />
+          <Button 
+            label="Learn More" 
+            icon="pi pi-info-circle" 
+            class="p-button-lg p-button-text p-button-light" 
+          />
         </div>
       </div>
     </section>
@@ -134,5 +177,5 @@
 </template>
 
 <script setup>
-// Home component doesn't need much logic - it's primarily for display
+// Home page component with navigation to auth pages
 </script>
