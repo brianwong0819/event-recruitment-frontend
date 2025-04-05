@@ -3,26 +3,26 @@
     class="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
   >
     <!-- Header with Logo -->
-    <header class="pt-6 pb-2">
-      <div class="container px-6">
+    <header class="pt-4 pb-2">
+      <div class="container px-4">
         <router-link to="/" class="inline-block">
           <img
             src="@/assets/logo.png"
             alt="Event Recruitment Logo"
-            class="h-14"
+            class="h-10"
           />
         </router-link>
       </div>
     </header>
 
     <!-- Main content -->
-    <main class="flex-grow flex items-center justify-center px-4 py-8">
-      <div class="w-full max-w-3xl">
+    <main class="flex-grow flex items-center justify-center px-4 py-6">
+      <div class="w-full max-w-2xl">
         <!-- Navigation links above the card -->
-        <div class="flex justify-start items-center mb-4 px-2">
+        <div class="flex justify-start items-center mb-3 px-2">
           <router-link
             to="/register"
-            class="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors duration-200 flex items-center"
+            class="text-xs font-medium text-gray-600 hover:text-primary-600 transition-colors duration-200 flex items-center"
           >
             <i class="pi pi-arrow-left mr-1 text-xs"></i> Back to registration
             options
@@ -30,11 +30,11 @@
         </div>
 
         <!-- Title section -->
-        <div class="text-center mb-8">
-          <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+        <div class="text-center mb-6">
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
             Join Our Talent Pool
           </h1>
-          <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p class="text-base text-gray-600 max-w-2xl mx-auto">
             Create your candidate profile and discover exciting event
             opportunities
           </p>
@@ -43,18 +43,18 @@
         <!-- Error alert -->
         <div
           v-if="error"
-          class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-md flex items-center"
+          class="mb-4 p-3 bg-red-50 border-l-4 border-red-500 rounded-md flex items-center"
         >
-          <i class="pi pi-exclamation-circle text-red-500 mr-3 text-xl"></i>
-          <p class="text-red-700">{{ error }}</p>
+          <i class="pi pi-exclamation-circle text-red-500 mr-2 text-base"></i>
+          <p class="text-red-700 text-sm">{{ error }}</p>
         </div>
 
         <!-- Registration card -->
         <div
-          class="bg-white rounded-xl p-6 md:p-8 shadow-lg border border-gray-100"
+          class="bg-white rounded-lg p-5 md:p-6 shadow-md border border-gray-100"
         >
           <!-- Custom progress steps indicator -->
-          <div class="mb-10">
+          <div class="mb-6">
             <div class="custom-steps-container flex justify-between">
               <div
                 v-for="(item, index) in items"
@@ -63,11 +63,11 @@
                 :class="{ active: index <= currentStep }"
               >
                 <div
-                  class="step-number flex items-center justify-center h-10 w-10 rounded-full border-2 mb-2"
+                  class="step-number flex items-center justify-center h-8 w-8 rounded-full border-2 mb-1"
                 >
-                  <i :class="item.icon + ' text-lg'"></i>
+                  <i :class="item.icon + ' text-base'"></i>
                 </div>
-                <span class="step-label text-sm font-medium">{{
+                <span class="step-label text-xs font-medium">{{
                   item.label
                 }}</span>
               </div>
@@ -76,23 +76,25 @@
 
           <!-- Step 1: Basic Information -->
           <div v-show="currentStep === 0" class="animate-fadeIn">
-            <div class="mb-6 border-b border-gray-100 pb-4">
-              <h2 class="text-2xl font-semibold text-gray-800">
+            <div class="mb-4 border-b border-gray-100 pb-3">
+              <h2 class="text-xl font-semibold text-gray-800">
                 Account Information
               </h2>
-              <p class="text-gray-600 mt-1">Create your login credentials</p>
+              <p class="text-gray-600 mt-1 text-sm">
+                Create your login credentials
+              </p>
             </div>
-            <form @submit.prevent="nextStep" class="space-y-6">
+            <form @submit.prevent="nextStep" class="space-y-4">
               <!-- Name field -->
               <div class="form-group">
                 <label for="name" class="form-label"> Full Name </label>
                 <div class="flex items-center">
-                  <i class="pi pi-user mr-3 text-gray-500"></i>
+                  <i class="pi pi-user mr-2 text-gray-500 text-sm"></i>
                   <InputText
                     id="name"
                     v-model="form.name"
                     type="text"
-                    class="w-full p-inputtext-lg"
+                    class="w-full p-inputtext-sm"
                     placeholder="Enter your full name"
                     :class="{ 'p-invalid': hasError('name') }"
                   />

@@ -3,26 +3,26 @@
     class="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
   >
     <!-- Header with Logo -->
-    <header class="pt-6 pb-2">
-      <div class="container px-6">
+    <header class="pt-4 pb-2">
+      <div class="container px-4">
         <router-link to="/" class="inline-block">
           <img
             src="@/assets/logo.png"
             alt="Event Recruitment Logo"
-            class="h-14"
+            class="h-10"
           />
         </router-link>
       </div>
     </header>
 
     <!-- Main content -->
-    <main class="flex-grow flex items-center justify-center px-4 py-8">
-      <div class="w-full max-w-3xl">
+    <main class="flex-grow flex items-center justify-center px-4 py-6">
+      <div class="w-full max-w-2xl">
         <!-- Navigation links above the card -->
-        <div class="flex justify-start items-center mb-4 px-2">
+        <div class="flex justify-start items-center mb-3 px-2">
           <router-link
             to="/register"
-            class="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors duration-200 flex items-center"
+            class="text-xs font-medium text-gray-600 hover:text-primary-600 transition-colors duration-200 flex items-center"
           >
             <i class="pi pi-arrow-left mr-1 text-xs"></i> Back to registration
             options
@@ -30,11 +30,11 @@
         </div>
 
         <!-- Title section -->
-        <div class="text-center mb-8">
-          <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+        <div class="text-center mb-6">
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
             Create Recruiter Account
           </h1>
-          <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p class="text-base text-gray-600 max-w-2xl mx-auto">
             Sign up to find the best talent for your events
           </p>
         </div>
@@ -42,18 +42,18 @@
         <!-- Error alert -->
         <div
           v-if="error"
-          class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-md flex items-center"
+          class="mb-4 p-3 bg-red-50 border-l-4 border-red-500 rounded-md flex items-center"
         >
-          <i class="pi pi-exclamation-circle text-red-500 mr-3 text-xl"></i>
-          <p class="text-red-700">{{ error }}</p>
+          <i class="pi pi-exclamation-circle text-red-500 mr-2 text-base"></i>
+          <p class="text-red-700 text-sm">{{ error }}</p>
         </div>
 
         <!-- Registration card -->
         <div
-          class="bg-white rounded-xl p-6 md:p-8 shadow-lg border border-gray-100"
+          class="bg-white rounded-lg p-5 md:p-6 shadow-md border border-gray-100"
         >
           <!-- Custom progress steps indicator -->
-          <div class="mb-10">
+          <div class="mb-6">
             <div class="custom-steps-container flex justify-between">
               <div
                 v-for="(item, index) in items"
@@ -62,11 +62,11 @@
                 :class="{ active: index <= activeStep }"
               >
                 <div
-                  class="step-number flex items-center justify-center h-10 w-10 rounded-full border-2 mb-2"
+                  class="step-number flex items-center justify-center h-8 w-8 rounded-full border-2 mb-1"
                 >
-                  <i :class="item.icon + ' text-lg'"></i>
+                  <i :class="item.icon + ' text-base'"></i>
                 </div>
-                <span class="step-label text-sm font-medium">{{
+                <span class="step-label text-xs font-medium">{{
                   item.label
                 }}</span>
               </div>
@@ -75,20 +75,20 @@
 
           <!-- Step 1: Basic Information -->
           <div v-show="activeStep === 0" class="animate-fadeIn">
-            <div class="mb-6 border-b border-gray-100 pb-4">
-              <h2 class="text-2xl font-semibold text-gray-800">
+            <div class="mb-4 border-b border-gray-100 pb-3">
+              <h2 class="text-xl font-semibold text-gray-800">
                 Basic Information
               </h2>
-              <p class="text-gray-600 mt-1">Tell us about yourself</p>
+              <p class="text-gray-600 mt-1 text-sm">Tell us about yourself</p>
             </div>
-            <form @submit.prevent="nextStep" class="space-y-6">
+            <form @submit.prevent="nextStep" class="space-y-4">
               <!-- Recruiter Type field -->
               <div class="form-group">
                 <label for="recruiterType" class="form-label">
                   Recruiter Type
                 </label>
                 <div class="flex items-center">
-                  <i class="pi pi-briefcase mr-3 text-gray-500"></i>
+                  <i class="pi pi-briefcase mr-2 text-gray-500 text-sm"></i>
                   <Dropdown
                     id="recruiterType"
                     v-model="form.recruiterType"
@@ -100,7 +100,7 @@
                     :class="{ 'p-invalid': hasError('recruiterType') }"
                   />
                 </div>
-                <small v-if="hasError('recruiterType')" class="p-error">
+                <small v-if="hasError('recruiterType')" class="p-error text-xs">
                   Recruiter type selection is required
                 </small>
               </div>
@@ -109,17 +109,17 @@
               <div class="form-group" v-if="showCompanyNameField">
                 <label for="companyName" class="form-label">Company Name</label>
                 <div class="flex items-center">
-                  <i class="pi pi-building mr-3 text-gray-500"></i>
+                  <i class="pi pi-building mr-2 text-gray-500 text-sm"></i>
                   <InputText
                     id="companyName"
                     v-model="form.companyName"
                     type="text"
-                    class="w-full p-inputtext-lg"
+                    class="w-full p-inputtext-sm"
                     placeholder="Enter your company name"
                     :class="{ 'p-invalid': hasError('companyName') }"
                   />
                 </div>
-                <small v-if="hasError('companyName')" class="p-error">
+                <small v-if="hasError('companyName')" class="p-error text-xs">
                   Company name is required
                 </small>
               </div>
@@ -132,12 +132,12 @@
                   }}
                 </label>
                 <div class="flex items-center">
-                  <i class="pi pi-user mr-3 text-gray-500"></i>
+                  <i class="pi pi-user mr-2 text-gray-500 text-sm"></i>
                   <InputText
                     id="recruiterRepName"
                     v-model="form.recruiterRepName"
                     type="text"
-                    class="w-full p-inputtext-lg"
+                    class="w-full p-inputtext-sm"
                     :placeholder="
                       showCompanyNameField
                         ? 'Enter representative\'s name'
@@ -146,7 +146,10 @@
                     :class="{ 'p-invalid': hasError('recruiterRepName') }"
                   />
                 </div>
-                <small v-if="hasError('recruiterRepName')" class="p-error">
+                <small
+                  v-if="hasError('recruiterRepName')"
+                  class="p-error text-xs"
+                >
                   {{
                     showCompanyNameField ? 'Representative name' : 'Full name'
                   }}
@@ -158,17 +161,17 @@
               <div class="form-group">
                 <label for="email" class="form-label">Email Address</label>
                 <div class="flex items-center">
-                  <i class="pi pi-envelope mr-3 text-gray-500"></i>
+                  <i class="pi pi-envelope mr-2 text-gray-500 text-sm"></i>
                   <InputText
                     id="email"
                     v-model="form.email"
                     type="email"
-                    class="w-full p-inputtext-lg"
+                    class="w-full p-inputtext-sm"
                     placeholder="company@example.com"
                     :class="{ 'p-invalid': hasError('email') }"
                   />
                 </div>
-                <small v-if="hasError('email')" class="p-error">
+                <small v-if="hasError('email')" class="p-error text-xs">
                   A valid email is required
                 </small>
               </div>
@@ -177,35 +180,35 @@
               <div class="form-group">
                 <label for="phoneNumber" class="form-label">Phone Number</label>
                 <div class="flex items-center">
-                  <i class="pi pi-phone mr-3 text-gray-500"></i>
+                  <i class="pi pi-phone mr-2 text-gray-500 text-sm"></i>
                   <InputText
                     id="phoneNumber"
                     v-model="form.phoneNumber"
                     type="tel"
-                    class="w-full p-inputtext-lg"
+                    class="w-full p-inputtext-sm"
                     placeholder="+60 12 345 6789"
                     :class="{ 'p-invalid': hasError('phoneNumber') }"
                   />
                 </div>
-                <small v-if="hasError('phoneNumber')" class="p-error">
+                <small v-if="hasError('phoneNumber')" class="p-error text-xs">
                   Phone number is required
                 </small>
               </div>
 
               <!-- Button -->
-              <div class="pt-4">
+              <div class="pt-3">
                 <Button
                   type="submit"
                   label="Continue to Account Setup"
                   icon="pi pi-arrow-right"
                   iconPos="right"
-                  class="w-full p-button-lg"
+                  class="w-full p-button-md"
                 />
               </div>
 
               <!-- Login link -->
-              <div class="text-center pt-4">
-                <p class="text-gray-600">
+              <div class="text-center pt-3">
+                <p class="text-gray-600 text-sm">
                   Already have an account?
                   <router-link
                     to="/login"
@@ -220,28 +223,28 @@
 
           <!-- Step 2: Account Information -->
           <div v-show="activeStep === 1" class="animate-fadeIn">
-            <div class="mb-6 border-b border-gray-100 pb-4">
-              <h2 class="text-2xl font-semibold text-gray-800">
-                Account Setup
-              </h2>
-              <p class="text-gray-600 mt-1">Create your login credentials</p>
+            <div class="mb-4 border-b border-gray-100 pb-3">
+              <h2 class="text-xl font-semibold text-gray-800">Account Setup</h2>
+              <p class="text-gray-600 mt-1 text-sm">
+                Create your login credentials
+              </p>
             </div>
-            <form @submit.prevent="nextStep" class="space-y-6">
+            <form @submit.prevent="nextStep" class="space-y-4">
               <!-- Username field -->
               <div class="form-group">
                 <label for="username" class="form-label">Username</label>
                 <div class="flex items-center">
-                  <i class="pi pi-at mr-3 text-gray-500"></i>
+                  <i class="pi pi-at mr-2 text-gray-500 text-sm"></i>
                   <InputText
                     id="username"
                     v-model="form.username"
                     type="text"
-                    class="w-full p-inputtext-lg"
+                    class="w-full p-inputtext-sm"
                     placeholder="Choose a unique username"
                     :class="{ 'p-invalid': hasError('username') }"
                   />
                 </div>
-                <small v-if="hasError('username')" class="p-error">
+                <small v-if="hasError('username')" class="p-error text-xs">
                   Username is required (minimum 3 characters)
                 </small>
               </div>
@@ -250,7 +253,7 @@
               <div class="form-group">
                 <label for="password" class="form-label">Password</label>
                 <div class="flex items-center">
-                  <i class="pi pi-lock mr-3 text-gray-500"></i>
+                  <i class="pi pi-lock mr-2 text-gray-500 text-sm"></i>
                   <Password
                     id="password"
                     v-model="form.password"
@@ -262,7 +265,7 @@
                     :inputClass="'w-full'"
                   />
                 </div>
-                <small v-if="hasError('password')" class="p-error">
+                <small v-if="hasError('password')" class="p-error text-xs">
                   Password is required (minimum 8 characters)
                 </small>
               </div>
@@ -273,7 +276,7 @@
                   Confirm Password
                 </label>
                 <div class="flex items-center">
-                  <i class="pi pi-shield mr-3 text-gray-500"></i>
+                  <i class="pi pi-shield mr-2 text-gray-500 text-sm"></i>
                   <Password
                     id="confirmPassword"
                     v-model="form.confirmPassword"
@@ -285,7 +288,10 @@
                     :inputClass="'w-full'"
                   />
                 </div>
-                <small v-if="hasError('confirmPassword')" class="p-error">
+                <small
+                  v-if="hasError('confirmPassword')"
+                  class="p-error text-xs"
+                >
                   {{
                     formErrors.confirmPasswordMessage ||
                     'Password confirmation is required'
@@ -294,12 +300,12 @@
               </div>
 
               <!-- Navigation buttons -->
-              <div class="flex justify-between mt-8 pt-4">
+              <div class="flex justify-between mt-6 pt-3">
                 <Button
                   type="button"
                   label="Back"
                   icon="pi pi-arrow-left"
-                  class="p-button-outlined p-button-lg"
+                  class="p-button-outlined p-button-md"
                   @click="prevStep"
                 />
                 <Button
@@ -307,7 +313,7 @@
                   label="Continue to Company Details"
                   icon="pi pi-arrow-right"
                   iconPos="right"
-                  class="p-button-lg"
+                  class="p-button-md"
                 />
               </div>
             </form>
@@ -315,13 +321,13 @@
 
           <!-- Step 3: Company Details -->
           <div v-show="activeStep === 2" class="animate-fadeIn">
-            <div class="mb-6 border-b border-gray-100 pb-4">
-              <h2 class="text-2xl font-semibold text-gray-800">
+            <div class="mb-4 border-b border-gray-100 pb-3">
+              <h2 class="text-xl font-semibold text-gray-800">
                 {{
                   showCompanyNameField ? 'Company Details' : 'Profile Details'
                 }}
               </h2>
-              <p class="text-gray-600 mt-1">
+              <p class="text-gray-600 mt-1 text-sm">
                 Tell candidates more about
                 {{
                   showCompanyNameField
@@ -330,7 +336,7 @@
                 }}
               </p>
             </div>
-            <form @submit.prevent="submitForm" class="space-y-6">
+            <form @submit.prevent="submitForm" class="space-y-4">
               <!-- Company Description field -->
               <div class="form-group">
                 <label for="companyDescription" class="form-label">
@@ -342,21 +348,26 @@
                   <span class="text-red-500">*</span>
                 </label>
                 <div class="flex items-start">
-                  <i class="pi pi-file-edit mr-3 text-gray-500 mt-3"></i>
+                  <i
+                    class="pi pi-file-edit mr-2 text-gray-500 mt-2 text-sm"
+                  ></i>
                   <Textarea
                     id="companyDescription"
                     v-model="form.companyDescription"
-                    rows="4"
+                    rows="3"
                     :placeholder="
                       showCompanyNameField
                         ? 'Describe your company, culture, and what makes it special...'
                         : 'Describe your professional background, expertise, and what you can offer to candidates...'
                     "
-                    class="w-full p-inputtext-lg"
+                    class="w-full p-inputtext-sm"
                     :class="{ 'p-invalid': hasError('companyDescription') }"
                   />
                 </div>
-                <small v-if="hasError('companyDescription')" class="p-error">
+                <small
+                  v-if="hasError('companyDescription')"
+                  class="p-error text-xs"
+                >
                   {{
                     showCompanyNameField
                       ? 'Company description'
@@ -366,7 +377,7 @@
                 </small>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Company Location field -->
                 <div class="form-group">
                   <label for="companyLocation" class="form-label">
@@ -374,17 +385,20 @@
                     <span class="text-red-500">*</span>
                   </label>
                   <div class="flex items-center">
-                    <i class="pi pi-map-marker mr-3 text-gray-500"></i>
+                    <i class="pi pi-map-marker mr-2 text-gray-500 text-sm"></i>
                     <InputText
                       id="companyLocation"
                       v-model="form.companyLocation"
                       type="text"
                       placeholder="e.g., Kuala Lumpur, Malaysia"
-                      class="w-full p-inputtext-lg"
+                      class="w-full p-inputtext-sm"
                       :class="{ 'p-invalid': hasError('companyLocation') }"
                     />
                   </div>
-                  <small v-if="hasError('companyLocation')" class="p-error">
+                  <small
+                    v-if="hasError('companyLocation')"
+                    class="p-error text-xs"
+                  >
                     {{ showCompanyNameField ? 'Company location' : 'Location' }}
                     is required
                   </small>
@@ -398,22 +412,25 @@
                         ? 'Company Website'
                         : 'Professional Website'
                     }}
-                    <span class="text-gray-500 text-sm font-normal"
+                    <span class="text-gray-500 text-xs font-normal"
                       >(if available)</span
                     >
                   </label>
                   <div class="flex items-center">
-                    <i class="pi pi-globe mr-3 text-gray-500"></i>
+                    <i class="pi pi-globe mr-2 text-gray-500 text-sm"></i>
                     <InputText
                       id="companyWebsite"
                       v-model="form.companyWebsite"
                       type="url"
                       placeholder="https://www.example.com"
-                      class="w-full p-inputtext-lg"
+                      class="w-full p-inputtext-sm"
                       :class="{ 'p-invalid': hasError('companyWebsite') }"
                     />
                   </div>
-                  <small v-if="hasError('companyWebsite')" class="p-error">
+                  <small
+                    v-if="hasError('companyWebsite')"
+                    class="p-error text-xs"
+                  >
                     Please enter a valid URL
                   </small>
                 </div>
@@ -421,10 +438,12 @@
 
               <!-- Terms and Conditions -->
               <div
-                class="bg-gray-50 p-5 rounded-lg mt-6 border border-gray-200"
+                class="bg-gray-50 p-3 rounded-lg mt-4 border border-gray-200"
               >
                 <div class="flex items-start">
-                  <i class="pi pi-check-circle mr-3 text-gray-500 mt-1"></i>
+                  <i
+                    class="pi pi-check-circle mr-2 text-gray-500 mt-1 text-sm"
+                  ></i>
                   <div>
                     <div class="flex items-center">
                       <Checkbox
@@ -433,7 +452,7 @@
                         :binary="true"
                         :class="{ 'p-invalid': hasError('terms') }"
                       />
-                      <label for="terms" class="text-gray-700 ml-2">
+                      <label for="terms" class="text-gray-700 ml-2 text-sm">
                         I agree to the
                         <a
                           href="#"
@@ -450,11 +469,14 @@
                         </a>
                       </label>
                     </div>
-                    <p class="text-gray-500 text-sm mt-1">
+                    <p class="text-gray-500 text-xs mt-1">
                       By creating an account, you agree to receive updates and
                       communications from our platform.
                     </p>
-                    <small v-if="hasError('terms')" class="p-error block mt-2">
+                    <small
+                      v-if="hasError('terms')"
+                      class="p-error block mt-1 text-xs"
+                    >
                       You must agree to the terms and conditions
                     </small>
                   </div>
@@ -462,12 +484,12 @@
               </div>
 
               <!-- Navigation buttons -->
-              <div class="flex justify-between mt-8 pt-4">
+              <div class="flex justify-between mt-6 pt-3">
                 <Button
                   type="button"
                   label="Back"
                   icon="pi pi-arrow-left"
-                  class="p-button-outlined p-button-lg"
+                  class="p-button-outlined p-button-md"
                   @click="prevStep"
                 />
                 <Button
@@ -475,7 +497,7 @@
                   label="Complete Registration"
                   icon="pi pi-check"
                   iconPos="right"
-                  class="p-button-lg"
+                  class="p-button-md"
                   :loading="isLoading"
                 />
               </div>
@@ -486,8 +508,8 @@
     </main>
 
     <!-- Footer -->
-    <footer class="py-6 text-center mt-auto">
-      <p class="text-sm text-gray-500">
+    <footer class="py-4 text-center mt-auto">
+      <p class="text-xs text-gray-500">
         &copy; {{ currentYear }} Event Recruitment Platform. All rights
         reserved.
       </p>
@@ -749,11 +771,45 @@ const submitForm = async () => {
 <style scoped>
 /* Custom form styles */
 .form-label {
-  @apply block text-sm font-medium text-gray-700 mb-1;
+  @apply block text-xs font-medium text-gray-700 mb-1;
 }
 
 .form-group {
-  @apply mb-4;
+  @apply mb-3;
+}
+
+/* Custom steps container spacing */
+.custom-steps-container::before {
+  top: 16px;
+  left: 45px;
+  right: 45px;
+}
+
+.custom-step-item {
+  width: 60px;
+}
+
+/* Make button sizes smaller */
+:deep(.p-button.p-button-md) {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+:deep(.p-inputtext),
+:deep(.p-dropdown),
+:deep(.p-multiselect),
+:deep(.p-calendar),
+:deep(.p-password) {
+  height: 2.25rem !important;
+}
+
+:deep(.p-inputtext-sm) {
+  @apply text-sm py-2;
+}
+
+/* Fix text areas */
+:deep(textarea.p-inputtext) {
+  min-height: 5rem;
 }
 
 /* Password specific fixes */

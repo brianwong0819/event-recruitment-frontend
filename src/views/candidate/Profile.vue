@@ -6,13 +6,13 @@
     <div class="flex flex-col md:flex-row w-full max-w-7xl shadow-lg">
       <!-- Left Sidebar -->
       <div
-        class="w-full md:w-80 lg:w-96 border-r md:sticky md:top-0 md:h-screen md:overflow-y-auto flex flex-col bg-gray-50 shadow-sm"
+        class="w-full md:w-72 lg:w-80 border-r md:sticky md:top-0 md:h-screen md:overflow-y-auto flex flex-col bg-gray-50 shadow-sm"
       >
         <!-- Profile Photo & Name Section -->
         <div
-          class="flex flex-col items-center px-8 py-10 border-b bg-gradient-to-b from-primary-50 to-gray-50"
+          class="flex flex-col items-center px-6 py-6 border-b bg-gradient-to-b from-primary-50 to-gray-50"
         >
-          <div class="w-28 h-28 relative mb-5">
+          <div class="w-20 h-20 relative mb-3">
             <div
               v-if="profile?.profilePictureUrl"
               class="w-full h-full overflow-hidden rounded-full border-2 border-primary-100 shadow-md"
@@ -25,26 +25,26 @@
             </div>
             <div
               v-else
-              class="w-full h-full rounded-full bg-primary-100 flex items-center justify-center text-primary-600 text-4xl font-bold border border-primary-200 shadow-md"
+              class="w-full h-full rounded-full bg-primary-100 flex items-center justify-center text-primary-600 text-3xl font-bold border border-primary-200 shadow-md"
             >
               {{ getInitials(profile?.name) }}
             </div>
           </div>
 
-          <h3 class="text-2xl font-semibold text-center text-gray-800">
+          <h3 class="text-xl font-semibold text-center text-gray-800">
             {{ profile?.name || 'Your Name' }}
           </h3>
-          <p class="text-gray-500 text-base text-center">
+          <p class="text-gray-500 text-sm text-center">
             {{ profile?.username || '@username' }}
           </p>
-          <p class="text-sm text-gray-500 mt-1 text-center mb-3">
+          <p class="text-xs text-gray-500 mt-1 text-center mb-2">
             {{ profile?.location || 'No location set' }}
           </p>
           <button
             @click="profilePictureInput.click()"
-            class="mt-2 text-base text-primary-600 flex items-center hover:text-primary-700 hover:underline transition-colors"
+            class="mt-1 text-sm text-primary-600 flex items-center hover:text-primary-700 hover:underline transition-colors"
           >
-            <i class="pi pi-camera mr-2"></i> Change Photo
+            <i class="pi pi-camera mr-1"></i> Change Photo
           </button>
           <input
             type="file"
@@ -56,87 +56,87 @@
         </div>
 
         <!-- Navigation Menu -->
-        <nav class="py-6 flex-grow">
-          <ul class="space-y-1">
+        <nav class="py-4 flex-grow">
+          <ul class="space-y-0.5">
             <li>
               <button
                 @click="activeSection = 'basic-info'"
                 :class="[
-                  'w-full text-left py-3 px-8 flex items-center transition-colors duration-150 text-lg',
+                  'w-full text-left py-2 px-6 flex items-center transition-colors duration-150 text-base',
                   activeSection === 'basic-info'
                     ? 'bg-white text-primary-600 font-medium border-l-4 border-primary-500 shadow-sm'
                     : 'text-gray-700 hover:bg-white hover:bg-opacity-60 border-l-4 border-transparent',
                 ]"
               >
-                <i class="pi pi-user text-xl w-8 mr-4"></i> Basic Information
+                <i class="pi pi-user text-lg w-6 mr-3"></i> Basic Information
               </button>
             </li>
             <li>
               <button
                 @click="activeSection = 'resume'"
                 :class="[
-                  'w-full text-left py-3 px-8 flex items-center transition-colors duration-150 text-lg',
+                  'w-full text-left py-2 px-6 flex items-center transition-colors duration-150 text-base',
                   activeSection === 'resume'
                     ? 'bg-white text-primary-600 font-medium border-l-4 border-primary-500 shadow-sm'
                     : 'text-gray-700 hover:bg-white hover:bg-opacity-60 border-l-4 border-transparent',
                 ]"
               >
-                <i class="pi pi-file-pdf text-xl w-8 mr-4"></i> Resume
+                <i class="pi pi-file-pdf text-lg w-6 mr-3"></i> Resume
               </button>
             </li>
             <li>
               <button
                 @click="activeSection = 'work-experience'"
                 :class="[
-                  'w-full text-left py-3 px-8 flex items-center transition-colors duration-150 text-lg',
+                  'w-full text-left py-2 px-6 flex items-center transition-colors duration-150 text-base',
                   activeSection === 'work-experience'
                     ? 'bg-white text-primary-600 font-medium border-l-4 border-primary-500 shadow-sm'
                     : 'text-gray-700 hover:bg-white hover:bg-opacity-60 border-l-4 border-transparent',
                 ]"
               >
-                <i class="pi pi-briefcase text-xl w-8 mr-4"></i> Work Experience
+                <i class="pi pi-briefcase text-lg w-6 mr-3"></i> Work Experience
               </button>
             </li>
             <li>
               <button
                 @click="activeSection = 'availability'"
                 :class="[
-                  'w-full text-left py-3 px-8 flex items-center transition-colors duration-150 text-lg',
+                  'w-full text-left py-2 px-6 flex items-center transition-colors duration-150 text-base',
                   activeSection === 'availability'
                     ? 'bg-white text-primary-600 font-medium border-l-4 border-primary-500 shadow-sm'
                     : 'text-gray-700 hover:bg-white hover:bg-opacity-60 border-l-4 border-transparent',
                 ]"
               >
-                <i class="pi pi-calendar text-xl w-8 mr-4"></i> Availability
+                <i class="pi pi-calendar text-lg w-6 mr-3"></i> Availability
               </button>
             </li>
             <li>
               <button
                 @click="activeSection = 'settings'"
                 :class="[
-                  'w-full text-left py-3 px-8 flex items-center transition-colors duration-150 text-lg',
+                  'w-full text-left py-2 px-6 flex items-center transition-colors duration-150 text-base',
                   activeSection === 'settings'
                     ? 'bg-white text-primary-600 font-medium border-l-4 border-primary-500 shadow-sm'
                     : 'text-gray-700 hover:bg-white hover:bg-opacity-60 border-l-4 border-transparent',
                 ]"
               >
-                <i class="pi pi-cog text-xl w-8 mr-4"></i> Account Settings
+                <i class="pi pi-cog text-lg w-6 mr-3"></i> Account Settings
               </button>
             </li>
           </ul>
         </nav>
 
         <!-- Profile Completion Card -->
-        <div class="px-8 py-6 mt-auto border-t">
-          <div class="pt-2">
-            <h3 class="text-base font-medium mb-3 text-gray-700">
+        <div class="px-6 py-4 mt-auto border-t">
+          <div class="pt-1">
+            <h3 class="text-sm font-medium mb-2 text-gray-700">
               Profile Completion
             </h3>
-            <div class="mb-2 flex justify-between items-center">
-              <span class="text-base font-medium text-gray-800"
+            <div class="mb-1 flex justify-between items-center">
+              <span class="text-sm font-medium text-gray-800"
                 >{{ profileCompletionPercentage }}% Complete</span
               >
-              <span class="text-base text-primary-600 font-medium">{{
+              <span class="text-sm text-primary-600 font-medium">{{
                 profileCompletionStatus
               }}</span>
             </div>
@@ -151,7 +151,7 @@
       </div>
 
       <!-- Main Content Area -->
-      <div class="flex-1 py-8 px-6 md:py-10 md:px-8 flex justify-center">
+      <div class="flex-1 py-6 px-5 md:py-8 md:px-6 flex justify-center">
         <!-- Content Container with Max Width -->
         <div class="w-full max-w-4xl">
           <!-- Loading state -->
@@ -163,12 +163,12 @@
             <!-- Basic Information Section -->
             <div v-show="activeSection === 'basic-info'">
               <div
-                class="rounded-xl shadow-md border mb-10 overflow-hidden bg-white"
+                class="rounded-lg shadow-md border mb-8 overflow-hidden bg-white"
               >
                 <div
-                  class="flex justify-between items-center p-6 md:p-8 border-b bg-white"
+                  class="flex justify-between items-center p-4 md:p-6 border-b bg-white"
                 >
-                  <h2 class="text-2xl font-semibold text-gray-800">
+                  <h2 class="text-xl font-semibold text-gray-800">
                     Basic Information
                   </h2>
                   <Button
@@ -180,131 +180,133 @@
                 </div>
 
                 <!-- Basic info display mode -->
-                <div v-if="!editingBasicInfo" class="p-6 md:p-8 bg-white">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-8">
+                <div v-if="!editingBasicInfo" class="p-4 md:p-6 bg-white">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-6">
                     <div class="group">
-                      <p class="text-base text-gray-500 mb-2 font-medium">
+                      <p class="text-sm text-gray-500 mb-1 font-medium">
                         Full Name
                       </p>
                       <p
-                        class="text-lg text-gray-800 border-b border-gray-100 pb-1"
+                        class="text-base text-gray-800 border-b border-gray-100 pb-1"
                       >
                         {{ profile?.name || 'Not provided' }}
                       </p>
                     </div>
                     <div class="group">
-                      <p class="text-base text-gray-500 mb-2 font-medium">
+                      <p class="text-sm text-gray-500 mb-1 font-medium">
                         Employment Status
                       </p>
                       <p
-                        class="text-lg text-gray-800 border-b border-gray-100 pb-1"
+                        class="text-base text-gray-800 border-b border-gray-100 pb-1"
                       >
                         {{ profile?.employmentStatus || 'Student' }}
                       </p>
                     </div>
                     <div class="group">
-                      <p class="text-base text-gray-500 mb-2 font-medium">
+                      <p class="text-sm text-gray-500 mb-1 font-medium">
                         Email Address
                       </p>
                       <p
-                        class="text-lg text-gray-800 border-b border-gray-100 pb-1"
+                        class="text-base text-gray-800 border-b border-gray-100 pb-1"
                       >
                         {{ profile?.email || 'Not provided' }}
                       </p>
                     </div>
                     <div class="group">
-                      <p class="text-base text-gray-500 mb-2 font-medium">
+                      <p class="text-sm text-gray-500 mb-1 font-medium">
                         Phone Number
                       </p>
                       <p
-                        class="text-lg text-gray-800 border-b border-gray-100 pb-1"
+                        class="text-base text-gray-800 border-b border-gray-100 pb-1"
                       >
                         {{ profile?.phoneNumber || 'Not provided' }}
                       </p>
                     </div>
                     <div class="group">
-                      <p class="text-base text-gray-500 mb-2 font-medium">
+                      <p class="text-sm text-gray-500 mb-1 font-medium">
                         Location
                       </p>
                       <p
-                        class="text-lg text-gray-800 border-b border-gray-100 pb-1"
+                        class="text-base text-gray-800 border-b border-gray-100 pb-1"
                       >
                         {{ profile?.location || 'Not provided' }}
                       </p>
                     </div>
                     <div class="group">
-                      <p class="text-base text-gray-500 mb-2 font-medium">
+                      <p class="text-sm text-gray-500 mb-1 font-medium">
                         Date of Birth
                       </p>
                       <p
-                        class="text-lg text-gray-800 border-b border-gray-100 pb-1"
+                        class="text-base text-gray-800 border-b border-gray-100 pb-1"
                       >
                         {{ formatDate(profile?.dateOfBirth) }}
                       </p>
                     </div>
                     <div class="group">
-                      <p class="text-base text-gray-500 mb-2 font-medium">
+                      <p class="text-sm text-gray-500 mb-1 font-medium">
                         Ethnicity
                       </p>
                       <p
-                        class="text-lg text-gray-800 border-b border-gray-100 pb-1"
+                        class="text-base text-gray-800 border-b border-gray-100 pb-1"
                       >
                         {{ formatRace(profile?.race) }}
                       </p>
                     </div>
                     <div class="group">
-                      <p class="text-base text-gray-500 mb-2 font-medium">
+                      <p class="text-sm text-gray-500 mb-1 font-medium">
                         Gender
                       </p>
                       <p
-                        class="text-lg text-gray-800 border-b border-gray-100 pb-1"
+                        class="text-base text-gray-800 border-b border-gray-100 pb-1"
                       >
                         {{ formatGender(profile?.gender) }}
                       </p>
                     </div>
                   </div>
 
-                  <div class="mt-10">
-                    <p class="text-base text-gray-500 mb-3 font-medium">
+                  <div class="mt-8">
+                    <p class="text-sm text-gray-500 mb-2 font-medium">
                       Languages
                     </p>
-                    <div class="flex flex-wrap gap-3">
+                    <div class="flex flex-wrap gap-2">
                       <span
                         v-for="lang in profile?.languages"
                         :key="lang"
-                        class="inline-block px-4 py-2 bg-primary-50 text-primary-600 rounded-full text-base shadow-sm"
+                        class="inline-block px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-sm shadow-sm"
                       >
                         {{ formatLanguage(lang) }}
                       </span>
                       <p
                         v-if="!profile?.languages?.length"
-                        class="text-lg text-gray-800"
+                        class="text-base text-gray-800"
                       >
                         No languages specified
                       </p>
                     </div>
                   </div>
 
-                  <div class="mt-10">
-                    <p class="text-base text-gray-500 mb-3 font-medium">
+                  <div class="mt-8">
+                    <p class="text-sm text-gray-500 mb-2 font-medium">
                       About Me
                     </p>
-                    <p class="text-lg text-gray-800 p-4 bg-gray-50 rounded-lg">
+                    <p
+                      class="text-base text-gray-800 p-3 bg-gray-50 rounded-lg"
+                    >
                       {{ profile?.bio || 'No bio provided' }}
                     </p>
                   </div>
                 </div>
 
                 <!-- Basic info edit mode -->
-                <div v-else class="p-8 bg-white rounded-lg">
+                <div v-else class="p-6 bg-white rounded-lg">
                   <form @submit.prevent="saveBasicInfo">
                     <div
-                      class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8"
+                      class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6"
                     >
                       <div class="form-group">
                         <label
                           for="name"
-                          class="font-medium text-gray-700 mb-2 block"
+                          class="font-medium text-gray-700 mb-1 block text-sm"
                           >Full Name</label
                         >
                         <InputText
@@ -314,14 +316,14 @@
                           style="
                             border-radius: 0.5rem;
                             background-color: #f9fafb;
-                            padding: 0.75rem 1rem;
+                            padding: 0.5rem 0.75rem;
                           "
                         />
                       </div>
                       <div class="form-group">
                         <label
                           for="phoneNumber"
-                          class="font-medium text-gray-700 mb-2 block"
+                          class="font-medium text-gray-700 mb-1 block text-sm"
                           >Phone Number</label
                         >
                         <InputText
@@ -331,14 +333,14 @@
                           style="
                             border-radius: 0.5rem;
                             background-color: #f9fafb;
-                            padding: 0.75rem 1rem;
+                            padding: 0.5rem 0.75rem;
                           "
                         />
                       </div>
                       <div class="form-group">
                         <label
                           for="location"
-                          class="font-medium text-gray-700 mb-2 block"
+                          class="font-medium text-gray-700 mb-1 block text-sm"
                           >Location</label
                         >
                         <InputText
@@ -348,7 +350,7 @@
                           style="
                             border-radius: 0.5rem;
                             background-color: #f9fafb;
-                            padding: 0.75rem 1rem;
+                            padding: 0.5rem 0.75rem;
                           "
                           placeholder="e.g., Kuala Lumpur, Malaysia"
                         />
@@ -356,7 +358,7 @@
                       <div class="form-group">
                         <label
                           for="dateOfBirth"
-                          class="font-medium text-gray-700 mb-2 block"
+                          class="font-medium text-gray-700 mb-1 block text-sm"
                           >Date of Birth</label
                         >
                         <Calendar
@@ -374,7 +376,7 @@
                           :pt="{
                             input: {
                               style:
-                                'border-radius: 0.5rem; background-color: #f9fafb; padding: 0.75rem 1rem;',
+                                'border-radius: 0.5rem; background-color: #f9fafb; padding: 0.5rem 0.75rem;',
                             },
                             trigger: {
                               class: 'visible opacity-100',
@@ -387,7 +389,7 @@
                       <div class="form-group">
                         <label
                           for="race"
-                          class="font-medium text-gray-700 mb-2 block"
+                          class="font-medium text-gray-700 mb-1 block text-sm"
                           >Ethnicity</label
                         >
                         <Dropdown
@@ -408,7 +410,7 @@
                       <div class="form-group">
                         <label
                           for="gender"
-                          class="font-medium text-gray-700 mb-2 block"
+                          class="font-medium text-gray-700 mb-1 block text-sm"
                           >Gender</label
                         >
                         <Dropdown
@@ -431,7 +433,7 @@
                     <div class="mt-8">
                       <label
                         for="languages"
-                        class="font-medium text-gray-700 mb-2 block"
+                        class="font-medium text-gray-700 mb-1 block text-sm"
                         >Languages</label
                       >
                       <MultiSelect
@@ -450,7 +452,7 @@
                     <div class="mt-8">
                       <label
                         for="bio"
-                        class="font-medium text-gray-700 mb-2 block"
+                        class="font-medium text-gray-700 mb-1 block text-sm"
                         >About Me</label
                       >
                       <Textarea
@@ -461,20 +463,20 @@
                         style="
                           border-radius: 0.5rem;
                           background-color: #f9fafb;
-                          padding: 0.75rem 1rem;
+                          padding: 0.5rem 0.75rem;
                         "
                         placeholder="Tell us about yourself"
                       />
                     </div>
 
                     <div
-                      class="flex justify-end gap-4 mt-10 pt-6 border-t border-gray-100"
+                      class="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-100"
                     >
                       <Button
                         type="button"
                         label="Cancel"
                         class="p-button-outlined"
-                        style="border-radius: 0.5rem; padding: 0.75rem 1.5rem"
+                        style="border-radius: 0.5rem; padding: 0.5rem 1rem"
                         @click="cancelEditBasicInfo"
                       />
                       <Button
@@ -482,7 +484,7 @@
                         label="Save Changes"
                         style="
                           border-radius: 0.5rem;
-                          padding: 0.75rem 1.5rem;
+                          padding: 0.5rem 1rem;
                           font-weight: 500;
                         "
                         :loading="saving"
@@ -497,12 +499,12 @@
             <!-- Resume Section -->
             <div v-show="activeSection === 'resume'">
               <div
-                class="rounded-xl shadow-md border mb-6 bg-white overflow-hidden"
+                class="rounded-lg shadow-md border mb-5 bg-white overflow-hidden"
               >
                 <div
-                  class="flex justify-between items-center p-6 md:p-6 border-b"
+                  class="flex justify-between items-center p-4 md:p-5 border-b"
                 >
-                  <h2 class="text-xl font-semibold text-gray-800">Resume</h2>
+                  <h2 class="text-lg font-semibold text-gray-800">Resume</h2>
                   <Button
                     icon="pi pi-upload"
                     label="Upload Resume"
@@ -518,15 +520,15 @@
                   />
                 </div>
 
-                <div class="p-6">
+                <div class="p-4">
                   <!-- Resume display -->
                   <div
                     v-if="profile?.resumeUrl"
-                    class="flex flex-col md:flex-row md:items-center md:justify-between p-5 border rounded-lg bg-white shadow-sm"
+                    class="flex flex-col md:flex-row md:items-center md:justify-between p-4 border rounded-lg bg-white shadow-sm"
                   >
                     <div class="flex items-center mb-3 md:mb-0">
-                      <div class="bg-primary-50 p-3 rounded-lg mr-4 shadow-sm">
-                        <i class="pi pi-file-pdf text-primary-600 text-xl"></i>
+                      <div class="bg-primary-50 p-2 rounded-lg mr-3 shadow-sm">
+                        <i class="pi pi-file-pdf text-primary-600 text-lg"></i>
                       </div>
                       <div>
                         <p class="font-medium text-gray-800">Your Resume</p>
@@ -553,17 +555,17 @@
                   <!-- No resume state -->
                   <div
                     v-else
-                    class="text-center p-8 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50"
+                    class="text-center p-6 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50"
                   >
                     <div
-                      class="bg-white inline-flex p-4 rounded-full mb-4 shadow-sm"
+                      class="bg-white inline-flex p-3 rounded-full mb-3 shadow-sm"
                     >
-                      <i class="pi pi-file-pdf text-gray-400 text-2xl"></i>
+                      <i class="pi pi-file-pdf text-gray-400 text-xl"></i>
                     </div>
-                    <p class="text-gray-700 font-medium mb-2">
+                    <p class="text-gray-700 font-medium mb-1 text-sm">
                       No resume uploaded yet
                     </p>
-                    <p class="text-sm text-gray-500 mb-4 max-w-md mx-auto">
+                    <p class="text-xs text-gray-500 mb-3 max-w-md mx-auto">
                       Upload your resume to pre-fill job applications and
                       increase your chances of being hired
                     </p>
@@ -581,10 +583,10 @@
             <!-- Work Experience Section -->
             <div v-show="activeSection === 'work-experience'">
               <div
-                class="rounded-xl shadow-md border mb-6 bg-white overflow-hidden"
+                class="rounded-lg shadow-md border mb-5 bg-white overflow-hidden"
               >
-                <div class="flex justify-between items-center p-6 border-b">
-                  <h2 class="text-xl font-semibold text-gray-800">
+                <div class="flex justify-between items-center p-4 border-b">
+                  <h2 class="text-lg font-semibold text-gray-800">
                     Work Experience
                   </h2>
                   <Button
@@ -595,21 +597,21 @@
                   />
                 </div>
 
-                <div class="p-6">
+                <div class="p-4">
                   <!-- Experience list -->
                   <div
                     v-if="experiences.length === 0"
-                    class="text-center p-8 bg-gray-50 rounded-lg"
+                    class="text-center p-6 bg-gray-50 rounded-lg"
                   >
                     <div
-                      class="bg-white inline-flex p-4 rounded-full mb-4 shadow-sm"
+                      class="bg-white inline-flex p-3 rounded-full mb-3 shadow-sm"
                     >
-                      <i class="pi pi-briefcase text-gray-400 text-2xl"></i>
+                      <i class="pi pi-briefcase text-gray-400 text-xl"></i>
                     </div>
-                    <p class="text-gray-700 font-medium mb-2">
+                    <p class="text-gray-700 font-medium mb-1 text-sm">
                       You haven't added any work experience yet
                     </p>
-                    <p class="text-sm text-gray-500 mb-4 max-w-md mx-auto">
+                    <p class="text-xs text-gray-500 mb-3 max-w-md mx-auto">
                       Add your past event experiences to stand out to employers
                       and improve your chances of getting hired
                     </p>
@@ -621,25 +623,29 @@
                     />
                   </div>
 
-                  <div v-else class="space-y-4">
+                  <div v-else class="space-y-3">
                     <div
                       v-for="(exp, index) in experiences"
                       :key="index"
-                      class="border rounded-lg p-5 hover:shadow-md transition-shadow duration-200 bg-white"
+                      class="border rounded-lg p-4 hover:shadow-md transition-shadow duration-200 bg-white"
                     >
                       <div class="flex justify-between">
                         <div>
-                          <div class="flex items-center mb-3">
+                          <div class="flex items-center mb-2">
                             <div
-                              class="bg-primary-50 w-10 h-10 rounded-full flex items-center justify-center mr-3 shadow-sm"
+                              class="bg-primary-50 w-8 h-8 rounded-full flex items-center justify-center mr-2 shadow-sm"
                             >
-                              <i class="pi pi-briefcase text-primary-600"></i>
+                              <i
+                                class="pi pi-briefcase text-primary-600 text-sm"
+                              ></i>
                             </div>
-                            <h3 class="font-medium text-lg text-gray-800">
+                            <h3 class="font-medium text-base text-gray-800">
                               {{ formatJobType(exp.jobType) }}
                             </h3>
                           </div>
-                          <p class="text-gray-600 pl-13 leading-relaxed">
+                          <p
+                            class="text-gray-600 pl-10 leading-relaxed text-sm"
+                          >
                             {{ exp.experienceText }}
                           </p>
                         </div>
@@ -664,9 +670,9 @@
 
             <!-- Availability Section -->
             <div v-show="activeSection === 'availability'">
-              <div class="rounded-lg shadow-sm mb-6">
-                <div class="flex justify-between items-center p-5 border-b">
-                  <h2 class="text-xl font-semibold">Availability</h2>
+              <div class="rounded-lg shadow-sm mb-5">
+                <div class="flex justify-between items-center p-4 border-b">
+                  <h2 class="text-lg font-semibold">Availability</h2>
                   <Button
                     icon="pi pi-calendar-plus"
                     label="Set Availability"
@@ -675,19 +681,19 @@
                   />
                 </div>
 
-                <div class="p-5">
+                <div class="p-4">
                   <!-- Availability display -->
                   <div
                     v-if="availableDates.length === 0"
-                    class="text-center p-8"
+                    class="text-center p-6"
                   >
-                    <div class="bg-gray-50 inline-flex p-4 rounded-full mb-3">
-                      <i class="pi pi-calendar text-gray-400 text-2xl"></i>
+                    <div class="bg-gray-50 inline-flex p-3 rounded-full mb-2">
+                      <i class="pi pi-calendar text-gray-400 text-xl"></i>
                     </div>
-                    <p class="text-gray-700 font-medium mb-2">
+                    <p class="text-gray-700 font-medium mb-1 text-sm">
                       You haven't set your availability yet
                     </p>
-                    <p class="text-sm text-gray-500 mb-4 max-w-md mx-auto">
+                    <p class="text-xs text-gray-500 mb-3 max-w-md mx-auto">
                       Let recruiters know when you're available to work to
                       increase your chances of being selected for events
                     </p>
@@ -700,19 +706,21 @@
                   </div>
 
                   <div v-else>
-                    <p class="text-sm text-gray-500 mb-4">
+                    <p class="text-xs text-gray-500 mb-3">
                       You're available on the following dates:
                     </p>
                     <div
-                      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"
+                      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"
                     >
                       <div
                         v-for="(date, index) in availableDates"
                         :key="index"
-                        class="flex items-center bg-green-50 rounded-lg p-3"
+                        class="flex items-center bg-green-50 rounded-lg p-2"
                       >
-                        <i class="pi pi-calendar-check text-green-600 mr-2"></i>
-                        <p class="text-green-800 font-medium">
+                        <i
+                          class="pi pi-calendar-check text-green-600 mr-2 text-sm"
+                        ></i>
+                        <p class="text-green-800 font-medium text-xs">
                           {{ formatAvailabilityDate(date) }}
                         </p>
                       </div>
@@ -733,18 +741,18 @@
             <!-- Account Settings Section -->
             <div v-show="activeSection === 'settings'">
               <div
-                class="rounded-xl shadow-md border mb-6 bg-white overflow-hidden"
+                class="rounded-lg shadow-md border mb-5 bg-white overflow-hidden"
               >
-                <div class="p-6 border-b">
-                  <h2 class="text-xl font-semibold text-gray-800">
+                <div class="p-4 border-b">
+                  <h2 class="text-lg font-semibold text-gray-800">
                     Account Settings
                   </h2>
                 </div>
 
-                <div class="p-6">
-                  <div class="space-y-6">
-                    <div class="border-b pb-6">
-                      <h3 class="text-lg font-medium mb-4 text-gray-800">
+                <div class="p-4">
+                  <div class="space-y-5">
+                    <div class="border-b pb-4">
+                      <h3 class="text-base font-medium mb-3 text-gray-800">
                         Profile Photo
                       </h3>
                       <div class="flex items-center">
@@ -752,12 +760,12 @@
                           <img
                             :src="profile.profilePictureUrl"
                             alt="Profile"
-                            class="w-20 h-20 rounded-full object-cover border-2 border-gray-100 shadow-sm"
+                            class="w-16 h-16 rounded-full object-cover border-2 border-gray-100 shadow-sm"
                           />
                         </div>
                         <div
                           v-else
-                          class="w-20 h-20 rounded-full bg-primary-50 flex items-center justify-center text-primary-600 text-2xl font-bold mr-4 shadow-sm"
+                          class="w-16 h-16 rounded-full bg-primary-50 flex items-center justify-center text-primary-600 text-lg font-bold mr-4 shadow-sm"
                         >
                           {{ getInitials(profile?.name) }}
                         </div>
@@ -780,26 +788,26 @@
                       </div>
                     </div>
 
-                    <div class="space-y-4">
-                      <h3 class="text-lg font-medium mb-2 text-gray-800">
+                    <div class="space-y-3">
+                      <h3 class="text-base font-medium mb-1 text-gray-800">
                         Account Management
                       </h3>
 
                       <div class="border rounded-lg shadow-sm">
                         <div
-                          class="p-4 flex items-center justify-between border-b bg-white hover:bg-gray-50 transition-colors"
+                          class="p-3 flex items-center justify-between border-b bg-white hover:bg-gray-50 transition-colors"
                         >
                           <div class="flex items-center">
-                            <div class="bg-primary-50 p-2 rounded-full mr-3">
+                            <div class="bg-primary-50 p-1.5 rounded-full mr-2">
                               <i
-                                class="pi pi-lock text-primary-600 text-lg"
+                                class="pi pi-lock text-primary-600 text-base"
                               ></i>
                             </div>
                             <div>
-                              <h4 class="font-medium text-gray-800">
+                              <h4 class="font-medium text-gray-800 text-sm">
                                 Password
                               </h4>
-                              <p class="text-sm text-gray-500">
+                              <p class="text-xs text-gray-500">
                                 Update your password to keep your account secure
                               </p>
                             </div>
@@ -811,19 +819,19 @@
                         </div>
 
                         <div
-                          class="p-4 flex items-center justify-between border-b bg-white hover:bg-gray-50 transition-colors"
+                          class="p-3 flex items-center justify-between border-b bg-white hover:bg-gray-50 transition-colors"
                         >
                           <div class="flex items-center">
-                            <div class="bg-primary-50 p-2 rounded-full mr-3">
+                            <div class="bg-primary-50 p-1.5 rounded-full mr-2">
                               <i
-                                class="pi pi-envelope text-primary-600 text-lg"
+                                class="pi pi-envelope text-primary-600 text-base"
                               ></i>
                             </div>
                             <div>
-                              <h4 class="font-medium text-gray-800">
+                              <h4 class="font-medium text-gray-800 text-sm">
                                 Email Address
                               </h4>
-                              <p class="text-sm text-gray-500">
+                              <p class="text-xs text-gray-500">
                                 Update your email address for notifications
                               </p>
                             </div>
@@ -835,19 +843,19 @@
                         </div>
 
                         <div
-                          class="p-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
+                          class="p-3 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
                         >
                           <div class="flex items-center">
-                            <div class="bg-primary-50 p-2 rounded-full mr-3">
+                            <div class="bg-primary-50 p-1.5 rounded-full mr-2">
                               <i
-                                class="pi pi-bell text-primary-600 text-lg"
+                                class="pi pi-bell text-primary-600 text-base"
                               ></i>
                             </div>
                             <div>
-                              <h4 class="font-medium text-gray-800">
+                              <h4 class="font-medium text-gray-800 text-sm">
                                 Notifications
                               </h4>
-                              <p class="text-sm text-gray-500">
+                              <p class="text-xs text-gray-500">
                                 Control how you receive notifications
                               </p>
                             </div>
@@ -859,17 +867,17 @@
                         </div>
                       </div>
 
-                      <div class="mt-8">
-                        <h3 class="text-lg font-medium text-red-600 mb-3">
+                      <div class="mt-6">
+                        <h3 class="text-base font-medium text-red-600 mb-2">
                           Danger Zone
                         </h3>
                         <div
-                          class="border border-red-200 rounded-lg p-5 bg-red-50"
+                          class="border border-red-200 rounded-lg p-4 bg-red-50"
                         >
-                          <h4 class="font-medium text-red-700">
+                          <h4 class="font-medium text-red-700 text-sm">
                             Delete Account
                           </h4>
-                          <p class="text-sm text-red-600 mb-3">
+                          <p class="text-xs text-red-600 mb-2">
                             Permanently delete your account and all associated
                             data. This action cannot be undone.
                           </p>
@@ -894,13 +902,15 @@
     <Dialog
       v-model:visible="showAddExperienceDialog"
       header="Add Work Experience"
-      :style="{ width: '500px' }"
+      :style="{ width: '450px' }"
       :modal="true"
       class="experience-dialog"
     >
       <div class="p-fluid">
-        <div class="field mb-4">
-          <label for="jobType" class="font-medium mb-2 block text-gray-700"
+        <div class="field mb-3">
+          <label
+            for="jobType"
+            class="font-medium mb-1 block text-gray-700 text-sm"
             >Job Type</label
           >
           <Dropdown
@@ -914,26 +924,26 @@
             style="border-radius: 0.5rem; background-color: #f9fafb"
           />
         </div>
-        <div class="field mb-4">
+        <div class="field mb-3">
           <label
             for="experienceText"
-            class="font-medium mb-2 block text-gray-700"
+            class="font-medium mb-1 block text-gray-700 text-sm"
             >Description</label
           >
           <Textarea
             id="experienceText"
             v-model="experienceForm.experienceText"
-            rows="5"
+            rows="4"
             placeholder="Describe your experience, responsibilities, and achievements"
             class="w-full shadow-sm"
             style="
               border-radius: 0.5rem;
               background-color: #f9fafb;
-              padding: 0.75rem 1rem;
+              padding: 0.5rem 0.75rem;
             "
           />
         </div>
-        <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+        <div class="flex justify-end gap-3 mt-4 pt-3 border-t border-gray-100">
           <Button
             label="Cancel"
             icon="pi pi-times"
@@ -955,13 +965,13 @@
     <Dialog
       v-model:visible="showAvailabilityDialog"
       header="Set Your Availability"
-      :style="{ width: '500px' }"
+      :style="{ width: '450px' }"
       :modal="true"
       class="availability-dialog"
     >
       <div class="p-fluid">
-        <div class="field mb-4">
-          <label class="font-medium mb-3 block text-gray-700"
+        <div class="field mb-3">
+          <label class="font-medium mb-2 block text-gray-700 text-sm"
             >Select Dates You're Available</label
           >
           <Calendar
@@ -973,7 +983,7 @@
             style="border-radius: 0.5rem"
           />
         </div>
-        <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+        <div class="flex justify-end gap-3 mt-4 pt-3 border-t border-gray-100">
           <Button
             label="Cancel"
             icon="pi pi-times"

@@ -3,50 +3,50 @@
     class="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
   >
     <!-- Header with Logo -->
-    <header class="pt-6 pb-2">
-      <div class="container px-6">
+    <header class="pt-4 pb-2">
+      <div class="container px-4">
         <router-link to="/" class="inline-block">
-          <img src="@/assets/logo.png" alt="CrewLink Logo" class="h-14" />
+          <img src="@/assets/logo.png" alt="CrewLink Logo" class="h-10" />
         </router-link>
       </div>
     </header>
 
     <!-- Main content -->
-    <main class="flex-grow flex items-center justify-center px-4 py-6">
-      <div class="w-full max-w-xl">
+    <main class="flex-grow flex items-center justify-center px-4 py-4">
+      <div class="w-full max-w-md">
         <!-- Navigation links above the card -->
-        <div class="flex justify-between items-center mb-3 px-2">
+        <div class="flex justify-between items-center mb-2 px-2">
           <router-link
             to="/"
-            class="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors duration-200 flex items-center"
+            class="text-xs font-medium text-gray-600 hover:text-primary-600 transition-colors duration-200 flex items-center"
           >
             <i class="pi pi-arrow-left mr-1 text-xs"></i> Back to home
           </router-link>
           <router-link
             to="/recruiter-login"
-            class="text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200 flex items-center"
+            class="text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200 flex items-center"
           >
             Are you an employer? <i class="pi pi-arrow-right ml-1 text-xs"></i>
           </router-link>
         </div>
 
         <div
-          class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100"
+          class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100"
         >
           <!-- Decorative top bar -->
           <div
-            class="h-3 bg-gradient-to-r from-primary-500 to-primary-300"
+            class="h-2 bg-gradient-to-r from-primary-500 to-primary-300"
           ></div>
 
-          <div class="p-8">
+          <div class="p-5">
             <!-- Success message from the auth store -->
             <div
               v-if="authStore.successMessage"
-              class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg"
+              class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg"
             >
               <div class="flex items-center">
-                <i class="pi pi-check-circle text-green-500 mr-2"></i>
-                <p class="text-green-700">
+                <i class="pi pi-check-circle text-green-500 mr-2 text-sm"></i>
+                <p class="text-green-700 text-sm">
                   {{ authStore.successMessage }}
                 </p>
               </div>
@@ -55,11 +55,11 @@
             <!-- Registration success message from query param (fallback) -->
             <div
               v-else-if="registrationSuccess"
-              class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg"
+              class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg"
             >
               <div class="flex items-center">
-                <i class="pi pi-check-circle text-green-500 mr-2"></i>
-                <p class="text-green-700">
+                <i class="pi pi-check-circle text-green-500 mr-2 text-sm"></i>
+                <p class="text-green-700 text-sm">
                   Registration successful! Please sign in with your credentials.
                 </p>
               </div>
@@ -68,37 +68,39 @@
             <!-- Error alert -->
             <div
               v-if="error"
-              class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg"
+              class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg"
             >
               <div class="flex items-center">
-                <i class="pi pi-exclamation-circle text-red-500 mr-2"></i>
-                <p class="text-red-700">{{ error }}</p>
+                <i
+                  class="pi pi-exclamation-circle text-red-500 mr-2 text-sm"
+                ></i>
+                <p class="text-red-700 text-sm">{{ error }}</p>
               </div>
             </div>
 
             <!-- Login form header -->
-            <div class="text-center mb-6">
-              <h1 class="text-3xl font-bold text-gray-800 mb-2">
+            <div class="text-center mb-4">
+              <h1 class="text-2xl font-bold text-gray-800 mb-1">
                 Welcome Back
               </h1>
-              <p class="text-lg text-gray-600">
+              <p class="text-base text-gray-600">
                 Sign in to continue to CrewLink
               </p>
             </div>
 
             <!-- Login form -->
-            <form @submit.prevent="handleSubmit" class="space-y-6">
+            <form @submit.prevent="handleSubmit" class="space-y-4">
               <!-- Username field -->
-              <div class="space-y-2">
+              <div class="space-y-1">
                 <label
                   for="username"
-                  class="block text-base font-medium text-gray-700"
+                  class="block text-sm font-medium text-gray-700"
                 >
                   Email or Username
                 </label>
                 <div class="flex items-center">
-                  <div class="mr-3">
-                    <i class="pi pi-user text-gray-400 text-lg"></i>
+                  <div class="mr-2">
+                    <i class="pi pi-user text-gray-400 text-base"></i>
                   </div>
                   <InputText
                     id="username"
@@ -113,7 +115,7 @@
                 </div>
                 <small
                   v-if="v$.username.$error"
-                  class="p-error flex items-center text-base"
+                  class="p-error flex items-center text-xs"
                 >
                   <i class="pi pi-info-circle mr-1"></i>
                   {{ v$.username.$errors[0].$message }}
@@ -121,24 +123,24 @@
               </div>
 
               <!-- Password field -->
-              <div class="space-y-2">
+              <div class="space-y-1">
                 <div class="flex items-center justify-between">
                   <label
                     for="password"
-                    class="block text-base font-medium text-gray-700"
+                    class="block text-sm font-medium text-gray-700"
                   >
                     Password
                   </label>
                   <router-link
                     to="/forgot-password"
-                    class="text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200"
+                    class="text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200"
                   >
                     Forgot password?
                   </router-link>
                 </div>
                 <div class="flex items-center">
-                  <div class="mr-3">
-                    <i class="pi pi-lock text-gray-400 text-lg"></i>
+                  <div class="mr-2">
+                    <i class="pi pi-lock text-gray-400 text-base"></i>
                   </div>
                   <Password
                     id="password"
@@ -153,7 +155,7 @@
                 </div>
                 <small
                   v-if="v$.password.$error"
-                  class="p-error flex items-center text-base"
+                  class="p-error flex items-center text-xs"
                 >
                   <i class="pi pi-info-circle mr-1"></i>
                   {{ v$.password.$errors[0].$message }}
@@ -165,13 +167,13 @@
                 type="submit"
                 :label="isLoading ? 'Signing in...' : 'Sign In'"
                 :loading="isLoading"
-                class="w-full p-button-primary p-3 mt-6 shadow-md hover:shadow-lg transition-shadow duration-200 text-lg"
+                class="w-full p-button-primary p-2 mt-4 shadow-md hover:shadow-lg transition-shadow duration-200 text-base"
               />
             </form>
 
             <!-- Register link -->
-            <div class="text-center mt-10">
-              <p class="text-base text-gray-600">
+            <div class="text-center mt-6">
+              <p class="text-sm text-gray-600">
                 Don't have an account?
                 <router-link
                   to="/register"
@@ -187,8 +189,8 @@
     </main>
 
     <!-- Footer -->
-    <footer class="py-6 text-center">
-      <p class="text-sm text-gray-500">
+    <footer class="py-4 text-center">
+      <p class="text-xs text-gray-500">
         &copy; {{ currentYear }} CrewLink. All rights reserved.
       </p>
     </footer>
@@ -283,22 +285,22 @@ onMounted(() => {
 /* Custom styles for the login page */
 :deep(.p-password input) {
   width: 100%;
-  font-size: 1.125rem;
+  font-size: 0.9rem;
 }
 
 :deep(.p-button) {
-  height: 56px;
-  font-size: 1.25rem;
+  height: 42px;
+  font-size: 1rem;
 }
 
 :deep(.p-inputtext) {
-  padding: 1rem 1.5rem;
+  padding: 0.6rem 1rem;
   border-radius: 0.5rem;
-  font-size: 1.125rem;
+  font-size: 0.9rem;
 }
 
 :deep(.p-password-panel) {
-  margin-top: 8px;
-  font-size: 1.125rem;
+  margin-top: 6px;
+  font-size: 0.9rem;
 }
 </style>
