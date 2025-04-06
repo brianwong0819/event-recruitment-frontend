@@ -2,6 +2,9 @@
   <div
     class="flex flex-col md:flex-row min-h-screen justify-center items-center"
   >
+    <!-- Toast for notifications -->
+    <Toast position="top-right" />
+
     <!-- Loading state -->
     <div v-if="loading" class="flex justify-center py-20 w-full">
       <div class="animate-pulse flex flex-col items-center">
@@ -128,6 +131,27 @@
                   "
                 ></i>
                 Resume
+              </button>
+            </li>
+            <li>
+              <button
+                @click="navigateToPhotos"
+                :class="[
+                  'w-full text-left py-2.5 px-4 flex items-center transition-all duration-200 text-base rounded-lg',
+                  activeSection === 'photos'
+                    ? 'bg-primary-100 text-primary-700 font-medium shadow-sm'
+                    : 'text-gray-700 hover:bg-white hover:shadow-sm',
+                ]"
+              >
+                <i
+                  class="pi pi-images text-lg w-6 mr-3"
+                  :class="
+                    activeSection === 'photos'
+                      ? 'text-primary-600'
+                      : 'text-gray-500'
+                  "
+                ></i>
+                Photos
               </button>
             </li>
             <li>
@@ -667,7 +691,7 @@
                   type="file"
                   ref="resumeFileInput"
                   style="display: none"
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf,application/pdf"
                   @change="handleResumeUpload"
                 />
               </div>
@@ -679,8 +703,10 @@
                   class="flex flex-col md:flex-row md:items-center md:justify-between p-5 border rounded-lg bg-white shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary-200"
                 >
                   <div class="flex items-center mb-3 md:mb-0">
-                    <div class="bg-primary-100 p-3 rounded-full mr-4 shadow-sm">
-                      <i class="pi pi-file-pdf text-primary-600 text-xl"></i>
+                    <div
+                      class="bg-primary-100 w-10 h-10 rounded-full flex items-center justify-center mr-4 shadow-sm"
+                    >
+                      <i class="pi pi-file-pdf text-primary-600 text-lg"></i>
                     </div>
                     <div>
                       <p class="font-medium text-gray-800">Your Resume</p>
@@ -713,7 +739,7 @@
                   class="text-center p-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 transition-all duration-300 hover:border-primary-200"
                 >
                   <div
-                    class="bg-white inline-flex p-4 rounded-full mb-4 shadow-sm"
+                    class="bg-white w-16 h-16 inline-flex items-center justify-center rounded-full mb-4 shadow-sm"
                   >
                     <i class="pi pi-file-pdf text-gray-400 text-2xl"></i>
                   </div>
@@ -729,6 +755,169 @@
                     label="Upload Resume"
                     class="p-button-sm shadow-sm"
                     @click="resumeFileInput.click()"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Photos Section -->
+          <div v-show="activeSection === 'photos'" class="animate-fadeIn">
+            <div
+              class="rounded-xl shadow-md border mb-5 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg"
+            >
+              <div
+                class="flex justify-between items-center p-4 md:p-5 border-b bg-gradient-to-r from-primary-50 to-white"
+              >
+                <h2
+                  class="text-lg font-semibold text-gray-800 flex items-center"
+                >
+                  <i class="pi pi-images text-primary-500 mr-2"></i>
+                  Profile Photos
+                </h2>
+                <Button
+                  icon="pi pi-upload"
+                  label="Upload Photo"
+                  class="p-button-outlined p-button-sm"
+                  @click="compcardFileInput.click()"
+                />
+                <input
+                  type="file"
+                  ref="compcardFileInput"
+                  style="display: none"
+                  accept="image/*"
+                  @change="handleCompcardUpload"
+                />
+              </div>
+
+              <div class="p-6">
+                <!-- Info Card -->
+                <div
+                  class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+                >
+                  <div class="flex items-start">
+                    <i
+                      class="pi pi-info-circle text-blue-500 mr-3 mt-0.5 text-lg"
+                    ></i>
+                    <div>
+                      <h3 class="text-blue-700 font-medium mb-1">
+                        Profile Photo Guidelines (Maximum 3 Photos)
+                      </h3>
+                      <p class="text-blue-600 text-sm">
+                        You can upload up to 3 photos total:
+                        <br />
+                        <strong>1. Self Photos:</strong> Recent photos of
+                        yourself with a clear face (no masks) for general
+                        identification.
+                        <br />
+                        <strong>2. Comp Card Photos:</strong> Professional
+                        photos for modeling and brand ambassador roles.
+                        <span
+                          class="cursor-pointer text-primary-600 font-medium ml-1 hover:underline"
+                          @click="showSampleDialog = true"
+                        >
+                          See examples
+                          <i class="pi pi-external-link text-xs"></i>
+                        </span>
+                        <br />
+                        <strong>Recommendation:</strong> Upload one comp card
+                        photo, one full body shot, and one half body shot.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Photo Gallery Section -->
+                <div v-if="loadingPhotos" class="flex justify-center py-12">
+                  <div class="animate-pulse flex flex-col items-center">
+                    <i
+                      class="pi pi-spin pi-spinner text-primary-500 text-4xl mb-2"
+                    ></i>
+                    <p class="text-primary-500">Loading your photos...</p>
+                  </div>
+                </div>
+
+                <div
+                  v-else-if="compcardPhotos.length > 0"
+                  class="gallery-container"
+                >
+                  <!-- Gallery Grid -->
+                  <div
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                  >
+                    <div
+                      v-for="(photo, index) in compcardPhotos"
+                      :key="index"
+                      class="photo-card relative group overflow-hidden rounded-lg bg-gray-100 shadow-sm hover:shadow-md transition-all"
+                      @click="openPhotoPreview(photo, index)"
+                    >
+                      <div class="relative aspect-square overflow-hidden">
+                        <img
+                          v-if="photo.url"
+                          :src="photo.url"
+                          :alt="`Comp Card Photo ${index + 1}`"
+                          class="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
+                          @error="
+                            console.error('Image load error');
+                            $event.target.src = `http://localhost:5173/src/assets/comcards/${photo.comcardUrl
+                              .split('/')
+                              .pop()}`;
+                          "
+                          style="object-fit: cover; width: 100%; height: 100%"
+                        />
+                        <div
+                          v-else
+                          class="w-full h-full flex items-center justify-center bg-gray-200"
+                        >
+                          <i class="pi pi-image text-gray-400 text-3xl"></i>
+                        </div>
+                      </div>
+
+                      <!-- Actions Overlay -->
+                      <div
+                        class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300"
+                      >
+                        <div
+                          class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-4 group-hover:translate-y-0 duration-300"
+                        >
+                          <Button
+                            icon="pi pi-eye"
+                            class="p-button-rounded p-button-sm p-button-primary bg-white hover:bg-white text-primary-700 shadow-md border-2 border-white"
+                            @click.stop="openPhotoPreview(photo, index)"
+                          />
+                          <Button
+                            icon="pi pi-trash"
+                            class="p-button-rounded p-button-sm p-button-danger bg-white hover:bg-white text-danger-600 shadow-md border-2 border-white"
+                            @click.stop="confirmPhotoDelete(photo.id)"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  v-else
+                  class="text-center py-12 border-2 border-dashed border-gray-200 rounded-xl"
+                >
+                  <div
+                    class="bg-primary-50 inline-flex p-4 rounded-full mb-4 shadow-sm"
+                  >
+                    <i class="pi pi-images text-primary-500 text-2xl"></i>
+                  </div>
+                  <h3 class="text-lg font-medium text-gray-700 mb-2">
+                    No photos uploaded yet
+                  </h3>
+                  <p class="text-gray-500 mb-4 max-w-md mx-auto">
+                    Upload photos of yourself to help recruiters recognize you.
+                    Clear self photos are great for general identification,
+                    while professional comp card photos are ideal for modeling
+                    and brand ambassador roles.
+                  </p>
+                  <Button
+                    icon="pi pi-upload"
+                    label="Upload Your First Photo"
+                    @click="compcardFileInput.click()"
                   />
                 </div>
               </div>
@@ -986,7 +1175,7 @@
                       >
                         <div class="flex items-center">
                           <div
-                            class="bg-primary-100 p-2.5 rounded-full mr-3 shadow-sm"
+                            class="bg-primary-100 w-10 h-10 rounded-full flex items-center justify-center mr-3 shadow-sm"
                           >
                             <i class="pi pi-lock text-primary-600 text-lg"></i>
                           </div>
@@ -1012,7 +1201,7 @@
                       >
                         <div class="flex items-center">
                           <div
-                            class="bg-primary-100 p-2.5 rounded-full mr-3 shadow-sm"
+                            class="bg-primary-100 w-10 h-10 rounded-full flex items-center justify-center mr-3 shadow-sm"
                           >
                             <i
                               class="pi pi-envelope text-primary-600 text-lg"
@@ -1040,7 +1229,7 @@
                       >
                         <div class="flex items-center">
                           <div
-                            class="bg-primary-100 p-2.5 rounded-full mr-3 shadow-sm"
+                            class="bg-primary-100 w-10 h-10 rounded-full flex items-center justify-center mr-3 shadow-sm"
                           >
                             <i class="pi pi-bell text-primary-600 text-lg"></i>
                           </div>
@@ -1435,20 +1624,176 @@
         </div>
       </div>
     </Dialog>
+
+    <!-- Photo Preview Dialog -->
+    <Dialog
+      v-model:visible="showPhotoPreview"
+      :style="{ width: '800px', maxWidth: '95vw' }"
+      :showHeader="false"
+      :modal="true"
+      :dismissableMask="true"
+      class="photo-preview-dialog rounded-xl"
+    >
+      <div class="relative">
+        <!-- Close button -->
+        <Button
+          icon="pi pi-times"
+          class="p-button-rounded p-button-text p-button-plain absolute top-2 right-2 z-10"
+          @click="showPhotoPreview = false"
+        />
+
+        <!-- Navigation buttons -->
+        <Button
+          v-if="compcardPhotos.length > 1"
+          icon="pi pi-chevron-left"
+          class="p-button-rounded p-button-text p-button-plain absolute top-1/2 left-2 z-10 transform -translate-y-1/2"
+          @click="navigatePhotos('prev')"
+        />
+
+        <Button
+          v-if="compcardPhotos.length > 1"
+          icon="pi pi-chevron-right"
+          class="p-button-rounded p-button-text p-button-plain absolute top-1/2 right-2 z-10 transform -translate-y-1/2"
+          @click="navigatePhotos('next')"
+        />
+
+        <!-- Image -->
+        <div class="flex justify-center">
+          <img
+            :src="currentPhoto?.url"
+            alt="Preview"
+            class="max-h-[80vh] object-contain"
+          />
+        </div>
+      </div>
+    </Dialog>
+
+    <!-- Comp Card Sample Dialog -->
+    <Dialog
+      v-model:visible="showSampleDialog"
+      header="Comp Card Photo Examples"
+      :style="{ width: '750px', maxWidth: '95vw' }"
+      :modal="true"
+      class="sample-dialog rounded-xl"
+    >
+      <div class="p-6 bg-gradient-to-b from-white to-gray-50">
+        <!-- Comp Card Introduction -->
+        <div
+          class="bg-blue-50 p-5 rounded-xl mb-6 border border-blue-100 shadow-sm"
+        >
+          <div class="flex items-start">
+            <div
+              class="bg-blue-500 rounded-full p-2 mr-4 shadow-sm flex-shrink-0"
+            >
+              <i class="pi pi-info-circle text-white"></i>
+            </div>
+            <div>
+              <h3 class="text-blue-800 font-medium mb-2">
+                What is a Comp Card?
+              </h3>
+              <p class="text-blue-700">
+                A comp card (or composite card) is a marketing tool used by
+                models and brand ambassadors to showcase their appearance.
+                Professional comp card photos highlight your features from
+                different angles and demonstrate your versatility.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comp Card Example -->
+        <div class="mb-6">
+          <h3 class="text-gray-800 font-medium mb-4 text-center text-lg">
+            Professional Comp Card Example
+          </h3>
+
+          <div
+            class="bg-white rounded-lg overflow-hidden shadow-md border border-gray-200"
+          >
+            <div class="p-5 flex justify-center">
+              <img
+                src="/src/assets/samples/comp-card-example.jpg"
+                alt="Comp Card Example"
+                class="max-w-full h-auto rounded shadow-sm"
+              />
+            </div>
+            <div class="bg-gray-50 p-3 border-t">
+              <p class="text-gray-600 text-sm text-center">
+                Professional photos showcasing different angles and expressions
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Professional Tips -->
+        <div
+          class="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-5 shadow-sm"
+        >
+          <div class="flex items-start">
+            <div
+              class="bg-amber-500 rounded-full p-2 mr-4 shadow-sm flex-shrink-0"
+            >
+              <i class="pi pi-lightbulb text-white"></i>
+            </div>
+            <div>
+              <h4 class="text-amber-800 font-medium mb-3">
+                Tips for Professional Comp Card Photos
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white bg-opacity-60 rounded-lg p-3">
+                  <ul class="text-amber-800 space-y-2 pl-5 list-disc">
+                    <li>Use professional quality photos with good lighting</li>
+                    <li>Ensure clean backgrounds that don't distract</li>
+                    <li>Wear professional attire or appropriate styling</li>
+                  </ul>
+                </div>
+                <div class="bg-white bg-opacity-60 rounded-lg p-3">
+                  <ul class="text-amber-800 space-y-2 pl-5 list-disc">
+                    <li>Show a variety of poses and expressions</li>
+                    <li>
+                      Choose high-resolution images (at least 1000px tall)
+                    </li>
+                    <li>Avoid heavy filters or excessive editing</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Close Button -->
+        <div class="flex justify-center mt-4">
+          <Button
+            label="Got it"
+            icon="pi pi-check"
+            @click="showSampleDialog = false"
+            class="p-button-primary px-4"
+          />
+        </div>
+      </div>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue';
+import { ref, computed, onMounted, reactive, watch } from 'vue';
 import { useProfileStore } from '@/stores/profile';
 import { useAuthStore } from '@/stores/auth';
 import { format, parseISO } from 'date-fns';
 import { apiClient } from '@/services/api.service';
 import candidateService from '@/services/candidate.service';
-import profileMock from '@/mocks/profile.mock';
-import experiencesMock from '@/mocks/experiences.mock';
-import availabilityMock from '@/mocks/availability.mock';
 import Password from 'primevue/password';
+import Toast from 'primevue/toast';
+import { useToast } from 'primevue/usetoast';
+import Dialog from 'primevue/dialog';
+import Calendar from 'primevue/calendar';
+import MultiSelect from 'primevue/multiselect';
+import Button from 'primevue/button';
+import Textarea from 'primevue/textarea';
+import { isTokenExpired } from '@/utils/token-handler';
+
+// Initialize toast service
+const toast = useToast();
 
 // Initialize stores with explicit error handling
 let profileStore;
@@ -1520,6 +1865,16 @@ const showAddExperienceDialog = ref(false);
 const experienceForm = ref({ jobType: null, experienceText: '' });
 const savingExperience = ref(false);
 const editingExperienceIndex = ref(-1);
+
+// After the other refs
+const compcardFileInput = ref(null);
+const compcardPhotos = ref([]);
+const loadingPhotos = ref(false);
+const showPhotoPreview = ref(false);
+const showSampleDialog = ref(false);
+const currentPhoto = ref(null);
+const currentPhotoIndex = ref(0);
+const uploadingPhoto = ref(false);
 
 // Load profile data on component mount
 onMounted(async () => {
@@ -1630,36 +1985,26 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Error fetching profile data:', error);
-    console.log('Falling back to mock data');
 
-    // Fallback to mock data
-    profile.value = profileMock;
-    experiences.value = experiencesMock;
-    availableDates.value = availabilityMock;
+    // Check if this is a token-related error (401 or 403)
+    const isAuthError =
+      error.response?.status === 401 || error.response?.status === 403;
 
-    // Try to find a profile picture in assets directory
-    if (profile.value && !profile.value.profilePictureUrl) {
-      const username = profile.value.username || '';
-      if (username) {
-        // Try common image formats
-        const formats = ['jpg', 'jpeg', 'png', 'gif'];
-        for (const format of formats) {
-          try {
-            const imgUrl = new URL(
-              `../../assets/profile-pictures/${username}.${format}`,
-              import.meta.url
-            ).href;
-            profile.value.profilePictureUrl = imgUrl;
-            console.log('Found profile picture:', imgUrl);
-            break;
-          } catch (e) {
-            // Continue trying other formats
-          }
-        }
-      }
+    // Check if we have an expired token
+    const token = localStorage.getItem('accessToken');
+    const hasExpiredToken = token && isTokenExpired(token);
+
+    // Only show error toast if it's not an auth error
+    // Auth errors will be handled by the API interceptor
+    if (!isAuthError && !hasExpiredToken) {
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to load profile data. Please try again later.',
+        life: 5000,
+      });
     }
-  } finally {
-    // Always set loading to false to prevent getting stuck on loading screen
+
     loading.value = false;
   }
 
@@ -1675,8 +2020,8 @@ onMounted(async () => {
         experiences.value = expResponse.data.data || expResponse.data;
       }
     } catch (expError) {
-      console.warn('Failed to fetch experiences, using mock data:', expError);
-      experiences.value = experiencesMock;
+      console.warn('Failed to fetch experiences:', expError);
+      experiences.value = [];
     }
 
     // Try to fetch availability
@@ -1689,13 +2034,39 @@ onMounted(async () => {
         availableDates.value = availResponse.data.data || availResponse.data;
       }
     } catch (availError) {
-      console.warn(
-        'Failed to fetch availability, using mock data:',
-        availError
-      );
-      availableDates.value = availabilityMock;
+      console.warn('Failed to fetch availability:', availError);
+      availableDates.value = [];
     }
   }
+
+  // Load comp card photos if 'photos' section is active
+  if (activeSection.value === 'photos') {
+    console.log('Initial load - photos section is active, fetching photos');
+    fetchCompcardPhotos();
+  }
+
+  // Add explicit onMounted hook to ensure photos are loaded
+  onMounted(() => {
+    console.log(
+      'Profile component mounted, activeSection:',
+      activeSection.value
+    );
+    // Force fetch photos on component mount if current section is photos
+    if (activeSection.value === 'photos') {
+      console.log('onMounted - Explicitly fetching photos');
+      fetchCompcardPhotos();
+    }
+  });
+
+  // Watch for activeSection changes to load photos when needed
+  watch(activeSection, (newSection) => {
+    console.log('Active section changed to:', newSection);
+    if (newSection === 'photos') {
+      console.log('Fetching photos due to navigation to photos section');
+      // Always fetch fresh photos when navigating to photos section
+      fetchCompcardPhotos();
+    }
+  });
 });
 
 // Email update actions
@@ -2482,6 +2853,27 @@ const handleResumeUpload = async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
 
+  // Check file type
+  const fileType = file.type;
+  const fileExtension = file.name.split('.').pop().toLowerCase();
+
+  if (fileType !== 'application/pdf' && fileExtension !== 'pdf') {
+    // Reset file input
+    if (resumeFileInput.value) {
+      resumeFileInput.value.value = '';
+    }
+
+    // Show error message to user
+    toast.add({
+      severity: 'error',
+      summary: 'Invalid File Type',
+      detail: 'Please upload a PDF file only.',
+      life: 5000,
+    });
+
+    return;
+  }
+
   uploadingResume.value = true;
   try {
     const response = await candidateService.uploadResume(file);
@@ -2490,10 +2882,24 @@ const handleResumeUpload = async (event) => {
 
     if (resumeUrl) {
       profile.value = { ...profile.value, resumeUrl };
+
+      // Show success message
+      toast.add({
+        severity: 'success',
+        summary: 'Resume Uploaded',
+        detail: 'Your resume has been successfully uploaded.',
+        life: 3000,
+      });
     }
   } catch (error) {
     console.error('Error uploading resume:', error);
-    // Show error toast or notification here
+    // Show error toast
+    toast.add({
+      severity: 'error',
+      summary: 'Upload Failed',
+      detail: 'Failed to upload resume. Please try again.',
+      life: 5000,
+    });
   } finally {
     uploadingResume.value = false;
     // Reset file input
@@ -2503,9 +2909,14 @@ const handleResumeUpload = async (event) => {
   }
 };
 
-const downloadResume = () => {
-  if (profile.value?.resumeUrl) {
-    window.open(profile.value.resumeUrl, '_blank');
+const downloadResume = async () => {
+  try {
+    console.log('Downloading resume...');
+    console.log('Resume URL from profile:', profile.value?.resumeUrl);
+    const response = await candidateService.downloadResume();
+    console.log('Download response:', response);
+  } catch (error) {
+    console.error('Error downloading resume:', error);
   }
 };
 
@@ -2553,6 +2964,268 @@ const handleProfilePictureUpload = async (event) => {
     }
   }
 };
+
+// Add methods for photo handling
+const fetchCompcardPhotos = async () => {
+  console.log('fetchCompcardPhotos called');
+  if (loadingPhotos.value) {
+    console.log('Photos already loading, skipping duplicate fetch');
+    return;
+  }
+
+  loadingPhotos.value = true;
+  console.log('Making API request to /candidate/file/comcard');
+  try {
+    // Use candidate service if available
+    const response = await candidateService.getCompcardPhotos();
+    console.log('API response received:', response);
+
+    if (response.data && response.data.data) {
+      // Handle array of photos
+      let photos = Array.isArray(response.data.data)
+        ? response.data.data
+        : [response.data.data];
+
+      console.log('Processing photos:', photos);
+
+      // Process each photo to ensure correct URL format
+      photos = photos.map((photo) => {
+        if (photo.comcardUrl) {
+          // Just use the service method - we've updated it to use the direct path
+          const url = candidateService.getCompcardFromAssets(photo.comcardUrl);
+          console.log(`Resolved URL for photo ${photo.id}: ${url}`);
+          return {
+            ...photo,
+            url: url,
+          };
+        } else if (photo.url) {
+          // Photo already has a url property
+          console.log(`Photo ${photo.id} already has URL: ${photo.url}`);
+          return photo;
+        } else {
+          // Fallback in case photo has neither url nor comcardUrl
+          console.warn('Photo missing url:', photo);
+          return {
+            ...photo,
+            url: null,
+          };
+        }
+      });
+
+      console.log('Final processed photos:', photos);
+      compcardPhotos.value = photos;
+    } else {
+      console.log('No photos data in response');
+      compcardPhotos.value = [];
+    }
+  } catch (error) {
+    console.error('Error fetching comp card photos:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Failed to load photos',
+      detail: 'We could not load your photos. Please try again later.',
+      life: 5000,
+    });
+    compcardPhotos.value = [];
+  } finally {
+    loadingPhotos.value = false;
+    console.log('Finished loading photos');
+  }
+};
+
+const handleCompcardUpload = async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  // Check if it's an image
+  if (!file.type.startsWith('image/')) {
+    toast.add({
+      severity: 'error',
+      summary: 'Invalid file type',
+      detail: 'Please select an image file.',
+      life: 3000,
+    });
+    return;
+  }
+
+  // Check file size (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    toast.add({
+      severity: 'error',
+      summary: 'File too large',
+      detail: 'Image must be less than 5MB.',
+      life: 3000,
+    });
+    return;
+  }
+
+  // Check if already has 3 photos
+  if (compcardPhotos.value.length >= 3) {
+    toast.add({
+      severity: 'error',
+      summary: 'Maximum photos reached',
+      detail:
+        'You can only upload a maximum of 3 photos. Please delete an existing photo before uploading a new one.',
+      life: 5000,
+    });
+    return;
+  }
+
+  uploadingPhoto.value = true;
+  try {
+    const response = await candidateService.uploadCompcardPhoto(file);
+
+    toast.add({
+      severity: 'success',
+      summary: 'Photo uploaded',
+      detail: 'Your photo has been uploaded successfully.',
+      life: 3000,
+    });
+
+    // Refresh photo list
+    await fetchCompcardPhotos();
+  } catch (error) {
+    console.error('Error uploading photo:', error);
+
+    toast.add({
+      severity: 'error',
+      summary: 'Upload failed',
+      detail:
+        error.response?.data?.message ||
+        'Failed to upload photo. Please try again.',
+      life: 5000,
+    });
+  } finally {
+    uploadingPhoto.value = false;
+    // Reset file input
+    if (compcardFileInput.value) {
+      compcardFileInput.value.value = '';
+    }
+  }
+};
+
+const openPhotoPreview = (photo, index) => {
+  currentPhoto.value = photo;
+  currentPhotoIndex.value = index;
+  showPhotoPreview.value = true;
+};
+
+const confirmPhotoDelete = (photoId) => {
+  // Show a confirmation dialog with improved styling
+  if (window.confirm('Are you sure you want to delete this photo?')) {
+    // Show a loading toast while deleting
+    toast.add({
+      severity: 'info',
+      summary: 'Deleting photo...',
+      detail: 'Please wait while we delete your photo.',
+      life: 2000,
+    });
+
+    // Call the delete function
+    deletePhoto(photoId);
+  }
+};
+
+const deletePhoto = async (photoId) => {
+  try {
+    console.log(`Attempting to delete photo with ID: ${photoId}`);
+    const response = await candidateService.deleteCompcardPhoto(photoId);
+    console.log('Delete photo response:', response);
+
+    toast.add({
+      severity: 'success',
+      summary: 'Photo deleted',
+      detail: 'The photo has been deleted successfully.',
+      life: 3000,
+    });
+
+    // Refresh photo list
+    await fetchCompcardPhotos();
+
+    // Close preview if open
+    if (showPhotoPreview.value) {
+      showPhotoPreview.value = false;
+    }
+  } catch (error) {
+    console.error('Error deleting photo:', error);
+
+    // Detailed error logging
+    if (error.response) {
+      console.error('Error response:', {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers,
+      });
+    } else if (error.request) {
+      console.error('Error request:', error.request);
+    } else {
+      console.error('Error message:', error.message);
+    }
+
+    toast.add({
+      severity: 'error',
+      summary: 'Delete failed',
+      detail:
+        error.response?.data?.message ||
+        'Failed to delete photo. Please try again.',
+      life: 5000,
+    });
+  }
+};
+
+const navigatePhotos = (direction) => {
+  if (direction === 'next') {
+    currentPhotoIndex.value =
+      (currentPhotoIndex.value + 1) % compcardPhotos.value.length;
+  } else {
+    currentPhotoIndex.value =
+      (currentPhotoIndex.value - 1 + compcardPhotos.value.length) %
+      compcardPhotos.value.length;
+  }
+  currentPhoto.value = compcardPhotos.value[currentPhotoIndex.value];
+};
+
+const navigateToPhotos = () => {
+  console.log('Manual navigation to photos section');
+  activeSection.value = 'photos';
+
+  // Always fetch photos when navigating to photos section
+  fetchCompcardPhotos();
+};
+
+const handlePhotoError = (event, photo, index) => {
+  console.error(`Error loading photo at index ${index}:`, photo);
+
+  // Create multiple potential URLs to try
+  const baseUrl = 'http://localhost:5173';
+  const filenameOnly = photo.comcardUrl.split('/').pop();
+
+  // Try these paths in sequence
+  const backupUrls = [
+    `${baseUrl}/src/assets/comcards/${filenameOnly}`,
+    `/src/assets/comcards/${filenameOnly}`,
+    `/assets/comcards/${filenameOnly}`,
+  ];
+
+  console.log('Attempting to load with backup URLs:', backupUrls);
+
+  // If the current URL is one of the backup URLs, try the next one
+  const currentIndex = backupUrls.indexOf(photo.url);
+  if (currentIndex >= 0 && currentIndex < backupUrls.length - 1) {
+    photo.url = backupUrls[currentIndex + 1];
+    console.log(`Trying next backup URL for photo ${index}:`, photo.url);
+  } else if (currentIndex === -1) {
+    // If current URL isn't in the backup list, try the first backup
+    photo.url = backupUrls[0];
+    console.log(`Trying first backup URL for photo ${index}:`, photo.url);
+  } else {
+    // We've tried all URLs, show error state
+    console.error(`All URLs failed for photo ${index}`);
+    // Set fallback image or placeholder
+    photo.url = null;
+    photo.loadError = true;
+  }
+};
 </script>
 
 <style scoped>
@@ -2565,187 +3238,20 @@ const handleProfilePictureUpload = async (event) => {
   @apply mb-4;
 }
 
-:deep(.p-button) {
-  border-radius: 0.75rem;
+/* Photo container styles */
+.aspect-square {
+  position: relative;
+  padding-bottom: 100%; /* 1:1 aspect ratio */
 }
 
-:deep(.p-button.p-button-sm) {
-  padding: 0.4rem 1rem;
-  font-size: 0.875rem;
-}
-
-:deep(.p-button.p-button-text) {
-  color: var(--primary-600);
-}
-
-:deep(.p-button.p-button-text:hover) {
-  background: rgba(108, 99, 255, 0.08);
-}
-
-:deep(.p-button.p-button-text.p-button-danger) {
-  color: #dc2626;
-}
-
-:deep(.p-button.p-button-text.p-button-danger:hover) {
-  background: rgba(220, 38, 38, 0.08);
-}
-
-:deep(.p-progressbar) {
-  background: #e2e8f0;
-  border-radius: 9999px;
-  height: 0.375rem;
-}
-
-:deep(.p-progressbar-value) {
-  background: var(--primary-600);
-  border-radius: 9999px;
-}
-
-:deep(.p-inputtext),
-:deep(.p-dropdown),
-:deep(.p-multiselect),
-:deep(.p-calendar .p-inputtext) {
-  border-radius: 0.75rem;
-  transition: all 0.2s ease;
-}
-
-:deep(.p-dropdown:hover),
-:deep(.p-multiselect:hover),
-:deep(.p-inputtext:hover),
-:deep(.p-calendar .p-inputtext:hover) {
-  border-color: var(--primary-400);
-}
-
-:deep(.p-dropdown:focus),
-:deep(.p-multiselect:focus),
-:deep(.p-inputtext:focus),
-:deep(.p-calendar .p-inputtext:focus) {
-  border-color: var(--primary-500);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-}
-
-:deep(.p-calendar) {
+.aspect-square > * {
+  position: absolute;
+  height: 100%;
   width: 100%;
-}
-
-:deep(.p-calendar .p-button) {
-  background-color: transparent;
-  border: none;
-  color: var(--primary-600);
-}
-
-:deep(.p-datepicker-trigger) {
-  display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  color: var(--primary-600) !important;
-}
-
-:deep(.p-calendar .p-datepicker-trigger-icon) {
-  color: var(--primary-600) !important;
-}
-
-:deep(.p-dialog) {
-  border-radius: 1rem;
-  overflow: hidden;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-:deep(.p-dialog .p-dialog-header) {
-  border-top-left-radius: 1rem;
-  border-top-right-radius: 1rem;
-  padding: 1.25rem 1.5rem;
-  background-color: white;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-:deep(.p-dialog .p-dialog-content) {
-  padding: 1.5rem;
-  background-color: white;
-}
-
-:deep(.p-chip) {
-  background: var(--primary-50);
-  color: var(--primary-700);
-  border-radius: 9999px;
-  padding: 0.25rem 0.75rem;
-}
-
-/* MultiSelect token styles */
-:deep(.p-multiselect-token) {
-  background-color: rgba(99, 102, 241, 0.1);
-  color: var(--primary-600);
-  border-radius: 9999px;
-  margin-right: 0.25rem;
-  padding: 0.25rem 0.5rem;
-}
-
-:deep(.p-multiselect-token-icon) {
-  margin-left: 0.25rem;
-}
-
-/* Remove any outlines or focus styles that might show in red */
-:deep(.p-dropdown:focus),
-:deep(.p-dropdown-item:focus),
-:deep(.p-multiselect:focus),
-:deep(.p-multiselect-item:focus),
-:deep(*:focus) {
-  outline: none !important;
-}
-
-/* Animation Classes */
-.animate-fadeIn {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Calendar styles */
-:deep(.p-datepicker) {
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-}
-
-:deep(.p-datepicker table td > span.p-highlight) {
-  background: var(--primary-500);
-}
-
-:deep(.p-datepicker table td.p-datepicker-today > span) {
-  border-color: var(--primary-300);
-}
-
-:deep(
-    .p-datepicker:not(.p-disabled)
-      table
-      td
-      span:not(.p-highlight):not(.p-disabled):hover
-  ) {
-  background: var(--primary-100);
-}
-
-:deep(.p-datepicker .p-datepicker-header) {
-  background: linear-gradient(to right, var(--primary-500), var(--primary-400));
-  color: white;
-  border-bottom: none;
-}
-
-:deep(.p-datepicker .p-datepicker-header .p-datepicker-title) {
-  font-weight: 600;
-}
-
-:deep(.p-datepicker .p-datepicker-header button) {
-  color: white;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  object-position: center;
 }
 </style>

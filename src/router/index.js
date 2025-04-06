@@ -114,6 +114,24 @@ const routes = [
     ],
   },
   {
+    path: '/photo-debug',
+    name: 'PhotoDebug',
+    component: () => import('@/PhotoDebug.vue'),
+    meta: {
+      requiresAuth: true,
+      role: 'CANDIDATE',
+    },
+  },
+  {
+    path: '/photo-test',
+    name: 'PhotoTest',
+    component: () => import('@/views/debug/PhotoTest.vue'),
+    meta: {
+      requiresAuth: true,
+      role: 'CANDIDATE',
+    },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: NotFound,

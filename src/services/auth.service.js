@@ -199,15 +199,35 @@ class AuthService {
    * @returns {Promise} - Response with new tokens
    */
   async refreshToken(refreshToken) {
-    const response = await apiClient.post('/auth/refreshtoken', {
-      refreshToken,
-    });
+    try {
+      const response = await apiClient.post(
+        '/auth/refresh',
+        { refreshToken },
+        { skipAuthRefresh: true } // Prevent interceptor from trying to refresh token again
+      );
 
-    if (response.data) {
-      this.setTokens(response.data);
+      if (
+        response.data &&
+        response.data.statusCode === 200 &&
+        response.data.data
+      ) {
+        const responseData = response.data.data;
+
+        // Store the new tokens
+        if (responseData.accessToken) {
+          localStorage.setItem('accessToken', responseData.accessToken);
+        }
+
+        if (responseData.refreshToken) {
+          localStorage.setItem('refreshToken', responseData.refreshToken);
+        }
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      throw error;
     }
-
-    return response.data;
   }
 
   /**
