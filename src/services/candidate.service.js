@@ -364,6 +364,91 @@ class CandidateService {
       throw error;
     }
   }
+
+  /**
+   * Upload working photo
+   * @param {File} file - Image file to upload
+   * @param {String} description - Description of the working photo
+   * @returns {Promise} - Response with uploaded image URL
+   */
+  async uploadWorkingPhoto(file, description) {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (description) {
+      formData.append('description', description);
+    }
+
+    return apiClient.post('/candidate/file/working', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  }
+
+  /**
+   * Get working photos
+   * @returns {Promise} - Response with working photos
+   */
+  async getWorkingPhotos() {
+    return apiClient.get('/candidate/file/working');
+  }
+
+  /**
+   * Delete working photo
+   * @param {String|Number} photoId - ID of the photo to delete
+   * @returns {Promise} - Response with deletion status
+   */
+  async deleteWorkingPhoto(photoId) {
+    console.log(`Deleting working photo with ID: ${photoId}`);
+    return apiClient.delete(`/candidate/file/working/${photoId}`);
+  }
+
+  /**
+   * Get working photo URL from assets directory
+   * @param {String} filename - Working photo filename or path
+   * @returns {String} - Full URL to the working photo
+   */
+  getWorkingPhotoFromAssets(filename) {
+    if (!filename || filename === 'undefined') return null;
+
+    try {
+      // Log the original filename for debugging
+      console.log('Resolving working image path for:', filename);
+
+      // Extract just the filename regardless of path format
+      const filenameOnly =
+        // Handle different path formats
+        filename.includes('/assets/working-photos/')
+          ? filename.split('/assets/working-photos/').pop()
+          : filename.includes('/')
+          ? filename.split('/').pop()
+          : filename;
+
+      // Log the extracted filename
+      console.log('Extracted filename for working photo:', filenameOnly);
+
+      // List of possible URLs to try
+      const possibleUrls = [
+        // For development environment
+        `http://localhost:5173/src/assets/working-photos/${filenameOnly}`,
+        // Relative to current origin
+        `${window.location.origin}/src/assets/working-photos/${filenameOnly}`,
+        // Relative path
+        `/src/assets/working-photos/${filenameOnly}`,
+        // For production environment
+        `/assets/working-photos/${filenameOnly}`,
+      ];
+
+      // Log all URLs being tried
+      console.log('Possible URLs for working photo:', possibleUrls);
+
+      // Return the first URL in the list - error handling can try others if this fails
+      return possibleUrls[0];
+    } catch (error) {
+      console.error('Failed to resolve working photo path:', error);
+      return null;
+    }
+  }
 }
 
 export default new CandidateService();

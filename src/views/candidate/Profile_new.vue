@@ -34,11 +34,10 @@
     <!-- Container for the profile content - centers everything and constrains max width -->
     <div
       v-else
-      class="flex flex-col md:flex-row w-full max-w-7xl shadow-md rounded-lg overflow-hidden relative md:gap-0 md:shadow-none"
+      class="flex flex-col md:flex-row w-full max-w-7xl shadow-lg relative"
     >
       <!-- Mobile Menu Toggle Button (Only visible on mobile) -->
       <button
-        v-if="isClient && windowWidth < 768"
         @click="toggleSidebar"
         class="md:hidden fixed bottom-6 right-6 z-50 bg-primary-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-primary-600"
       >
@@ -51,19 +50,14 @@
       <!-- Left Sidebar -->
       <div
         :class="[
-          'w-full md:w-72 lg:w-80 md:sticky md:top-0 md:h-screen md:overflow-y-auto flex flex-col bg-gradient-to-br from-primary-50 via-white to-gray-50 transition-all duration-300 transform relative',
+          'w-full md:w-72 lg:w-80 border-r md:sticky md:top-0 md:h-screen md:overflow-y-auto flex flex-col bg-gradient-to-br from-primary-50 via-white to-gray-50 shadow-md transition-all duration-300 transform',
           {
             'fixed inset-0 z-40 h-screen':
-              sidebarOpen && isClient && windowWidth < 768,
+              sidebarOpen && window.innerWidth < 768,
           },
-          { hidden: !sidebarOpen && isClient && windowWidth < 768 },
+          { hidden: !sidebarOpen && window.innerWidth < 768 },
         ]"
       >
-        <!-- Gradient fade effect on the right edge of sidebar -->
-        <div
-          class="absolute top-0 right-0 w-8 h-full bg-gradient-to-r from-transparent via-primary-50/10 to-gray-50 hidden md:block z-20 pointer-events-none"
-        ></div>
-
         <!-- Profile Photo & Name Section -->
         <div
           class="flex flex-col items-center px-6 py-8 border-b bg-gradient-to-b from-primary-100 to-white relative overflow-hidden"
@@ -100,6 +94,12 @@
             <i class="pi pi-map-marker mr-1 text-primary-500"></i>
             <p>{{ getLocation(profile) }}</p>
           </div>
+          <button
+            @click="profilePictureInput.click()"
+            class="mt-3 text-sm text-primary-600 flex items-center hover:text-primary-700 hover:bg-primary-50 transition-colors rounded-full px-3 py-1"
+          >
+            <i class="pi pi-camera mr-1"></i> Change Photo
+          </button>
           <input
             type="file"
             ref="profilePictureInput"
@@ -241,6 +241,33 @@
           </ul>
         </nav>
 
+        <!-- Profile Completion Card -->
+        <div class="px-6 py-4 mt-auto border-t">
+          <div class="pt-1">
+            <h3
+              class="text-sm font-medium mb-2 text-gray-700 flex items-center"
+            >
+              <i class="pi pi-check-circle text-primary-500 mr-2"></i>
+              Profile Completion
+            </h3>
+            <div class="mb-1 flex justify-between items-center">
+              <span class="text-sm font-medium text-gray-800"
+                >{{ profileCompletionPercentage }}% Complete</span
+              >
+              <span
+                class="text-sm text-primary-600 font-medium px-2 py-0.5 bg-primary-50 rounded-full text-xs"
+                >{{ profileCompletionStatus }}</span
+              >
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-2.5 shadow-inner">
+              <div
+                class="bg-gradient-to-r from-primary-400 to-primary-600 h-2.5 rounded-full transition-all duration-500"
+                :style="`width: ${profileCompletionPercentage}%`"
+              ></div>
+            </div>
+          </div>
+        </div>
+
         <!-- Add close button for mobile sidebar -->
         <button
           @click="toggleSidebar"
@@ -252,13 +279,8 @@
 
       <!-- Main Content Area -->
       <div
-        class="flex-1 py-4 px-4 md:py-8 md:px-6 flex justify-center bg-gray-50 relative"
+        class="flex-1 py-4 px-4 md:py-8 md:px-6 flex justify-center bg-gray-50"
       >
-        <!-- Gradient fade effect on the left edge of main content -->
-        <div
-          class="absolute top-0 left-0 w-8 h-full bg-gradient-to-r from-gray-50 via-gray-50/50 to-transparent hidden md:block z-20 pointer-events-none"
-        ></div>
-
         <!-- Content Container with Max Width -->
         <div class="w-full max-w-4xl">
           <!-- Basic Information Section -->
@@ -783,26 +805,12 @@
                 >
                   <i class="pi pi-images text-primary-500 mr-2"></i>
                   Comp Card & Self Photos
-                  <span
-                    v-if="compcardPhotos.length >= 3"
-                    class="ml-2 text-xs font-normal bg-gray-100 text-gray-600 py-1 px-2 rounded-full"
-                  >
-                    Maximum reached (3)
-                  </span>
                 </h2>
                 <Button
-                  v-if="compcardPhotos.length < 3"
                   icon="pi pi-upload"
                   label="Upload Photo"
                   class="p-button-outlined p-button-sm"
                   @click="compcardFileInput.click()"
-                />
-                <Button
-                  v-else
-                  icon="pi pi-exclamation-circle"
-                  label="Maximum reached (3)"
-                  class="p-button-sm p-button-secondary"
-                  disabled
                 />
                 <input
                   type="file"
@@ -826,7 +834,7 @@
                       <h3
                         class="text-blue-700 font-medium mb-1 text-sm md:text-base"
                       >
-                        Comp Card & Self Photos Guidelines (Maximum 3 Photos)
+                        Profile Photo Guidelines (Maximum 3 Photos)
                       </h3>
                       <p class="text-blue-600 text-xs md:text-sm">
                         You can upload up to 3 photos total:
@@ -953,19 +961,11 @@
                     and brand ambassador roles.
                   </p>
                   <Button
-                    v-if="compcardPhotos.length < 3"
                     icon="pi pi-upload"
                     label="Upload Your First Photo"
                     class="p-button-sm"
                     @click="compcardFileInput.click()"
                   />
-                  <div
-                    v-else
-                    class="text-yellow-600 flex items-center justify-center gap-2 mt-2 text-sm"
-                  >
-                    <i class="pi pi-exclamation-circle"></i>
-                    <span>Maximum number of photos (3) reached</span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -990,7 +990,7 @@
                   v-if="workingPhotos.length < 3"
                   icon="pi pi-upload"
                   label="Upload Photo"
-                  class="p-button-outlined p-button-sm"
+                  class="p-button-sm"
                   @click="openWorkingPhotoUploadDialog"
                 />
                 <Button
@@ -1013,7 +1013,7 @@
                     ></i>
                     <div>
                       <h3 class="text-blue-700 font-medium mb-1">
-                        Working Photos Guidelines (Maximum 3 Photos)
+                        Working Photos (Maximum 3)
                       </h3>
                       <p class="text-blue-600 text-sm">
                         Upload photos of yourself working at events such as:
@@ -1064,22 +1064,18 @@
                     >
                       <div class="relative aspect-square overflow-hidden">
                         <img
-                          v-if="
-                            photo.photoUrl ||
-                            photo.url ||
-                            photo.imageUrl ||
-                            photo.backupUrl
-                          "
-                          :src="
-                            photo.photoUrl ||
-                            photo.url ||
-                            photo.imageUrl ||
-                            photo.backupUrl ||
-                            ''
-                          "
+                          v-if="photo.url"
+                          :src="photo.url"
                           :alt="`Working Photo ${index + 1}`"
-                          class="w-full h-auto object-cover"
-                          @error="handleWorkingPhotoError($event, photo, index)"
+                          class="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
+                          @error="
+                            console.error('Image load error');
+                            $event.target.src =
+                              candidateService.getWorkingPhotoFromAssets(
+                                photo.imageUrl
+                              );
+                          "
+                          style="object-fit: cover; width: 100%; height: 100%"
                         />
                         <div
                           v-else
@@ -1139,7 +1135,6 @@
                   <Button
                     icon="pi pi-upload"
                     label="Upload Your First Working Photo"
-                    class="p-button-sm"
                     @click="openWorkingPhotoUploadDialog"
                   />
                 </div>
@@ -2020,76 +2015,40 @@
     v-model:visible="showWorkingPhotoUploadDialog"
     modal
     header="Upload Working Photo"
-    :style="{ width: '550px' }"
+    :style="{ width: '450px' }"
     :closable="true"
     :dismissableMask="true"
-    class="working-photo-upload-dialog"
   >
-    <div class="p-5">
-      <!-- Upload Area -->
-      <div class="mb-5">
+    <div class="p-4">
+      <div class="mb-4">
         <div
-          v-if="!selectedWorkingPhotoFile"
-          class="border-2 border-dashed border-gray-300 bg-gray-50 rounded-xl p-8 text-center hover:bg-blue-50 hover:border-primary-300 transition-all duration-300 cursor-pointer"
+          class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-300 transition-colors cursor-pointer"
           @click="workingPhotoInput?.click()"
-          @dragover.prevent
-          @drop.prevent="handleDrop"
         >
-          <div class="flex flex-col items-center justify-center">
-            <i class="pi pi-cloud-upload text-5xl text-primary-300 mb-4"></i>
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">
+          <div v-if="selectedWorkingPhotoFile">
+            <img
+              :src="URL.createObjectURL(selectedWorkingPhotoFile)"
+              alt="Selected image preview"
+              class="mx-auto max-h-48 rounded-lg shadow-sm mb-3"
+            />
+            <p class="text-sm text-gray-600">
+              {{ selectedWorkingPhotoFile.name }} ({{
+                (selectedWorkingPhotoFile.size / 1024).toFixed(0)
+              }}KB)
+            </p>
+            <Button
+              label="Change Photo"
+              class="p-button-text p-button-sm mt-2"
+              icon="pi pi-refresh"
+              @click.stop="workingPhotoInput?.click()"
+            />
+          </div>
+          <div v-else>
+            <i class="pi pi-image text-gray-400 text-4xl mb-2"></i>
+            <h3 class="text-gray-700 font-medium mb-1">
               Click to select a photo
             </h3>
-            <p class="text-gray-500 text-sm mb-3">
-              Or drag and drop your file here
-            </p>
-            <div
-              class="bg-white px-4 py-2 rounded-full shadow-sm text-primary-500 text-sm font-medium inline-flex items-center"
-            >
-              <i class="pi pi-image mr-2"></i>
-              Select from device
-            </div>
-            <div class="mt-4 text-xs text-gray-400">
-              Supported formats: JPEG, PNG • Max size: 5MB
-            </div>
-          </div>
-        </div>
-
-        <div v-else class="mb-5">
-          <div
-            class="relative rounded-xl overflow-hidden shadow-md bg-gray-100"
-          >
-            <img
-              :src="getObjectURL(selectedWorkingPhotoFile)"
-              alt="Selected image preview"
-              class="w-full max-h-64 object-contain mx-auto"
-            />
-            <div class="absolute top-2 right-2 flex gap-2">
-              <Button
-                icon="pi pi-refresh"
-                class="p-button-rounded p-button-sm p-button-outlined p-button-secondary"
-                @click.stop="workingPhotoInput?.click()"
-                v-tooltip.top="'Change photo'"
-              />
-              <Button
-                icon="pi pi-times"
-                class="p-button-rounded p-button-sm p-button-outlined p-button-danger"
-                @click.stop="selectedWorkingPhotoFile = null"
-                v-tooltip.top="'Remove photo'"
-              />
-            </div>
-          </div>
-          <div class="flex items-center mt-2 bg-primary-50 p-3 rounded-lg">
-            <i class="pi pi-file text-primary-500 mr-2"></i>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-gray-700 truncate">
-                {{ selectedWorkingPhotoFile.name }}
-              </p>
-              <p class="text-xs text-gray-500">
-                {{ (selectedWorkingPhotoFile.size / 1024).toFixed(0) }}KB •
-                {{ selectedWorkingPhotoFile.type.split('/')[1].toUpperCase() }}
-              </p>
-            </div>
+            <p class="text-gray-500 text-sm">Or drag and drop your file here</p>
           </div>
         </div>
 
@@ -2103,46 +2062,40 @@
       </div>
 
       <!-- Photo Description Input -->
-      <div class="mb-3">
+      <div class="mb-4">
         <label
           for="workingPhotoDescription"
-          class="block text-gray-700 font-medium mb-2 flex items-center"
+          class="block text-gray-700 font-medium mb-1"
+          >Photo Description</label
         >
-          <i class="pi pi-pencil text-primary-400 mr-2"></i>
-          Photo Description
-        </label>
         <Textarea
           id="workingPhotoDescription"
           v-model="workingPhotoDescription"
           rows="3"
           placeholder="Describe this photo (e.g., 'Working as a promoter at ABC Event', 'Serving drinks at XYZ event')"
           class="w-full"
-          autoResize
         />
-        <small class="flex items-center mt-2 text-gray-500">
-          <i class="pi pi-info-circle mr-1 text-xs"></i>
-          This description helps recruiters understand the context of your photo
-        </small>
+        <small class="text-gray-500"
+          >This description will help recruiters understand the context of your
+          photo.</small
+        >
       </div>
     </div>
 
     <template #footer>
-      <div class="flex justify-between w-full px-3">
-        <Button
-          label="Cancel"
-          icon="pi pi-times"
-          @click="showWorkingPhotoUploadDialog = false"
-          class="p-button-text"
-        />
-        <Button
-          label="Upload"
-          icon="pi pi-upload"
-          @click="uploadWorkingPhoto"
-          :loading="loadingWorkingPhotos"
-          :disabled="!selectedWorkingPhotoFile"
-          class="p-button-primary"
-        />
-      </div>
+      <Button
+        label="Cancel"
+        icon="pi pi-times"
+        @click="showWorkingPhotoUploadDialog = false"
+        class="p-button-text"
+      />
+      <Button
+        label="Upload"
+        icon="pi pi-upload"
+        @click="uploadWorkingPhoto"
+        :loading="loadingWorkingPhotos"
+        :disabled="!selectedWorkingPhotoFile"
+      />
     </template>
   </Dialog>
 
@@ -2161,20 +2114,12 @@
           class="relative mx-auto max-w-full max-h-[70vh] overflow-hidden rounded-lg shadow-lg"
         >
           <img
-            :src="
-              selectedWorkingPhoto.photoUrl ||
-              selectedWorkingPhoto.url ||
-              selectedWorkingPhoto.imageUrl ||
-              selectedWorkingPhoto.backupUrl ||
-              ''
-            "
+            :src="selectedWorkingPhoto.url"
             :alt="`Working Photo ${workingPhotoPreviewIndex + 1}`"
             class="max-h-[70vh] max-w-full object-contain"
             @error="
-              handleWorkingPhotoError(
-                $event,
-                selectedWorkingPhoto,
-                workingPhotoPreviewIndex
+              $event.target.src = candidateService.getWorkingPhotoFromAssets(
+                selectedWorkingPhoto.imageUrl
               )
             "
           />
@@ -2251,39 +2196,21 @@ let profileStore;
 let authStore;
 
 // Sidebar state for responsive design
-const sidebarOpen = ref(true); // Default to open
-const windowWidth = ref(0);
-const isClient = ref(false);
+const sidebarOpen = ref(window.innerWidth >= 768); // Default to open on desktop
+const windowWidth = ref(window.innerWidth);
 
 // Toggle sidebar for mobile view
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value;
 };
 
-// Safely check window size on client side only
+// Listen for window resize to update the sidebar state
 const updateWindowWidth = () => {
-  if (isClient.value) {
-    windowWidth.value = window?.innerWidth || 0;
-    // Only change sidebar state based on window width after initial load
-    if (windowWidth.value >= 768) {
-      sidebarOpen.value = true;
-    }
+  windowWidth.value = window.innerWidth;
+  if (windowWidth.value >= 768) {
+    sidebarOpen.value = true;
   }
 };
-
-// Add resize event listener on component mount, and set isClient
-onMounted(() => {
-  isClient.value = true;
-  updateWindowWidth(); // Initial check
-  window?.addEventListener('resize', updateWindowWidth);
-});
-
-// Clean up event listener when component is unmounted
-onBeforeUnmount(() => {
-  if (isClient.value) {
-    window?.removeEventListener('resize', updateWindowWidth);
-  }
-});
 
 try {
   profileStore = useProfileStore();
@@ -2313,6 +2240,16 @@ console.debug('Auth store initialization:', {
   authStore,
   hasChangePassword: typeof authStore.changePassword === 'function',
   methods: Object.keys(authStore),
+});
+
+// Add resize event listener on component mount
+onMounted(() => {
+  window.addEventListener('resize', updateWindowWidth);
+});
+
+// Clean up event listener when component is unmounted
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateWindowWidth);
 });
 
 // Component state
@@ -2541,8 +2478,20 @@ onMounted(async () => {
   if (activeSection.value === 'photos') {
     console.log('Initial load - photos section is active, fetching photos');
     fetchCompcardPhotos();
-    fetchWorkingPhotos(); // Also fetch working photos
   }
+
+  // Add explicit onMounted hook to ensure photos are loaded
+  onMounted(() => {
+    console.log(
+      'Profile component mounted, activeSection:',
+      activeSection.value
+    );
+    // Force fetch photos on component mount if current section is photos
+    if (activeSection.value === 'photos') {
+      console.log('onMounted - Explicitly fetching photos');
+      fetchCompcardPhotos();
+    }
+  });
 
   // Watch for activeSection changes to load photos when needed
   watch(activeSection, (newValue, oldValue) => {
@@ -3615,14 +3564,19 @@ const openPhotoPreview = (photo, index) => {
 };
 
 const confirmPhotoDelete = (photoId) => {
-  confirmDialog.require({
-    message: 'Are you sure you want to delete this photo?',
-    header: 'Delete Confirmation',
-    icon: 'pi pi-exclamation-triangle',
-    acceptClass: 'p-button-danger',
-    accept: () => deletePhoto(photoId),
-    reject: () => {},
-  });
+  // Show a confirmation dialog with improved styling
+  if (window.confirm('Are you sure you want to delete this photo?')) {
+    // Show a loading toast while deleting
+    toast.add({
+      severity: 'info',
+      summary: 'Deleting photo...',
+      detail: 'Please wait while we delete your photo.',
+      life: 2000,
+    });
+
+    // Call the delete function
+    deletePhoto(photoId);
+  }
 };
 
 const deletePhoto = async (photoId) => {
@@ -3741,66 +3695,27 @@ const fetchWorkingPhotos = async () => {
     console.log('Making API request to /candidate/file/working');
     const response = await candidateService.getWorkingPhotos();
     console.log('Working photos response:', response);
-    console.log('Raw response data:', response.data);
 
-    // Handle different response formats
-    let photos = [];
-    if (response.data && response.data.data) {
-      photos = Array.isArray(response.data.data)
-        ? response.data.data
-        : [response.data.data];
-    } else if (Array.isArray(response.data)) {
-      photos = response.data;
-    }
-
+    const photos = response.data.data || [];
     console.log('Processing working photos array:', photos);
-
-    // Check if photos has any elements
-    if (photos.length === 0) {
-      console.log('No working photos found in the response');
-      workingPhotos.value = [];
-      return;
-    }
-
-    // Check and log individual photo objects
-    photos.forEach((photo, index) => {
-      console.log(`Photo ${index} structure:`, JSON.stringify(photo));
-    });
 
     // Map the photos to include URLs
     workingPhotos.value = photos.map((photo) => {
-      // Log the photo object structure to debug
-      console.log(`Processing photo:`, photo);
+      const url = photo.imageUrl
+        ? candidateService.getWorkingPhotoFromAssets(photo.imageUrl)
+        : null;
 
-      // The API response uses 'photoUrl' instead of 'imageUrl'
-      const imagePath =
-        photo.photoUrl || photo.imageUrl || photo.url || photo.path || null;
-      console.log(`Image path found:`, imagePath);
+      console.log(
+        `Resolving URL for working photo: ${photo.id}, URL: ${url || 'none'}`
+      );
 
-      let url = null;
-      if (imagePath) {
-        url = candidateService.getWorkingPhotoFromAssets(imagePath);
-        console.log(
-          `Resolved URL for working photo ${photo.id || index}: ${
-            url || 'none'
-          }`
-        );
-      } else {
-        console.warn(`Missing image path for working photo:`, photo);
+      if (!url) {
+        console.warn(`Missing URL for working photo: ${photo.id}`);
       }
 
       return {
         ...photo,
-        url: url,
-        // Store original path for error handling
-        imageUrl: imagePath,
-        backupUrl: `/src/assets/working-photos/${
-          imagePath
-            ? imagePath.includes('/')
-              ? imagePath.split('/').pop()
-              : imagePath
-            : ''
-        }`,
+        url,
       };
     });
 
@@ -3837,10 +3752,7 @@ const openWorkingPhotoUploadDialog = () => {
 
 const handleWorkingPhotoChange = (event) => {
   const file = event.target.files[0];
-  validateAndSetWorkingPhoto(file);
-};
 
-const validateAndSetWorkingPhoto = (file) => {
   if (!file) return;
 
   // Validate file type
@@ -3883,61 +3795,12 @@ const uploadWorkingPhoto = async () => {
   loadingWorkingPhotos.value = true;
 
   try {
-    console.log(
-      'Uploading working photo with file:',
-      selectedWorkingPhotoFile.value.name
-    );
-    console.log('Description:', workingPhotoDescription.value);
-
     const response = await candidateService.uploadWorkingPhoto(
       selectedWorkingPhotoFile.value,
       workingPhotoDescription.value
     );
 
     console.log('Working photo upload response:', response);
-    console.log('Response data structure:', JSON.stringify(response.data));
-
-    // Try to find the photo data in the response
-    let photoData = null;
-    if (response.data && response.data.data) {
-      photoData = response.data.data;
-    } else if (response.data) {
-      photoData = response.data;
-    }
-
-    console.log('Extracted photo data:', photoData);
-
-    // Check if we can find the image URL in the response
-    if (photoData) {
-      // Log the properties of the photo data
-      console.log('Photo data properties:', Object.keys(photoData));
-
-      // If we received the photo data directly, we can add it to our local state
-      // instead of having to re-fetch all photos
-      if (photoData.id) {
-        console.log('Adding new photo to local state without re-fetching');
-        const newPhoto = {
-          ...photoData,
-          description: workingPhotoDescription.value,
-          url: candidateService.getWorkingPhotoFromAssets(
-            photoData.imageUrl || photoData.url || photoData.path
-          ),
-          backupUrl: `/src/assets/working-photos/${(
-            photoData.imageUrl ||
-            photoData.url ||
-            photoData.path ||
-            ''
-          )
-            .split('/')
-            .pop()}`,
-        };
-
-        console.log('New photo object:', newPhoto);
-        workingPhotos.value.push(newPhoto);
-      } else {
-        console.log("Photo data doesn't contain ID, will re-fetch all photos");
-      }
-    }
 
     toast.add({
       severity: 'success',
@@ -3947,18 +3810,9 @@ const uploadWorkingPhoto = async () => {
     });
 
     showWorkingPhotoUploadDialog.value = false;
-    // Always re-fetch to ensure we have the latest data
-    fetchWorkingPhotos();
+    fetchWorkingPhotos(); // Refresh the photo list
   } catch (error) {
     console.error('Error uploading working photo:', error);
-
-    // Log detailed error information
-    if (error.response) {
-      console.error('Error response:', error.response);
-      console.error('Error data:', error.response.data);
-      console.error('Error status:', error.response.status);
-    }
-
     toast.add({
       severity: 'error',
       summary: 'Upload Failed',
@@ -4114,75 +3968,12 @@ const loadExperiencesAndAvailability = async () => {
   }
 };
 
-// Enhance the getObjectURL function with better error handling
-const getObjectURL = (file) => {
-  try {
-    if (!file) return '';
-    if (typeof window === 'undefined' || !window.URL) {
-      console.error('URL API is not available');
-      return '';
-    }
-    return window.URL.createObjectURL(file);
-  } catch (error) {
-    console.error('Error creating object URL:', error);
-    return '';
-  }
-};
+// Sidebar state
+const sidebarOpen = ref(false);
 
-// Add this function to handle working photo errors
-const handleWorkingPhotoError = (event, photo, index) => {
-  console.error(`Error loading working photo at index ${index}:`, photo);
-
-  // Log all available information
-  console.log('Photo details:', {
-    id: photo.id,
-    photoUrl: photo.photoUrl,
-    imageUrl: photo.imageUrl,
-    url: photo.url,
-    backupUrl: photo.backupUrl,
-  });
-
-  try {
-    // Extract the filename from various potential paths
-    let filename = null;
-
-    if (photo.photoUrl && photo.photoUrl.includes('/assets/working-photos/')) {
-      // Format: /assets/working-photos/filename.jpg
-      filename = photo.photoUrl.split('/assets/working-photos/').pop();
-      console.log('Extracted filename from photoUrl:', filename);
-    } else if (photo.imageUrl && photo.imageUrl.includes('/')) {
-      // Format could be any path with a filename at the end
-      filename = photo.imageUrl.split('/').pop();
-      console.log('Extracted filename from imageUrl:', filename);
-    } else if (photo.photoUrl) {
-      // photoUrl might be just the filename
-      filename = photo.photoUrl;
-      console.log('Using photoUrl as filename:', filename);
-    } else if (photo.id) {
-      // Last resort - use the ID with jpg extension
-      filename = `${photo.id}.jpg`;
-      console.log('Using ID as filename:', filename);
-    }
-
-    if (filename) {
-      // Try all possible URL formats
-      const directPath = `/src/assets/working-photos/${filename}`;
-      console.log('Attempting to load with direct path:', directPath);
-      event.target.src = directPath;
-    }
-  } catch (error) {
-    console.error('Failed to create fallback URL:', error);
-  }
-};
-
-const handleDrop = (event) => {
-  event.preventDefault();
-  const files = event.dataTransfer.files;
-  if (files.length > 0) {
-    const file = files[0];
-    // Use the existing validation function
-    validateAndSetWorkingPhoto(file);
-  }
+// Toggle sidebar
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value;
 };
 </script>
 
@@ -4211,30 +4002,6 @@ const handleDrop = (event) => {
   bottom: 0;
   left: 0;
   object-position: center;
-}
-
-/* Seamless sidebar gradient transition */
-@media (min-width: 768px) {
-  /* Remove negative margin since we have gradients now */
-  [class*='md:border-l'] {
-    border-left: none !important;
-    margin-left: 0 !important;
-  }
-
-  /* Hide any borders that might interfere with gradient effect */
-  .md\:border-l,
-  .md\:border-r,
-  .border-l,
-  .border-r {
-    border-left-color: transparent !important;
-    border-right-color: transparent !important;
-  }
-
-  /* Ensure gradients completely overlap */
-  .absolute.top-0.right-0,
-  .absolute.top-0.left-0 {
-    height: 100vh;
-  }
 }
 
 /* Responsive dialog styles */
@@ -4417,62 +4184,5 @@ const handleDrop = (event) => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* Bringing sidebar and main content closer */
-@media (min-width: 768px) {
-  [class*='md:border-l'] {
-    margin-left: -1px;
-  }
-
-  .md\:flex-row {
-    gap: 0 !important;
-  }
-}
-
-.working-photo-upload-dialog .p-dialog-content {
-  padding: 1rem;
-}
-
-.working-photo-upload-dialog .p-dialog-footer {
-  padding: 0.75rem 1rem;
-}
-
-.working-photo-upload-dialog .p-button-primary {
-  padding: 0.4rem 0.75rem !important;
-  font-size: 0.75rem !important;
-}
-
-.working-photo-upload-dialog .p-button-text {
-  padding: 0.4rem 0.75rem !important;
-  font-size: 0.75rem !important;
-}
-
-/* ... existing styles ... */
-
-.working-photo-upload-dialog .p-dialog-header {
-  background: linear-gradient(
-    135deg,
-    var(--primary-color) 0%,
-    var(--primary-600) 100%
-  );
-  color: white;
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
-  padding: 1rem 1.5rem;
-}
-
-.working-photo-upload-dialog .p-dialog-content {
-  padding: 0;
-  border-bottom-left-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
-}
-
-.working-photo-upload-dialog .p-dialog-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #f0f0f0;
-  background-color: #fcfcfc;
-  border-bottom-left-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
 }
 </style>

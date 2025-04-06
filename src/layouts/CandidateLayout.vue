@@ -102,7 +102,7 @@
     </header>
 
     <!-- Main content -->
-    <main class="flex-grow">
+    <main class="flex-grow bg-gray-50">
       <div class="container mx-auto">
         <router-view></router-view>
       </div>

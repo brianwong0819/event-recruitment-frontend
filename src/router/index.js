@@ -132,6 +132,24 @@ const routes = [
     },
   },
   {
+    path: '/profile-test',
+    name: 'ProfileTest',
+    component: () => import('@/views/candidate/ProfileTest.vue'),
+    meta: {
+      requiresAuth: false,
+      role: ['CANDIDATE'],
+    },
+  },
+  {
+    path: '/profile-new',
+    name: 'ProfileNew',
+    component: () => import('@/views/candidate/ProfileNew.vue'),
+    meta: {
+      requiresAuth: false,
+      role: ['CANDIDATE'],
+    },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: NotFound,
