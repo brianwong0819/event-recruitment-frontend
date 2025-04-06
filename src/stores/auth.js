@@ -78,6 +78,26 @@ export const useAuthStore = defineStore('auth', {
         console.log('Starting candidate login...');
         const response = await AuthService.candidateLogin(username, password);
         console.log('Login response:', response);
+
+        // Check if we actually got user data before setting authenticated state
+        if (!response) {
+          console.error('Empty login response');
+          this.authenticated = false;
+          this.error = 'Invalid login response';
+          throw new Error('Invalid login response');
+        }
+
+        // If response doesn't have a user object, create a minimal one
+        if (!response.user) {
+          console.log(
+            'Creating minimal user object since response.user is missing'
+          );
+          response.user = {
+            role: 'CANDIDATE',
+            username: username,
+          };
+        }
+
         this.user = response.user;
         this.authenticated = true;
         console.log('User authenticated:', this.user);
@@ -172,11 +192,42 @@ export const useAuthStore = defineStore('auth', {
     /**
      * Logout current user
      */
-    logout() {
-      AuthService.logout();
-      this.user = null;
-      this.authenticated = false;
-      router.push('/login');
+    async logout() {
+      try {
+        await AuthService.logout();
+        this.user = null;
+        this.authenticated = false;
+
+        // Reset other stores if they exist
+        try {
+          // Use dynamic imports to avoid circular dependencies
+          const { useProfileStore } = await import('./profile');
+          if (useProfileStore) {
+            const profileStore = useProfileStore();
+            profileStore.$reset(); // Reset the profile store state
+          }
+
+          // Reset any other stores that might have user data
+          // Example with dynamic import pattern:
+          // const { useOtherStore } = await import('./otherStore');
+          // if (useOtherStore) {
+          //   const otherStore = useOtherStore();
+          //   otherStore.$reset();
+          // }
+        } catch (storeError) {
+          console.warn('Error resetting stores during logout:', storeError);
+          // Continue with logout even if store reset fails
+        }
+
+        // Navigate to login page
+        router.push('/login');
+      } catch (error) {
+        console.error('Logout error:', error);
+        // Even if server logout fails, clear local state
+        this.user = null;
+        this.authenticated = false;
+        router.push('/login');
+      }
     },
 
     /**
@@ -304,6 +355,55 @@ export const useAuthStore = defineStore('auth', {
      */
     clearSuccessMessage() {
       this.successMessage = null;
+    },
+
+    /**
+     * Change password
+     * @param {string} currentPassword - Current password
+     * @param {string} newPassword - New password
+     * @param {string} confirmPassword - Confirmation of new password
+     */
+    async changePassword(currentPassword, newPassword, confirmPassword) {
+      this.isLoading = true;
+      this.error = null;
+
+      try {
+        // Import the candidate service dynamically to avoid circular dependencies
+        const candidateService = await import(
+          '../services/candidate.service'
+        ).then((m) => m.default);
+
+        const response = await candidateService.changePassword(
+          currentPassword,
+          newPassword,
+          confirmPassword
+        );
+
+        this.isLoading = false;
+
+        // Return response to the component that called this method
+        return response;
+      } catch (error) {
+        this.isLoading = false;
+
+        // Check if this is a password validation error (incorrect current password)
+        if (error.isPasswordError) {
+          // Don't clear auth state for password validation errors
+          this.error = error.message;
+          throw error;
+        }
+
+        // For other errors, check if we need to handle auth issues
+        if (error.response?.status === 401) {
+          this.error = error.response?.data?.message || 'Authentication failed';
+          // Don't logout automatically for password change errors
+        } else {
+          this.error =
+            error.response?.data?.message || 'Failed to change password';
+        }
+
+        throw error;
+      }
     },
   },
 });

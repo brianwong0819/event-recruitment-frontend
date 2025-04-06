@@ -1,4 +1,4 @@
-import apiClient from './api.service';
+import { apiClient } from './api.service';
 import userService from './user.service';
 
 class CandidateService {
@@ -16,7 +16,27 @@ class CandidateService {
    * @returns {Promise} - Response with updated profile
    */
   async updateProfile(profileData) {
-    return userService.updateCandidateProfile(profileData);
+    try {
+      // Format dates properly if needed
+      const formattedData = { ...profileData };
+
+      // Make sure date is in proper ISO format for API
+      if (
+        formattedData.dateOfBirth &&
+        typeof formattedData.dateOfBirth !== 'string'
+      ) {
+        formattedData.dateOfBirth = formattedData.dateOfBirth
+          .toISOString()
+          .split('T')[0];
+      }
+
+      // Call the user service to update the profile
+      const response = await userService.updateCandidateProfile(formattedData);
+      return response;
+    } catch (error) {
+      console.error('Error updating profile:', error.message);
+      throw error;
+    }
   }
 
   /**
@@ -28,15 +48,11 @@ class CandidateService {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await apiClient.post(
-      '/candidates/resume/upload',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
+    const response = await apiClient.post('/resume/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
     return response;
   }
@@ -47,7 +63,7 @@ class CandidateService {
    * @returns {Promise} - Response with updated experience data
    */
   async saveExperience(experienceData) {
-    return apiClient.post('/candidates/experience', experienceData);
+    return apiClient.post('/experience', experienceData);
   }
 
   /**
@@ -56,7 +72,7 @@ class CandidateService {
    * @returns {Promise} - Response with deletion status
    */
   async deleteExperience(experienceId) {
-    return apiClient.delete(`/candidates/experience/${experienceId}`);
+    return apiClient.delete(`/experience/${experienceId}`);
   }
 
   /**
@@ -64,7 +80,7 @@ class CandidateService {
    * @returns {Promise} - Response with list of experiences
    */
   async getExperiences() {
-    return apiClient.get('/candidates/experiences');
+    return apiClient.get('/experiences');
   }
 
   /**
@@ -73,7 +89,7 @@ class CandidateService {
    * @returns {Promise} - Response with updated availability
    */
   async updateAvailability(dates) {
-    return apiClient.post('/candidates/availability', { dates });
+    return apiClient.post('/availability', { dates });
   }
 
   /**
@@ -81,7 +97,7 @@ class CandidateService {
    * @returns {Promise} - Response with list of available dates
    */
   async getAvailability() {
-    return apiClient.get('/candidates/availability');
+    return apiClient.get('/availability');
   }
 
   /**
@@ -90,7 +106,33 @@ class CandidateService {
    * @returns {Promise} - Response with uploaded image URL
    */
   async uploadProfilePicture(file) {
-    return userService.uploadProfilePicture(file);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return apiClient.post('/candidate/photos/profile-picture', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  }
+
+  /**
+   * Get profile picture URL
+   * @param {String} filename - Image filename in assets directory
+   * @returns {String} - Full URL to the profile picture
+   */
+  getProfilePictureFromAssets(filename) {
+    if (!filename || filename === 'undefined') return null;
+    try {
+      // Using URL constructor for more robust importing with correct relative path
+      return new URL(
+        `../../assets/profile-pictures/${filename}`,
+        import.meta.url
+      ).href;
+    } catch (error) {
+      console.error('Failed to load profile picture from assets:', error);
+      return null;
+    }
   }
 
   /**
@@ -98,7 +140,7 @@ class CandidateService {
    * @returns {Promise} - Response with deletion status
    */
   async deleteResume() {
-    return apiClient.delete('/candidates/resume');
+    return apiClient.delete('/resume');
   }
 
   /**
@@ -106,7 +148,70 @@ class CandidateService {
    * @returns {Promise} - Response with deletion status
    */
   async removeProfilePicture() {
-    return apiClient.delete('/candidates/profile/picture');
+    return apiClient.delete('/candidate/photos/profile-picture');
+  }
+
+  /**
+   * Update email address
+   * @param {String} email - New email address
+   * @returns {Promise} - Response with updated profile
+   */
+  async updateEmail(email) {
+    try {
+      // Use the same API endpoint as profile update, but only send email
+      const response = await apiClient.put('/profile', { email });
+      return response;
+    } catch (error) {
+      console.error('Error updating email:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Change user password
+   * @param {String} currentPassword - Current password
+   * @param {String} newPassword - New password
+   * @param {String} confirmPassword - Confirmation of new password
+   * @returns {Promise} - Response with status
+   */
+  async changePassword(currentPassword, newPassword, confirmPassword) {
+    try {
+      // Use a config option to prevent automatic retries on authentication errors
+      const response = await apiClient.post(
+        '/profile/change-password',
+        {
+          currentPassword,
+          newPassword,
+          confirmPassword,
+        },
+        {
+          // This will prevent automatic token refresh on 401 errors for this specific request
+          skipAuthRefresh: true,
+          // Option to not retry this request if it fails
+          shouldRetry: false,
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error('Error changing password:', error.message);
+
+      // If the error is "Current password is incorrect", handle it specifically
+      if (
+        error.response?.status === 401 ||
+        error.response?.data?.message === 'Current password is incorrect'
+      ) {
+        // Throw a custom error that won't trigger the auth refresh mechanism
+        throw {
+          ...error,
+          isPasswordError: true,
+          message:
+            error.response?.data?.message || 'Current password is incorrect',
+          response: error.response,
+        };
+      }
+
+      throw error;
+    }
   }
 }
 

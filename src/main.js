@@ -47,6 +47,18 @@ import 'primeicons/primeicons.css';
 // Tailwind CSS
 import './assets/css/index.css';
 
+// Import API debugger in development mode
+if (process.env.NODE_ENV === 'development') {
+  import('./utils/api-debugger');
+  import('./utils/direct-profile-test');
+  import('./utils/simple-profile-test');
+  import('./utils/api-troubleshooter');
+  console.log(
+    '%cDevelopment mode detected - API testing utilities loaded',
+    'color: orange; font-weight: bold;'
+  );
+}
+
 // Create app
 const app = createApp(App);
 
@@ -94,7 +106,7 @@ app.config.errorHandler = (err, vm, info) => {
   console.error('Vue Error:', err);
   console.error('Component:', vm);
   console.error('Info:', info);
-  
+
   // You could also send errors to a logging service here
 };
 

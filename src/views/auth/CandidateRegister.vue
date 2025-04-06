@@ -312,6 +312,31 @@
                 </div>
               </div>
 
+              <div class="grid grid-cols-1 gap-6">
+                <!-- Employment Status field -->
+                <div class="form-group">
+                  <label for="employmentStatus" class="form-label">
+                    Employment Status
+                  </label>
+                  <div class="flex items-center">
+                    <i class="pi pi-briefcase mr-3 text-gray-500"></i>
+                    <Dropdown
+                      id="employmentStatus"
+                      v-model="form.employmentStatus"
+                      :options="employmentStatusOptions"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Select your employment status"
+                      class="w-full custom-dropdown"
+                      :class="{ 'p-invalid': hasError('employmentStatus') }"
+                    />
+                  </div>
+                  <small v-if="hasError('employmentStatus')" class="p-error">
+                    Employment status selection is required
+                  </small>
+                </div>
+              </div>
+
               <!-- Navigation buttons -->
               <div class="flex justify-between mt-8 pt-4">
                 <Button
@@ -493,6 +518,7 @@ const form = reactive({
   gender: null,
   dateOfBirth: null,
   race: null,
+  employmentStatus: null,
 
   // Step 3: Languages & Bio
   languages: [],
@@ -543,6 +569,16 @@ const raceOptions = [
   { label: 'Malay', value: 'MALAY' },
   { label: 'Chinese', value: 'CHINESE' },
   { label: 'Indian', value: 'INDIAN' },
+  { label: 'Other', value: 'OTHER' },
+];
+
+const employmentStatusOptions = [
+  { label: 'Full-time', value: 'FULL_TIME' },
+  { label: 'Part-time', value: 'PART_TIME' },
+  { label: 'Student', value: 'STUDENT' },
+  { label: 'Unemployed', value: 'UNEMPLOYED' },
+  { label: 'Self-employed', value: 'SELF_EMPLOYED' },
+  { label: 'Retired', value: 'RETIRED' },
   { label: 'Other', value: 'OTHER' },
 ];
 
@@ -644,6 +680,11 @@ const validateCurrentStep = () => {
       formErrors.race = true;
       isValid = false;
     }
+
+    if (!form.employmentStatus) {
+      formErrors.employmentStatus = true;
+      isValid = false;
+    }
   } else if (currentStep.value === 2) {
     // Step 3: Languages & Bio
     if (!form.languages || form.languages.length === 0) {
@@ -700,6 +741,7 @@ const submitForm = async () => {
         ? form.dateOfBirth.toISOString().split('T')[0]
         : null,
       race: form.race,
+      employmentStatus: form.employmentStatus,
       languages: form.languages,
       bio: form.bio,
     };

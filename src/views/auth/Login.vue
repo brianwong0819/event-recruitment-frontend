@@ -246,9 +246,14 @@ const handleSubmit = async () => {
     await authStore.candidateLogin(username.value, password.value);
     // Redirect will be handled by the store
   } catch (err) {
+    console.error('Login error in component:', err);
+    // Display error message to user
     error.value =
       err.response?.data?.message ||
       'Login failed. Please check your credentials.';
+
+    // Reset password field on failed login
+    password.value = '';
   } finally {
     isLoading.value = false;
   }

@@ -1,4 +1,4 @@
-import apiClient from './api.service';
+import { apiClient } from './api.service';
 
 class AuthService {
   /**
@@ -9,30 +9,131 @@ class AuthService {
    */
   async candidateLogin(username, password) {
     console.log('AuthService: candidateLogin called');
-    const response = await apiClient.post('/auth/candidate/login', {
-      username,
-      password,
-    });
+    try {
+      const response = await apiClient.post('/auth/candidate/login', {
+        username,
+        password,
+      });
 
-    console.log('AuthService: Login API response:', response.data);
+      console.log('AuthService: Login API response:', response.data);
 
-    if (response.data) {
-      // The backend doesn't seem to return tokens explicitly
-      // Check if we need to extract from headers or response structure
-      const tokenData = {
-        accessToken:
-          response.data.accessToken || response.data.token || 'dummy-token',
-        refreshToken: response.data.refreshToken || 'dummy-refresh',
-      };
+      // Debug the full response structure
+      console.log('Full response structure:');
+      console.log(JSON.stringify(response, null, 2));
 
-      this.setTokens(tokenData);
-      this.setUser(response.data, 'candidate');
-      console.log('AuthService: User data stored in localStorage');
-      console.log('AuthService: Current user:', this.getCurrentUser());
-      console.log('AuthService: Is authenticated:', this.isAuthenticated());
+      if (response.data) {
+        // Based on your console logs, the jwToken appears to be in the data field
+        // Log each key in the response to find where the token is
+        console.log('Response data keys:', Object.keys(response.data));
+
+        // Check if response has a data property with the token
+        const hasData = typeof response.data.data === 'object';
+        console.log('Response has data object:', hasData);
+
+        if (hasData) {
+          console.log('Data object keys:', Object.keys(response.data.data));
+        }
+
+        // Direct check for jwToken in data object
+        let jwToken = '';
+
+        // Based on the logs, we saw the token was in data.jwToken
+        if (hasData && response.data.data.jwToken) {
+          console.log('Found jwToken in data.jwToken');
+          jwToken = response.data.data.jwToken;
+        }
+        // Or it might be directly in the response.data.jwToken
+        else if (response.data.jwToken) {
+          console.log('Found jwToken in response.jwToken');
+          jwToken = response.data.jwToken;
+        }
+
+        // Additional check for token in the data object
+        else {
+          // Loop through each field in response.data to find the JWT token
+          console.log('Searching all response fields for JWT-like value:');
+
+          const findJwtInObject = (obj, prefix = '') => {
+            for (const key in obj) {
+              const value = obj[key];
+              if (
+                typeof value === 'string' &&
+                value.length > 30 &&
+                /^ey[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*\./.test(value)
+              ) {
+                console.log(`Found JWT-like string in ${prefix}${key}`);
+                return value;
+              } else if (typeof value === 'object' && value !== null) {
+                const found = findJwtInObject(value, `${prefix}${key}.`);
+                if (found) return found;
+              }
+            }
+            return null;
+          };
+
+          const foundToken = findJwtInObject(response.data);
+          if (foundToken) {
+            console.log('Found JWT-like token in response');
+            jwToken = foundToken;
+          }
+        }
+
+        console.log('JWT Token found:', !!jwToken);
+        if (jwToken) {
+          console.log(
+            'JWT Token (first 30 chars):',
+            jwToken.substring(0, 30) + '...'
+          );
+        }
+
+        const tokenData = {
+          accessToken: jwToken || 'dummy-token',
+          refreshToken:
+            response.data.data?.refreshToken ||
+            response.data.refreshToken ||
+            'dummy-refresh',
+        };
+
+        this.setTokens(tokenData);
+
+        // Create a proper user object from whatever data we have
+        const userData = {
+          // Always set a role
+          role: 'CANDIDATE',
+          // Try to extract user details from various locations
+          ...(response.data.user || {}),
+          ...(response.data.data?.user || {}),
+          // Include username that was used to login
+          username: username,
+          // Any other fields from the response
+          ...(hasData ? response.data.data : {}),
+        };
+
+        // If we have a JWT token, try to extract user info from it
+        if (jwToken) {
+          const tokenPrefix = jwToken.startsWith('Bearer ') ? '' : 'Bearer ';
+          const tokenUser = this.extractUserFromToken(
+            jwToken.replace('Bearer ', '')
+          );
+          if (tokenUser) {
+            Object.assign(userData, tokenUser);
+          }
+        }
+
+        // Ensure there's always a user object in the response
+        if (!response.data.user) {
+          response.data.user = userData;
+        }
+
+        // Store the user data
+        this.setUser(response.data, 'candidate');
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('Error in candidateLogin:', error);
+      throw error;
     }
-
-    return response.data;
   }
 
   /**
@@ -133,15 +234,51 @@ class AuthService {
 
   /**
    * Logout the current user
+   * @returns {Promise} - Response with logout status
    */
-  logout() {
+  async logout() {
+    // Get the refresh token before clearing localStorage
+    const refreshToken = localStorage.getItem('refreshToken');
+
+    // Clear all localStorage items related to user authentication and data
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     localStorage.removeItem('userType');
 
-    // Optional: Call the backend to invalidate token
-    // apiClient.post('/auth/logout');
+    // Clear any profile/candidate specific data
+    localStorage.removeItem('profile');
+    localStorage.removeItem('candidate-profile');
+    localStorage.removeItem('recruiter-profile');
+    localStorage.removeItem('experiences');
+    localStorage.removeItem('availability');
+
+    // Clear any cached application data
+    localStorage.removeItem('applications');
+    localStorage.removeItem('jobs');
+
+    // For complete cleanup, clear session storage as well
+    sessionStorage.clear();
+
+    // Clear all localStorage items that might contain user data (more comprehensive approach)
+    const keysToKeep = ['theme', 'language']; // Keep these settings if needed
+    Object.keys(localStorage).forEach((key) => {
+      if (!keysToKeep.includes(key)) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    // Call the backend to invalidate token
+    if (refreshToken) {
+      try {
+        return await apiClient.post('/auth/logout', { refreshToken });
+      } catch (error) {
+        console.error('Error logging out on server:', error);
+        throw error;
+      }
+    }
+
+    return Promise.resolve();
   }
 
   /**
@@ -152,14 +289,22 @@ class AuthService {
     console.log('Setting tokens with data:', data);
 
     // Store access token
-    const accessToken = data.accessToken || data.token || data.access_token;
+    const accessToken =
+      data.accessToken || data.token || data.jwToken || data.access_token;
     if (accessToken) {
-      localStorage.setItem('accessToken', accessToken);
-      console.log('Access token stored in localStorage');
+      // Add the Bearer prefix if it's not already there
+      const tokenValue = accessToken.startsWith('Bearer ')
+        ? accessToken
+        : `Bearer ${accessToken}`;
+      localStorage.setItem('accessToken', tokenValue);
+      console.log(
+        'Access token stored in localStorage:',
+        tokenValue.substring(0, 20) + '...'
+      );
     } else {
       console.warn('No access token found in response');
       // For testing, we can set a dummy token
-      localStorage.setItem('accessToken', 'dummy-token-for-testing');
+      localStorage.setItem('accessToken', 'Bearer dummy-token-for-testing');
     }
 
     // Store refresh token if available
@@ -232,6 +377,40 @@ class AuthService {
    */
   isRecruiter() {
     return this.isAuthenticated() && this.getUserType() === 'recruiter';
+  }
+
+  /**
+   * Extract base user info from JWT token
+   * @param {string} token - JWT token
+   * @returns {Object} - Basic user information extracted from token
+   */
+  extractUserFromToken(token) {
+    try {
+      // JWT tokens have 3 parts separated by dots
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        console.error('Invalid JWT token format');
+        return null;
+      }
+
+      // Decode the payload (middle part)
+      const payload = JSON.parse(atob(parts[1]));
+      console.log('Token payload:', payload);
+
+      // Extract common user fields from payload
+      return {
+        // Most JWT tokens include these fields
+        id: payload.sub || payload.id || payload.userId || '',
+        username:
+          payload.username || payload.email || payload.preferred_username || '',
+        role: payload.role || 'CANDIDATE', // Default to CANDIDATE
+        email: payload.email || '',
+        // Add any other fields that might be in the token
+      };
+    } catch (error) {
+      console.error('Error extracting user from token:', error);
+      return null;
+    }
   }
 }
 

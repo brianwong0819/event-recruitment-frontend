@@ -1,5 +1,11 @@
 <template>
   <div class="min-h-screen flex flex-col bg-gray-100">
+    <!-- Toast for notifications -->
+    <Toast />
+
+    <!-- Confirmation dialog -->
+    <ConfirmDialog />
+
     <!-- Header -->
     <header class="bg-white shadow">
       <div class="flex justify-between items-center px-4 py-3">
@@ -119,11 +125,17 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import Menu from 'primevue/menu';
 import Button from 'primevue/button';
+import { useConfirm } from 'primevue/useconfirm';
+import { useToast } from 'primevue/usetoast';
+import ConfirmDialog from 'primevue/confirmdialog';
+import Toast from 'primevue/toast';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const menu = ref();
 const mobileMenuOpen = ref(false);
+const confirm = useConfirm();
+const toast = useToast();
 
 // Menu items for user dropdown
 const userMenuItems = [
@@ -143,12 +155,55 @@ const userMenuItems = [
   {
     label: 'Sign Out',
     icon: 'pi pi-power-off',
-    command: () => {
-      authStore.logout();
-      router.push('/recruiter-login');
-    },
+    command: () => handleLogout(),
   },
 ];
+
+// Handle logout with confirmation
+const handleLogout = () => {
+  // Use PrimeVue's confirm dialog
+  confirm.require({
+    message:
+      'Are you sure you want to log out? All unsaved changes will be lost.',
+    header: 'Confirm Logout',
+    icon: 'pi pi-exclamation-triangle',
+    acceptClass: 'p-button-danger',
+    accept: async () => {
+      try {
+        // Show a loading toast
+        toast.add({
+          severity: 'info',
+          summary: 'Logging out',
+          detail: 'Please wait while we log you out...',
+          life: 3000,
+        });
+
+        // Call logout from the auth store
+        await authStore.logout();
+
+        // Show success toast
+        toast.add({
+          severity: 'success',
+          summary: 'Logged out',
+          detail: 'You have been successfully logged out.',
+          life: 3000,
+        });
+
+        // Router navigation is handled in the auth store logout method
+      } catch (error) {
+        console.error('Error during logout:', error);
+
+        // Show error toast
+        toast.add({
+          severity: 'error',
+          summary: 'Logout Error',
+          detail: 'There was an error logging you out. Please try again.',
+          life: 5000,
+        });
+      }
+    },
+  });
+};
 
 // Toggle user dropdown menu
 const toggleUserMenu = (event) => {
