@@ -1,5 +1,6 @@
 import axios from 'axios';
-import router from '../router';
+// Removing direct router import to avoid circular dependency
+// import router from '../router';
 import {
   showTokenExpirationNotice,
   isTokenExpired,
@@ -113,13 +114,8 @@ const handleAuthLogout = () => {
     message: 'Your session has expired. Redirecting to login...',
   });
 
-  // Redirect to login page
-  if (router.currentRoute.value.path !== '/login') {
-    router.push({
-      path: '/login',
-      query: { redirect: router.currentRoute.value.fullPath },
-    });
-  }
+  // Redirect to login page - using window.location instead of router
+  window.location.href = '/login';
 };
 
 // Response interceptor - runs after each response

@@ -1,5 +1,27 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import AuthService from '../services/auth.service';
+
+// Import AuthService with a more isolated approach
+const AuthService = {
+  isAuthenticated() {
+    return !!localStorage.getItem('accessToken');
+  },
+  getCurrentUser() {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return null;
+    try {
+      return JSON.parse(userStr);
+    } catch (e) {
+      console.error('Error parsing user from localStorage', e);
+      return null;
+    }
+  },
+  logout() {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userType');
+  },
+};
 
 // Import views
 const Home = () => import('../views/Home.vue');
@@ -22,6 +44,7 @@ const CandidateAvailability = () =>
 // Recruiter views
 const RecruiterLayout = () => import('../layouts/RecruiterLayout.vue');
 const RecruiterDashboard = () => import('../views/recruiter/Dashboard.vue');
+const RecruiterProfile = () => import('../views/recruiter/Profile.vue');
 
 // Route configuration
 const routes = [
@@ -118,43 +141,12 @@ const routes = [
         name: 'RecruiterDashboard',
         component: RecruiterDashboard,
       },
+      {
+        path: 'profile',
+        name: 'RecruiterProfile',
+        component: RecruiterProfile,
+      },
     ],
-  },
-  {
-    path: '/photo-debug',
-    name: 'PhotoDebug',
-    component: () => import('@/PhotoDebug.vue'),
-    meta: {
-      requiresAuth: true,
-      role: 'CANDIDATE',
-    },
-  },
-  {
-    path: '/photo-test',
-    name: 'PhotoTest',
-    component: () => import('@/views/debug/PhotoTest.vue'),
-    meta: {
-      requiresAuth: true,
-      role: 'CANDIDATE',
-    },
-  },
-  {
-    path: '/profile-test',
-    name: 'ProfileTest',
-    component: () => import('@/views/candidate/ProfileTest.vue'),
-    meta: {
-      requiresAuth: false,
-      role: ['CANDIDATE'],
-    },
-  },
-  {
-    path: '/profile-new',
-    name: 'ProfileNew',
-    component: () => import('@/views/candidate/ProfileNew.vue'),
-    meta: {
-      requiresAuth: false,
-      role: ['CANDIDATE'],
-    },
   },
   {
     path: '/:pathMatch(.*)*',

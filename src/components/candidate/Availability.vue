@@ -160,6 +160,21 @@
             </div>
           </div>
 
+          <!-- Display for "NOT_AVAILABLE" availability -->
+          <div
+            v-else-if="availabilityType === 'NOT_AVAILABLE'"
+            class="bg-red-50 p-4 rounded-lg border border-red-100 mb-4"
+          >
+            <div class="flex items-center mb-2">
+              <i class="pi pi-ban text-red-600 mr-2 text-lg"></i>
+              <h3 class="text-red-800 font-semibold">Not Available</h3>
+            </div>
+            <p class="text-red-700 text-sm">
+              You're currently not available for any events. Recruiters will not
+              be able to assign you to events.
+            </p>
+          </div>
+
           <!-- Edit button -->
           <div class="mt-3 md:mt-4 flex justify-end">
             <Button
@@ -317,6 +332,41 @@
                 >
                 <span class="text-xs text-gray-600 block"
                   >I want to select specific dates when I'm available</span
+                >
+              </label>
+            </div>
+
+            <!-- Not Available option -->
+            <div
+              :class="[
+                'flex items-center p-4 rounded-lg border transition-all cursor-pointer',
+                selectedType === 'NOT_AVAILABLE'
+                  ? 'bg-red-50 border-red-200 shadow-sm'
+                  : 'bg-white border-gray-200 hover:bg-gray-50',
+              ]"
+              @click="selectedType = 'NOT_AVAILABLE'"
+            >
+              <div class="radio-wrapper mr-2">
+                <RadioButton
+                  v-model="selectedType"
+                  value="NOT_AVAILABLE"
+                  :inputId="'type-not-available'"
+                  class="custom-radio"
+                />
+                <div
+                  class="custom-radio-icon"
+                  :class="{ active: selectedType === 'NOT_AVAILABLE' }"
+                ></div>
+              </div>
+              <label
+                :for="'type-not-available'"
+                class="ml-2 cursor-pointer flex-1"
+              >
+                <span class="font-medium text-gray-800 block mb-1"
+                  >Not Available</span
+                >
+                <span class="text-xs text-gray-600 block"
+                  >I'm not available for any events at this time</span
                 >
               </label>
             </div>

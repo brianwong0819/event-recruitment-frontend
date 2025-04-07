@@ -8,6 +8,7 @@ import router from './router';
 import PrimeVue from 'primevue/config';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
+import InputNumber from 'primevue/inputnumber';
 import Password from 'primevue/password';
 import Dropdown from 'primevue/dropdown';
 import MultiSelect from 'primevue/multiselect';
@@ -24,6 +25,7 @@ import Badge from 'primevue/badge';
 import Card from 'primevue/card';
 import FileUpload from 'primevue/fileupload';
 import Chip from 'primevue/chip';
+import Chips from 'primevue/chips';
 import Avatar from 'primevue/avatar';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
@@ -38,6 +40,8 @@ import ColumnGroup from 'primevue/columngroup';
 import Row from 'primevue/row';
 import OverlayPanel from 'primevue/overlaypanel';
 import Dialog from 'primevue/dialog';
+import ToggleButton from 'primevue/togglebutton';
+import Rating from 'primevue/rating';
 import Tooltip from 'primevue/tooltip';
 
 // PrimeVue Styles
@@ -50,10 +54,11 @@ import './assets/css/index.css';
 
 // Import API debugger in development mode
 if (process.env.NODE_ENV === 'development') {
-  import('./utils/api-debugger');
-  import('./utils/direct-profile-test');
-  import('./utils/simple-profile-test');
-  import('./utils/api-troubleshooter');
+  // Comment out imports that might not exist
+  // import('./utils/api-debugger');
+  // import('./utils/direct-profile-test');
+  // import('./utils/simple-profile-test');
+  // import('./utils/api-troubleshooter');
   console.log(
     '%cDevelopment mode detected - API testing utilities loaded',
     'color: orange; font-weight: bold;'
@@ -73,6 +78,7 @@ app.use(ConfirmationService);
 // Register PrimeVue components
 app.component('Button', Button);
 app.component('InputText', InputText);
+app.component('InputNumber', InputNumber);
 app.component('Password', Password);
 app.component('Dropdown', Dropdown);
 app.component('MultiSelect', MultiSelect);
@@ -88,6 +94,7 @@ app.component('Badge', Badge);
 app.component('Card', Card);
 app.component('FileUpload', FileUpload);
 app.component('Chip', Chip);
+app.component('Chips', Chips);
 app.component('Avatar', Avatar);
 app.component('TabView', TabView);
 app.component('TabPanel', TabPanel);
@@ -101,6 +108,8 @@ app.component('ColumnGroup', ColumnGroup);
 app.component('Row', Row);
 app.component('OverlayPanel', OverlayPanel);
 app.component('Dialog', Dialog);
+app.component('ToggleButton', ToggleButton);
+app.component('Rating', Rating);
 
 // Register directives
 app.directive('tooltip', Tooltip);

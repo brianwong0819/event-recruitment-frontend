@@ -66,7 +66,7 @@ class UserService {
    * @returns {Promise} - Recruiter profile data
    */
   async getRecruiterProfile() {
-    return apiClient.get('/recruiters/profile');
+    return apiClient.get('/profile');
   }
 
   /**
@@ -75,7 +75,7 @@ class UserService {
    * @returns {Promise} - Response with updated profile
    */
   async updateRecruiterProfile(profileData) {
-    const response = await apiClient.put('/recruiters/profile', profileData);
+    const response = await apiClient.put('/profile', profileData);
 
     // Update local user data if available in response
     if (response.data?.data) {

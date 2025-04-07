@@ -131,17 +131,59 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
 
       try {
+        console.log('Starting recruiter login...');
         const response = await AuthService.recruiterLogin(username, password);
-        this.user = response.user;
+        console.log('Login response:', response);
+
+        // Check if we actually got user data before setting authenticated state
+        if (!response) {
+          console.error('Empty login response');
+          this.authenticated = false;
+          this.error = 'Invalid login response';
+          throw new Error('Invalid login response');
+        }
+
+        // Check for valid tokens in localStorage
+        const accessToken = localStorage.getItem('accessToken');
+        const refreshToken = localStorage.getItem('refreshToken');
+
+        console.log('Access token exists:', !!accessToken);
+        console.log('Refresh token exists:', !!refreshToken);
+
+        if (!accessToken) {
+          console.error('No access token saved after login');
+          this.error = 'Authentication token not found';
+          throw new Error('Authentication token not found');
+        }
+
+        // Get user from localStorage (should be set by AuthService.setUser)
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          this.user = JSON.parse(storedUser);
+          console.log('User loaded from localStorage:', this.user);
+        } else if (response.user) {
+          this.user = response.user;
+          console.log('User loaded from response:', this.user);
+        } else {
+          console.log('Creating minimal user object since no user data found');
+          this.user = {
+            role: 'RECRUITER',
+            username: username,
+          };
+        }
+
         this.authenticated = true;
+        console.log('User authenticated:', this.user);
 
         // Navigate to appropriate dashboard or return URL
         const returnUrl = this.returnUrl || '/recruiter/dashboard';
+        console.log('Redirecting to:', returnUrl);
         router.push(returnUrl);
         this.returnUrl = null;
 
         return response;
       } catch (error) {
+        console.error('Login error:', error);
         this.error = error.response?.data?.message || 'Login failed';
         this.authenticated = false;
         this.user = null;
