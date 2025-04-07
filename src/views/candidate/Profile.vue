@@ -1260,94 +1260,10 @@
           <!-- Availability Section -->
           <div v-show="activeSection === 'availability'" class="animate-fadeIn">
             <div
-              class="rounded-xl shadow-md border mb-4 md:mb-5 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg"
+              class="rounded-xl shadow-md border mb-6 md:mb-8 overflow-hidden bg-white"
             >
-              <div
-                class="flex justify-between items-center p-3 md:p-5 border-b bg-gradient-to-r from-primary-50 to-white"
-              >
-                <h2
-                  class="text-base md:text-lg font-semibold text-gray-800 flex items-center"
-                >
-                  <i class="pi pi-calendar text-primary-500 mr-2"></i>
-                  Availability
-                </h2>
-                <Button
-                  icon="pi pi-calendar-plus"
-                  label="Set Availability"
-                  class="p-button-sm"
-                  @click="showAvailabilityDialog = true"
-                />
-              </div>
-
-              <div class="p-4 md:p-6">
-                <!-- Availability display -->
-                <div
-                  v-if="availableDates.length === 0"
-                  class="text-center p-4 md:p-8 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 transition-all duration-300 hover:border-primary-200"
-                >
-                  <div
-                    class="bg-white inline-flex p-3 md:p-4 rounded-full mb-3 md:mb-4 shadow-sm"
-                  >
-                    <i
-                      class="pi pi-calendar text-gray-400 text-xl md:text-2xl"
-                    ></i>
-                  </div>
-                  <p
-                    class="text-gray-700 font-medium mb-2 text-sm md:text-base"
-                  >
-                    You haven't set your availability yet
-                  </p>
-                  <p
-                    class="text-xs md:text-sm text-gray-500 mb-3 md:mb-4 max-w-md mx-auto"
-                  >
-                    Let recruiters know when you're available to work to
-                    increase your chances of being selected for events
-                  </p>
-                  <Button
-                    icon="pi pi-calendar-plus"
-                    label="Set Availability"
-                    class="p-button-sm shadow-sm"
-                    @click="showAvailabilityDialog = true"
-                  />
-                </div>
-
-                <div v-else>
-                  <div
-                    class="bg-gradient-to-br from-primary-50 to-white p-3 md:p-4 rounded-lg mb-3 md:mb-4 border border-primary-100"
-                  >
-                    <p
-                      class="text-xs md:text-sm text-primary-700 mb-1 font-medium flex items-center"
-                    >
-                      <i class="pi pi-info-circle mr-2 text-primary-500"></i>
-                      You're available on the following dates:
-                    </p>
-                  </div>
-                  <div
-                    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3"
-                  >
-                    <div
-                      v-for="(date, index) in availableDates"
-                      :key="index"
-                      class="flex items-center bg-green-50 rounded-lg p-2 md:p-3 transition-all duration-300 hover:bg-green-100 hover:shadow-sm border border-green-100"
-                    >
-                      <i
-                        class="pi pi-calendar-check text-green-600 mr-2 text-sm md:text-base"
-                      ></i>
-                      <p class="text-green-800 font-medium text-xs md:text-sm">
-                        {{ formatAvailabilityDate(date) }}
-                      </p>
-                    </div>
-                  </div>
-                  <div class="mt-3 md:mt-4 flex justify-end">
-                    <Button
-                      icon="pi pi-pencil"
-                      label="Edit Availability"
-                      class="p-button-outlined p-button-sm"
-                      @click="showAvailabilityDialog = true"
-                    />
-                  </div>
-                </div>
-              </div>
+              <!-- Use the new Availability component -->
+              <AvailabilityComponent />
             </div>
           </div>
 
@@ -1624,56 +1540,6 @@
             @click="saveExperience"
             :loading="savingExperience"
             class="p-button-sm p-button-primary"
-            style="border-radius: 0.75rem"
-          />
-        </div>
-      </div>
-    </Dialog>
-
-    <!-- Availability Dialog -->
-    <Dialog
-      v-model:visible="showAvailabilityDialog"
-      header="Set Your Availability"
-      :style="{ width: '500px' }"
-      :modal="true"
-      class="availability-dialog rounded-xl"
-    >
-      <div class="p-fluid">
-        <div class="field mb-4">
-          <label
-            class="font-medium mb-2 block text-gray-700 text-sm flex items-center"
-            ><i class="pi pi-calendar text-primary-500 mr-2"></i> Select Dates
-            You're Available</label
-          >
-          <div
-            class="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-inner"
-          >
-            <Calendar
-              v-model="selectedDates"
-              selectionMode="multiple"
-              :inline="true"
-              :minDate="new Date()"
-              class="w-full shadow-sm"
-              style="border-radius: 0.75rem"
-            />
-          </div>
-          <p class="text-xs text-gray-500 mt-2 flex items-center">
-            <i class="pi pi-info-circle text-primary-400 mr-1"></i>
-            Select all dates when you would be available to work
-          </p>
-        </div>
-        <div class="flex justify-end gap-3 mt-5 pt-4 border-t border-gray-100">
-          <Button
-            label="Cancel"
-            icon="pi pi-times"
-            class="p-button-text"
-            @click="showAvailabilityDialog = false"
-          />
-          <Button
-            label="Save Availability"
-            icon="pi pi-check"
-            @click="saveAvailability"
-            :loading="savingAvailability"
             style="border-radius: 0.75rem"
           />
         </div>
@@ -2273,6 +2139,7 @@ import ProgressBar from 'primevue/progressbar';
 import InputText from 'primevue/inputtext';
 import ConfirmDialog from 'primevue/confirmdialog';
 import { useRoute, useRouter } from 'vue-router';
+import AvailabilityComponent from '@/components/candidate/Availability.vue';
 
 // Initialize toast service
 const toast = useToast();

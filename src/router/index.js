@@ -16,6 +16,8 @@ const NotFound = () => import('../views/NotFound.vue');
 const CandidateLayout = () => import('../layouts/CandidateLayout.vue');
 const CandidateDashboard = () => import('../views/candidate/Dashboard.vue');
 const CandidateProfile = () => import('../views/candidate/Profile.vue');
+const CandidateAvailability = () =>
+  import('../views/candidate/Availability.vue');
 
 // Recruiter views
 const RecruiterLayout = () => import('../layouts/RecruiterLayout.vue');
@@ -94,6 +96,11 @@ const routes = [
         path: 'profile',
         name: 'CandidateProfile',
         component: CandidateProfile,
+      },
+      {
+        path: 'availability',
+        name: 'CandidateAvailability',
+        component: CandidateAvailability,
       },
     ],
   },

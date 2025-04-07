@@ -101,20 +101,20 @@ class CandidateService {
   }
 
   /**
-   * Update candidate availability dates
-   * @param {Array} dates - Array of date strings in YYYY-MM-DD format
+   * Update candidate availability
+   * @param {Object} availabilityData - Availability data with type and dates
    * @returns {Promise} - Response with updated availability
    */
-  async updateAvailability(dates) {
-    return apiClient.post('/availability', { dates });
+  async updateAvailability(availabilityData) {
+    return apiClient.put('/candidates/availability', availabilityData);
   }
 
   /**
-   * Get candidate availability dates
-   * @returns {Promise} - Response with list of available dates
+   * Get candidate availability
+   * @returns {Promise} - Response with availability data
    */
   async getAvailability() {
-    return apiClient.get('/availability');
+    return apiClient.get('/candidates/availability');
   }
 
   /**
