@@ -1163,6 +1163,8 @@
                   icon="pi pi-plus"
                   label="Add Experience"
                   class="p-button-sm"
+                  severity="primary"
+                  outlined
                   @click="showAddExperienceDialog = true"
                 />
               </div>
@@ -1194,7 +1196,7 @@
                   <Button
                     icon="pi pi-plus"
                     label="Add Experience"
-                    class="p-button-sm shadow-sm"
+                    class="p-button-outlined p-button-primary p-button-sm shadow-sm"
                     @click="showAddExperienceDialog = true"
                   />
                 </div>
@@ -1527,19 +1529,45 @@
     <!-- Add Experience Dialog -->
     <Dialog
       v-model:visible="showAddExperienceDialog"
-      header="Add Work Experience"
-      :style="{ width: '90vw', maxWidth: '500px' }"
+      :header="
+        editingExperienceIndex >= 0
+          ? 'Edit Work Experience'
+          : 'Add Work Experience'
+      "
+      :style="{ width: '90vw', maxWidth: '550px' }"
       :modal="true"
       class="experience-dialog rounded-xl p-dialog-mobile"
     >
       <div class="p-fluid">
+        <!-- Info Card with Guidelines -->
+        <div
+          class="bg-blue-50 border border-blue-200 rounded-lg p-3 md:p-4 mb-4"
+          v-if="editingExperienceIndex < 0"
+        >
+          <div class="flex items-start">
+            <i
+              class="pi pi-info-circle text-blue-500 mr-2 md:mr-3 mt-0.5 text-base md:text-lg"
+            ></i>
+            <div>
+              <h3 class="text-blue-700 font-medium mb-1 text-sm md:text-base">
+                Work Experience Tips
+              </h3>
+              <p class="text-blue-600 text-xs md:text-sm">
+                Adding detailed work experience helps recruiters understand your
+                skills and background. Be specific about your role,
+                responsibilities, and achievements.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div class="field mb-3 md:mb-4">
           <label
             for="jobType"
             class="font-medium mb-1 md:mb-2 block text-gray-700 text-xs md:text-sm flex items-center"
-            ><i class="pi pi-briefcase text-primary-500 mr-2"></i> Job
-            Type</label
           >
+            <i class="pi pi-briefcase text-primary-500 mr-2"></i> Job Type
+          </label>
           <Dropdown
             id="jobType"
             v-model="experienceForm.jobType"
@@ -1551,18 +1579,19 @@
             style="border-radius: 0.75rem; background-color: #f9fafb"
           />
         </div>
+
         <div class="field mb-3 md:mb-4">
           <label
             for="experienceText"
             class="font-medium mb-1 md:mb-2 block text-gray-700 text-xs md:text-sm flex items-center"
-            ><i class="pi pi-comment text-primary-500 mr-2"></i>
-            Description</label
           >
+            <i class="pi pi-comment text-primary-500 mr-2"></i> Description
+          </label>
           <Textarea
             id="experienceText"
             v-model="experienceForm.experienceText"
             rows="5"
-            placeholder="Describe your experience, responsibilities, and achievements"
+            placeholder="Worked as a brand ambassador for Coca-Cola during the Summer Festival 2023. Engaged with customers, distributed samples, and promoted new products."
             class="w-full shadow-sm"
             style="
               border-radius: 0.75rem;
@@ -1570,7 +1599,11 @@
               padding: 0.75rem 1rem;
             "
           />
+          <small class="text-gray-500 mt-1 block text-xs italic">
+            Describe your experience, responsibilities, and notable achievements
+          </small>
         </div>
+
         <div
           class="flex justify-end gap-3 mt-4 md:mt-5 pt-3 md:pt-4 border-t border-gray-100"
         >
@@ -1585,6 +1618,7 @@
             icon="pi pi-check"
             @click="saveExperience"
             :loading="savingExperience"
+            class="p-button-sm p-button-primary"
             style="border-radius: 0.75rem"
           />
         </div>
@@ -2445,29 +2479,17 @@ onMounted(async () => {
 
   // Helper function to load experiences and availability
   async function loadExperiencesAndAvailability() {
-    // Try to fetch experiences
+    // Try to fetch experiences using candidate service
     try {
-      const expResponse = await apiClient.get('/experiences');
-      if (
-        expResponse.data &&
-        (expResponse.data.data || expResponse.data.length)
-      ) {
-        experiences.value = expResponse.data.data || expResponse.data;
-      }
+      await fetchExperiences();
     } catch (expError) {
       console.warn('Failed to fetch experiences:', expError);
       experiences.value = [];
     }
 
-    // Try to fetch availability
+    // Try to fetch availability using candidate service
     try {
-      const availResponse = await apiClient.get('/availability');
-      if (
-        availResponse.data &&
-        (availResponse.data.data || availResponse.data.length)
-      ) {
-        availableDates.value = availResponse.data.data || availResponse.data;
-      }
+      await fetchAvailability();
     } catch (availError) {
       console.warn('Failed to fetch availability:', availError);
       availableDates.value = [];
@@ -2478,6 +2500,23 @@ onMounted(async () => {
   if (activeSection.value === 'photos') {
     console.log('Initial load - photos section is active, fetching photos');
     fetchCompcardPhotos();
+    fetchWorkingPhotos();
+  }
+
+  // Load experiences if 'work-experience' section is active
+  if (activeSection.value === 'work-experience') {
+    console.log(
+      'Initial load - work experience section is active, fetching experiences'
+    );
+    fetchExperiences();
+  }
+
+  // Load availability if 'availability' section is active
+  if (activeSection.value === 'availability') {
+    console.log(
+      'Initial load - availability section is active, fetching availability'
+    );
+    fetchAvailability();
   }
 
   // Add explicit onMounted hook to ensure photos are loaded
@@ -2486,6 +2525,11 @@ onMounted(async () => {
       'Profile component mounted, activeSection:',
       activeSection.value
     );
+
+    // Always fetch experiences on component mount
+    console.log('onMounted - Explicitly fetching experiences');
+    fetchExperiences();
+
     // Force fetch photos on component mount if current section is photos
     if (activeSection.value === 'photos') {
       console.log('onMounted - Explicitly fetching photos');
@@ -2493,7 +2537,7 @@ onMounted(async () => {
     }
   });
 
-  // Watch for activeSection changes to load photos when needed
+  // Watch for activeSection changes to load data when needed
   watch(activeSection, (newValue, oldValue) => {
     console.log(`Section changed from ${oldValue} to ${newValue}`);
 
@@ -2501,16 +2545,10 @@ onMounted(async () => {
       console.log('Photos section is now active, fetching photos');
       fetchCompcardPhotos();
       fetchWorkingPhotos();
-    } else if (
-      newValue === 'work-experience' &&
-      experiences.value.length === 0
-    ) {
+    } else if (newValue === 'work-experience') {
       console.log('Work experience section is active, fetching experiences');
       fetchExperiences();
-    } else if (
-      newValue === 'availability' &&
-      availableDates.value.length === 0
-    ) {
+    } else if (newValue === 'availability') {
       console.log('Availability section is active, fetching available dates');
       fetchAvailability();
     }
@@ -2967,13 +3005,13 @@ const languageOptions = [
 ];
 
 const jobTypeOptions = [
-  { label: 'Event Promoter', value: 'PROMOTER' },
-  { label: 'Event Assistant', value: 'ASSISTANT' },
+  { label: 'Promoter', value: 'PROMOTER' },
+  { label: 'Event Crew', value: 'EVENT_CREW' },
   { label: 'Brand Ambassador', value: 'BRAND_AMBASSADOR' },
-  { label: 'Registration Staff', value: 'REGISTRATION' },
-  { label: 'Emcee', value: 'EMCEE' },
+  { label: 'Supervisor', value: 'SUPERVISOR' },
+  { label: 'Setup Crew', value: 'SETUP_CREW' },
+  { label: 'Mascot Crew', value: 'MASCOT_CREW' },
   { label: 'Usher', value: 'USHER' },
-  { label: 'Logistics Staff', value: 'LOGISTICS' },
   { label: 'Other', value: 'OTHER' },
 ];
 
@@ -3288,16 +3326,61 @@ const editExperience = (index) => {
 
 const deleteExperience = async (index) => {
   try {
-    const experience = experiences.value[index];
-    if (experience.id) {
-      // Call API to delete if we have an ID
-      await candidateService.deleteExperience(experience.id);
-    }
-    // Remove from local state
-    experiences.value.splice(index, 1);
+    // Show confirmation dialog
+    confirmDialog.require({
+      message:
+        'Are you sure you want to delete this work experience? This action cannot be undone.',
+      header: 'Confirm Deletion',
+      icon: 'pi pi-exclamation-triangle',
+      acceptClass: 'p-button-danger',
+      accept: async () => {
+        try {
+          // Show loading toast
+          toast.add({
+            severity: 'info',
+            summary: 'Processing',
+            detail: 'Deleting experience...',
+            life: 3000,
+          });
+
+          const experience = experiences.value[index];
+          if (experience.id) {
+            // Call API to delete if we have an ID
+            await candidateService.deleteExperience(experience.id);
+          }
+
+          // Remove from local state
+          experiences.value.splice(index, 1);
+
+          // Show success toast
+          toast.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Work experience has been deleted successfully',
+            life: 3000,
+          });
+        } catch (error) {
+          console.error('Error deleting experience:', error);
+          toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to delete work experience. Please try again.',
+            life: 5000,
+          });
+        }
+      },
+      reject: () => {
+        // Do nothing when rejected
+      },
+    });
   } catch (error) {
-    console.error('Error deleting experience:', error);
-    // Show error toast or notification here
+    console.error('Error in delete experience flow:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'An unexpected error occurred. Please try again.',
+      life: 5000,
+    });
   }
 };
 
@@ -3896,8 +3979,15 @@ const fetchExperiences = async () => {
     const response = await candidateService.getExperiences();
     console.log('Experience data received:', response);
 
-    if (response.data && (response.data.data || response.data.length)) {
-      experiences.value = response.data.data || response.data;
+    if (response && response.data) {
+      // For the new API, data might be nested differently
+      if (response.data.data && Array.isArray(response.data.data)) {
+        experiences.value = response.data.data;
+      } else if (Array.isArray(response.data)) {
+        experiences.value = response.data;
+      } else {
+        experiences.value = [];
+      }
     } else {
       experiences.value = [];
     }
@@ -3933,38 +4023,6 @@ const fetchAvailability = async () => {
       detail: 'Failed to load availability. Please try again.',
       life: 5000,
     });
-  }
-};
-
-// Let's define the loadExperiencesAndAvailability function outside of onMounted
-// Add this after the fetchAvailability function
-const loadExperiencesAndAvailability = async () => {
-  // Try to fetch experiences
-  try {
-    const expResponse = await apiClient.get('/experiences');
-    if (
-      expResponse.data &&
-      (expResponse.data.data || expResponse.data.length)
-    ) {
-      experiences.value = expResponse.data.data || expResponse.data;
-    }
-  } catch (expError) {
-    console.warn('Failed to fetch experiences:', expError);
-    experiences.value = [];
-  }
-
-  // Try to fetch availability
-  try {
-    const availResponse = await apiClient.get('/availability');
-    if (
-      availResponse.data &&
-      (availResponse.data.data || availResponse.data.length)
-    ) {
-      availableDates.value = availResponse.data.data || availResponse.data;
-    }
-  } catch (availError) {
-    console.warn('Failed to fetch availability:', availError);
-    availableDates.value = [];
   }
 };
 

@@ -38,6 +38,7 @@ import ColumnGroup from 'primevue/columngroup';
 import Row from 'primevue/row';
 import OverlayPanel from 'primevue/overlaypanel';
 import Dialog from 'primevue/dialog';
+import Tooltip from 'primevue/tooltip';
 
 // PrimeVue Styles
 import 'primevue/resources/themes/lara-light-indigo/theme.css';
@@ -100,6 +101,9 @@ app.component('ColumnGroup', ColumnGroup);
 app.component('Row', Row);
 app.component('OverlayPanel', OverlayPanel);
 app.component('Dialog', Dialog);
+
+// Register directives
+app.directive('tooltip', Tooltip);
 
 // Global error handler
 app.config.errorHandler = (err, vm, info) => {

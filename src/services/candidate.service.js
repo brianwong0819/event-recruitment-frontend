@@ -59,11 +59,19 @@ class CandidateService {
 
   /**
    * Add or update work experience
-   * @param {Object} experienceData - Experience data
+   * @param {Object} experienceData - Experience data with jobType and experienceText
    * @returns {Promise} - Response with updated experience data
    */
   async saveExperience(experienceData) {
-    return apiClient.post('/experience', experienceData);
+    // If experience has an ID, it's an update
+    if (experienceData.id) {
+      return apiClient.put(
+        `/candidate/experiences/${experienceData.id}`,
+        experienceData
+      );
+    }
+    // Otherwise it's a new experience
+    return apiClient.post('/candidate/experiences', experienceData);
   }
 
   /**
@@ -72,7 +80,7 @@ class CandidateService {
    * @returns {Promise} - Response with deletion status
    */
   async deleteExperience(experienceId) {
-    return apiClient.delete(`/experience/${experienceId}`);
+    return apiClient.delete(`/candidate/experiences/${experienceId}`);
   }
 
   /**
@@ -80,7 +88,16 @@ class CandidateService {
    * @returns {Promise} - Response with list of experiences
    */
   async getExperiences() {
-    return apiClient.get('/experiences');
+    return apiClient.get('/candidate/experiences');
+  }
+
+  /**
+   * Get experience by ID
+   * @param {string} experienceId - ID of experience to retrieve
+   * @returns {Promise} - Response with experience data
+   */
+  async getExperienceById(experienceId) {
+    return apiClient.get(`/candidate/experiences/${experienceId}`);
   }
 
   /**
