@@ -20,10 +20,15 @@
         >
           <div class="relative">
             <Avatar
-              :image="profile.companyLogoUrl || ''"
+              :image="
+                profile.companyLogoUrl
+                  ? recruiterService.getLogoUrl(profile.companyLogoUrl)
+                  : ''
+              "
               class="w-24 h-24 md:w-32 md:h-32"
               v-if="profile.companyLogoUrl"
               alt="Company Logo"
+              @error="handleImageError"
             />
             <Avatar
               :icon="
@@ -42,8 +47,14 @@
             />
             <Button
               icon="pi pi-camera"
-              class="p-button-rounded p-button-sm absolute bottom-0 right-0"
+              class="p-button-rounded p-button-sm absolute bottom-0 right-0 bg-white text-blue-600 border-blue-300 shadow-md hover:bg-blue-50"
+              style="
+                width: 2.5rem;
+                height: 2.5rem;
+                transform: translate(25%, 25%);
+              "
               @click="logoFileInput?.click()"
+              aria-label="Upload profile picture"
             />
             <input
               type="file"
@@ -515,6 +526,7 @@
                     v-for="portfolio in portfolios"
                     :key="portfolio.id"
                     class="border rounded-lg overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md bg-white"
+                    :class="{ 'opacity-60': portfolio.isDeleting }"
                   >
                     <div class="relative h-48 bg-gray-100">
                       <img
@@ -591,18 +603,21 @@
                             class="p-button-rounded p-button-text p-button-sm"
                             @click="editPortfolio(portfolio)"
                             v-tooltip.top="'Edit collection'"
+                            :disabled="portfolio.isDeleting || portfolioLoading"
                           />
                           <Button
                             icon="pi pi-images"
                             class="p-button-rounded p-button-text p-button-sm"
                             @click="viewPortfolioMedia(portfolio)"
                             v-tooltip.top="'Manage media'"
+                            :disabled="portfolio.isDeleting || portfolioLoading"
                           />
                           <Button
                             icon="pi pi-trash"
-                            class="p-button-rounded p-button-text p-button-sm p-button-danger"
-                            @click="confirmDeletePortfolio(portfolio)"
+                            class="p-button-rounded p-button-danger p-button-sm"
+                            @click.stop="confirmDeletePortfolio(portfolio)"
                             v-tooltip.top="'Delete collection'"
+                            :disabled="portfolio.isDeleting || portfolioLoading"
                           />
                         </div>
                       </div>
@@ -790,13 +805,16 @@
                     class="relative group"
                   >
                     <div
-                      class="aspect-square rounded-lg overflow-hidden bg-gray-100 border"
+                      class="aspect-square rounded-lg overflow-hidden bg-gray-100 border cursor-pointer"
+                      @click="
+                        openMediaPreview(media, portfolioMedia.indexOf(media))
+                      "
                     >
                       <img
                         v-if="!media.type || media.type === 'IMAGE'"
                         :src="media.url"
                         :alt="media.fileName || 'Media item'"
-                        class="w-full h-full object-cover"
+                        class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                         @error="
                           (e) => {
                             console.error(
@@ -837,7 +855,7 @@
                       <Button
                         icon="pi pi-trash"
                         class="p-button-rounded p-button-danger p-button-sm"
-                        @click="confirmDeleteMedia(media)"
+                        @click.stop="confirmDeleteMedia(media)"
                       />
                     </div>
                   </div>
@@ -1151,6 +1169,66 @@
         <Button label="Save" icon="pi pi-check" @click="changePassword" />
       </template>
     </Dialog>
+
+    <!-- Media Preview Dialog -->
+    <Dialog
+      v-model:visible="showMediaPreview"
+      :style="{ width: '90vw', maxWidth: '1000px' }"
+      :showHeader="false"
+      :modal="true"
+      :dismissableMask="true"
+      class="media-preview-dialog rounded-xl"
+    >
+      <div class="relative">
+        <!-- Close button -->
+        <Button
+          icon="pi pi-times"
+          class="p-button-rounded p-button-text p-button-plain absolute top-2 right-2 z-10"
+          @click="showMediaPreview = false"
+        />
+
+        <!-- Navigation buttons -->
+        <Button
+          v-if="portfolioMedia.length > 1"
+          icon="pi pi-chevron-left"
+          class="p-button-rounded p-button-text p-button-plain absolute top-1/2 left-2 z-10 transform -translate-y-1/2"
+          @click="navigateMedia('prev')"
+        />
+
+        <Button
+          v-if="portfolioMedia.length > 1"
+          icon="pi pi-chevron-right"
+          class="p-button-rounded p-button-text p-button-plain absolute top-1/2 right-2 z-10 transform -translate-y-1/2"
+          @click="navigateMedia('next')"
+        />
+
+        <!-- Media Content -->
+        <div class="flex justify-center">
+          <img
+            v-if="!currentMedia?.type || currentMedia?.type === 'IMAGE'"
+            :src="currentMedia?.url"
+            :alt="currentMedia?.fileName || 'Media preview'"
+            class="max-h-[80vh] object-contain"
+          />
+          <video
+            v-else-if="currentMedia?.type === 'VIDEO'"
+            :src="currentMedia?.url"
+            class="max-h-[80vh] max-w-full"
+            controls
+            autoplay
+          ></video>
+        </div>
+
+        <!-- Media Info -->
+        <div
+          class="bg-black bg-opacity-50 text-white p-2 absolute bottom-0 left-0 right-0"
+        >
+          <p class="text-center">
+            {{ currentMedia?.fileName || 'Media item' }}
+          </p>
+        </div>
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -1288,6 +1366,11 @@ const portfolioMedia = ref([]);
 const mediaLoading = ref(false);
 const mediaUploading = ref(false);
 const uploadProgress = ref(0);
+
+// Media preview
+const showMediaPreview = ref(false);
+const currentMedia = ref(null);
+const currentMediaIndex = ref(0);
 
 // Options for dropdowns
 const recruiterTypeOptions = [
@@ -1781,11 +1864,11 @@ const cancelEdit = () => {
 };
 
 const handleLogoUpload = async (event) => {
-  const file = event.target.files?.[0];
+  const file = event.target.files[0];
   if (!file) return;
 
-  // Check file type
-  if (!file.type.startsWith('image/')) {
+  // Check if the file is an image
+  if (!file.type.includes('image')) {
     toast.add({
       severity: 'error',
       summary: 'Invalid File',
@@ -1795,129 +1878,76 @@ const handleLogoUpload = async (event) => {
     return;
   }
 
-  // Check file size (limit to 5MB)
-  const maxSize = 5 * 1024 * 1024; // 5MB
-  if (file.size > maxSize) {
+  // Check file size (5MB limit)
+  const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+  if (file.size > MAX_SIZE) {
     toast.add({
       severity: 'error',
       summary: 'File Too Large',
-      detail: 'Please select an image smaller than 5MB.',
+      detail: 'Please select an image under 5MB.',
       life: 3000,
     });
     return;
   }
 
   try {
+    // Display loading state
     toast.add({
       severity: 'info',
-      summary: 'Uploading',
-      detail: 'Uploading company logo...',
+      summary: 'Uploading...',
+      detail: 'Uploading your logo, please wait.',
       life: 3000,
     });
 
-    const formData = new FormData();
-    formData.append('file', file);
+    // Upload the file
+    const response = await recruiterService.uploadLogo(file);
 
-    // Get token from localStorage
-    const token = getToken();
-    if (!token) {
-      throw new Error('Authentication token not found');
-    }
-
-    console.log('Uploading logo with token:', token.substring(0, 15) + '...');
-
-    // Use direct fetch for upload
-    const response = await fetch('http://localhost:8080/api/profile/logo', {
-      method: 'POST',
-      headers: {
-        Authorization: token,
-      },
-      body: formData,
-      credentials: 'include',
-    });
-
-    console.log('Logo upload response status:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Logo upload error response:', errorText);
-      throw new Error(
-        `Logo upload failed with status ${response.status}: ${errorText}`
-      );
-    }
-
-    // Parse response
-    const responseText = await response.text();
-    console.log(
-      'Logo upload response text:',
-      responseText.substring(0, 100) + '...'
-    );
-
-    let responseData;
-    try {
-      // Only parse if there's actual content
-      if (responseText && responseText.trim()) {
-        responseData = JSON.parse(responseText);
-        console.log('Parsed logo upload response:', responseData);
-      } else {
-        throw new Error('Empty response from server');
-      }
-    } catch (e) {
-      console.error('Failed to parse logo upload response:', e);
-      throw new Error('Invalid response format from server');
-    }
-
-    // Extract logo URL from different possible response structures
+    // Extract the logoUrl from the response
     let logoUrl = null;
 
-    if (responseData.data && responseData.data.logoUrl) {
-      logoUrl = responseData.data.logoUrl;
-    } else if (responseData.data && responseData.data.companyLogoUrl) {
-      logoUrl = responseData.data.companyLogoUrl;
-    } else if (responseData.logoUrl) {
-      logoUrl = responseData.logoUrl;
-    } else if (responseData.companyLogoUrl) {
-      logoUrl = responseData.companyLogoUrl;
-    }
+    if (response.data?.data?.companyLogoUrl) {
+      logoUrl = response.data.data.companyLogoUrl;
 
-    if (logoUrl) {
-      console.log('New logo URL:', logoUrl);
+      // Update profile with the logo URL
       profile.value.companyLogoUrl = logoUrl;
       editedProfile.value.companyLogoUrl = logoUrl;
 
-      // Update user data in localStorage
+      // Also update the user in localStorage
       try {
         const userObj = JSON.parse(localStorage.getItem('user') || '{}');
         userObj.companyLogoUrl = logoUrl;
         localStorage.setItem('user', JSON.stringify(userObj));
-        console.log('Updated logo URL in localStorage');
       } catch (e) {
-        console.error('Failed to update localStorage with logo URL:', e);
+        // Silent catch
       }
 
       toast.add({
         severity: 'success',
-        summary: 'Success',
-        detail: 'Logo uploaded successfully',
+        summary: 'Logo Updated',
+        detail: 'Your profile picture has been updated successfully.',
         life: 3000,
       });
     } else {
-      console.error('Logo URL not found in response:', responseData);
-      throw new Error('Logo URL not found in response');
+      toast.add({
+        severity: 'warn',
+        summary: 'Partial Update',
+        detail:
+          'Logo upload succeeded but we could not get the updated URL. Refresh may be needed.',
+        life: 3000,
+      });
     }
   } catch (error) {
-    console.error('Error uploading logo:', error);
     toast.add({
       severity: 'error',
       summary: 'Upload Failed',
-      detail: 'Failed to upload logo: ' + (error.message || 'Unknown error'),
-      life: 5000,
+      detail: 'Failed to upload profile picture. Please try again.',
+      life: 3000,
     });
-  }
-
-  // Reset file input
-  if (logoFileInput.value) {
-    logoFileInput.value.value = '';
+  } finally {
+    // Clear the file input to allow re-uploading the same file
+    if (logoFileInput.value) {
+      logoFileInput.value.value = '';
+    }
   }
 };
 
@@ -2078,6 +2108,8 @@ const fetchPortfolios = async () => {
         ...portfolio,
         // Ensure coverImageUrl is preserved from the API response
         coverImageUrl: portfolio.coverImageUrl || null,
+        // Initialize isDeleting state for each portfolio
+        isDeleting: false,
       };
     });
 
@@ -2252,45 +2284,55 @@ const saveCollection = async () => {
 };
 
 const confirmDeletePortfolio = (portfolio) => {
+  // Prevent multiple confirmations while loading or if already deleting
+  if (portfolioLoading.value) return;
+
   confirm.require({
     message: `Are you sure you want to delete "${portfolio.eventName}"? This action cannot be undone.`,
     header: 'Delete Collection',
     icon: 'pi pi-exclamation-triangle',
     acceptClass: 'p-button-danger',
-    accept: () => deletePortfolio(portfolio.id),
-    reject: () => {},
-  });
-};
+    accept: async () => {
+      try {
+        portfolioLoading.value = true;
 
-const deletePortfolio = async (portfolioId) => {
-  try {
-    portfolioLoading.value = true;
-    await axios.delete(
-      `http://localhost:8080/api/recruiters/portfolio/${portfolioId}`,
-      {
-        headers: { Authorization: getToken() },
+        // Disable all portfolio buttons during deletion
+        portfolios.value = portfolios.value.map((p) => ({
+          ...p,
+          isDeleting: p.id === portfolio.id,
+        }));
+
+        await axios.delete(
+          `http://localhost:8080/api/recruiters/portfolio/${portfolio.id}`,
+          {
+            headers: { Authorization: getToken() },
+          }
+        );
+
+        toast.add({
+          severity: 'success',
+          summary: 'Deleted',
+          detail: 'Collection deleted successfully',
+          life: 3000,
+        });
+
+        await fetchPortfolios();
+      } catch (error) {
+        console.error('Failed to delete portfolio:', error);
+        toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to delete collection. Please try again.',
+          life: 3000,
+        });
+      } finally {
+        portfolioLoading.value = false;
       }
-    );
-
-    toast.add({
-      severity: 'success',
-      summary: 'Deleted',
-      detail: 'Collection deleted successfully',
-      life: 3000,
-    });
-
-    await fetchPortfolios();
-  } catch (error) {
-    console.error('Failed to delete portfolio:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to delete collection. Please try again.',
-      life: 3000,
-    });
-  } finally {
-    portfolioLoading.value = false;
-  }
+    },
+    reject: () => {
+      // Do nothing on reject
+    },
+  });
 };
 
 // Media Management Methods
@@ -2513,6 +2555,29 @@ const closeMediaDialog = () => {
   portfolioMedia.value = [];
 };
 
+const openMediaPreview = (media, index) => {
+  currentMedia.value = media;
+  currentMediaIndex.value =
+    index !== undefined
+      ? index
+      : portfolioMedia.value.findIndex((m) => m.id === media.id);
+  showMediaPreview.value = true;
+};
+
+const navigateMedia = (direction) => {
+  const totalItems = portfolioMedia.value.length;
+  if (totalItems <= 1) return;
+
+  if (direction === 'next') {
+    currentMediaIndex.value = (currentMediaIndex.value + 1) % totalItems;
+  } else {
+    currentMediaIndex.value =
+      (currentMediaIndex.value - 1 + totalItems) % totalItems;
+  }
+
+  currentMedia.value = portfolioMedia.value[currentMediaIndex.value];
+};
+
 // Lifecycle hooks
 onMounted(async () => {
   console.log('Profile component mounted');
@@ -2584,5 +2649,15 @@ const mapMediaUrl = (url) => {
 
   // Otherwise, assume it's a direct filename and map to local assets directory
   return `/src/assets/portfolio-media/${filename}`;
+};
+
+const handleImageError = (event) => {
+  toast.add({
+    severity: 'warn',
+    summary: 'Image Loading Issue',
+    detail:
+      'Could not load company logo. The system will use a default avatar instead.',
+    life: 5000,
+  });
 };
 </script>

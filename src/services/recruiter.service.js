@@ -9,7 +9,6 @@ class RecruiterService {
    * @returns {Promise} Promise representing the API call
    */
   getProfile() {
-    console.log('Calling profile API endpoint: /profile');
     return apiClient.get('/profile');
   }
 
@@ -19,7 +18,6 @@ class RecruiterService {
    * @returns {Promise} Promise representing the API call
    */
   updateProfile(profileData) {
-    console.log('Updating profile with data:', profileData);
     return apiClient.put('/profile', profileData);
   }
 
@@ -32,8 +30,7 @@ class RecruiterService {
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log('Uploading logo to endpoint: /profile/logo');
-    return apiClient.post('/profile/logo', formData, {
+    return apiClient.post('/recruiter/company-logo', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -41,20 +38,46 @@ class RecruiterService {
   }
 
   /**
-   * Get company logo URL
-   * @param {string} logoPath - The logo path from the server
-   * @returns {string} Full URL to the logo
+   * Get profile picture URL from assets directory
+   * @param {String} logoPath - Profile picture filename or path
+   * @returns {String} - Full URL to the profile picture
+   */
+  getLogoFromAssets(logoPath) {
+    if (!logoPath || logoPath === 'undefined') return null;
+
+    try {
+      const filenameOnly = logoPath.includes('/')
+        ? logoPath.split('/').pop()
+        : logoPath;
+
+      return `http://localhost:5173/src/assets/profile-pictures/${filenameOnly}`;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  /**
+   * Get logo URL - handles both local and server-side URLs
+   * @param {String} logoPath - Logo path or filename
+   * @returns {String} - Processed URL for display
    */
   getLogoUrl(logoPath) {
-    if (!logoPath) return null;
+    if (!logoPath) return '';
 
-    // Check if it's already a full URL
+    // First try to get it from assets
+    if (logoPath.includes('/') || !logoPath.startsWith('http')) {
+      const assetUrl = this.getLogoFromAssets(logoPath);
+      if (assetUrl) return assetUrl;
+    }
+
+    // For absolute URLs with http/https
     if (logoPath.startsWith('http')) {
       return logoPath;
     }
 
-    // Otherwise, build the URL
-    return `${apiClient.defaults.baseURL}/uploads/recruiter/logos/${logoPath}`;
+    // For URLs starting with / (server-relative paths)
+    const baseServerUrl = apiClient.defaults.baseURL.split('/api')[0]; // e.g. http://localhost:8080
+    return `${baseServerUrl}${logoPath.startsWith('/') ? '' : '/'}${logoPath}`;
   }
 
   /**
