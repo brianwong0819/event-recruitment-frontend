@@ -408,25 +408,6 @@
                     @click="showChangePasswordDialog = true"
                   />
                 </div>
-                <div class="mb-4">
-                  <h4 class="font-medium text-md mb-2">
-                    Two-Factor Authentication
-                  </h4>
-                  <div class="flex items-center gap-2">
-                    <ToggleButton
-                      v-model="twoFactorEnabled"
-                      onLabel="Enabled"
-                      offLabel="Disabled"
-                    />
-                    <span class="text-sm text-gray-600 ml-2">
-                      {{
-                        twoFactorEnabled
-                          ? 'Two-factor authentication is enabled'
-                          : 'Enable two-factor authentication to increase security'
-                      }}
-                    </span>
-                  </div>
-                </div>
               </div>
 
               <div class="mb-6">
@@ -471,25 +452,6 @@
                   class="mt-4"
                   @click="savePreferences"
                 />
-              </div>
-
-              <div>
-                <h3 class="text-lg font-semibold mb-4 pb-2 border-b">
-                  Account Actions
-                </h3>
-                <div class="flex flex-wrap gap-3">
-                  <Button
-                    label="Export My Data"
-                    icon="pi pi-download"
-                    class="p-button-outlined"
-                  />
-                  <Button
-                    label="Deactivate Account"
-                    icon="pi pi-times"
-                    class="p-button-outlined p-button-danger"
-                    @click="confirmDeactivation"
-                  />
-                </div>
               </div>
             </div>
 
@@ -1128,35 +1090,83 @@
           <label
             for="currentPassword"
             class="block text-gray-700 text-sm font-medium mb-2"
-            >Current Password</label
           >
+            <i class="pi pi-lock text-primary-500 mr-2"></i>
+            Current Password
+          </label>
           <Password
             id="currentPassword"
-            v-model="passwordForm.current"
+            v-model="passwordForm.currentPassword"
             toggleMask
+            class="w-full shadow-sm"
+            :class="{ 'p-invalid': passwordFormErrors.currentPassword }"
             :feedback="false"
+            placeholder="Enter your current password"
           />
+          <small
+            v-if="passwordFormErrors.currentPassword"
+            class="p-error block mt-1"
+          >
+            {{ passwordFormErrors.currentPassword }}
+          </small>
         </div>
         <div class="field mb-4">
           <label
             for="newPassword"
             class="block text-gray-700 text-sm font-medium mb-2"
-            >New Password</label
           >
-          <Password id="newPassword" v-model="passwordForm.new" toggleMask />
+            <i class="pi pi-lock-open text-primary-500 mr-2"></i>
+            New Password
+          </label>
+          <Password
+            id="newPassword"
+            v-model="passwordForm.newPassword"
+            toggleMask
+            class="w-full shadow-sm"
+            :class="{ 'p-invalid': passwordFormErrors.newPassword }"
+            :feedback="true"
+            placeholder="Enter your new password"
+          />
+          <small
+            v-if="passwordFormErrors.newPassword"
+            class="p-error block mt-1"
+          >
+            {{ passwordFormErrors.newPassword }}
+          </small>
         </div>
         <div class="field mb-4">
           <label
             for="confirmPassword"
             class="block text-gray-700 text-sm font-medium mb-2"
-            >Confirm New Password</label
           >
+            <i class="pi pi-check-circle text-primary-500 mr-2"></i>
+            Confirm New Password
+          </label>
           <Password
             id="confirmPassword"
-            v-model="passwordForm.confirm"
+            v-model="passwordForm.confirmPassword"
             toggleMask
+            class="w-full shadow-sm"
+            :class="{ 'p-invalid': passwordFormErrors.confirmPassword }"
             :feedback="false"
+            placeholder="Confirm your new password"
           />
+          <small
+            v-if="passwordFormErrors.confirmPassword"
+            class="p-error block mt-1"
+          >
+            {{ passwordFormErrors.confirmPassword }}
+          </small>
+        </div>
+
+        <div
+          v-if="passwordSubmissionError"
+          class="mb-4 p-4 rounded-md bg-red-50 border border-red-200 text-red-600"
+        >
+          <div class="flex items-center">
+            <i class="pi pi-exclamation-circle text-red-500 mr-2"></i>
+            <span class="font-medium">{{ passwordSubmissionError }}</span>
+          </div>
         </div>
       </div>
       <template #footer>
@@ -1165,8 +1175,14 @@
           icon="pi pi-times"
           class="p-button-text"
           @click="showChangePasswordDialog = false"
+          :disabled="changingPassword"
         />
-        <Button label="Save" icon="pi pi-check" @click="changePassword" />
+        <Button
+          :label="changingPassword ? 'Saving...' : 'Save'"
+          icon="pi pi-check"
+          @click="changePassword"
+          :loading="changingPassword"
+        />
       </template>
     </Dialog>
 
@@ -1253,7 +1269,6 @@ import Tag from 'primevue/tag';
 import Toast from 'primevue/toast';
 import ConfirmDialog from 'primevue/confirmdialog';
 import Checkbox from 'primevue/checkbox';
-import ToggleButton from 'primevue/togglebutton';
 import Dialog from 'primevue/dialog';
 import Password from 'primevue/password';
 import Rating from 'primevue/rating';
@@ -1288,7 +1303,6 @@ const editMode = ref(false);
 const logoFileInput = ref(null);
 const activeTab = ref('basic');
 const showChangePasswordDialog = ref(false);
-const twoFactorEnabled = ref(false);
 const showValidationErrors = ref(false);
 
 // Computed property for form validation
@@ -1308,10 +1322,19 @@ const communicationPrefs = ref({
 
 // Password change form
 const passwordForm = ref({
-  current: '',
-  new: '',
-  confirm: '',
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: '',
 });
+
+// Password form validation and error handling
+const passwordFormErrors = ref({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: '',
+});
+const passwordSubmissionError = ref('');
+const changingPassword = ref(false);
 
 // Mock data for profile matching database schema
 const profile = ref({
@@ -1961,69 +1984,213 @@ const savePreferences = () => {
   });
 };
 
-const changePassword = () => {
-  // Validation
-  if (
-    !passwordForm.value.current ||
-    !passwordForm.value.new ||
-    !passwordForm.value.confirm
+// Add validation function for password form
+const validatePasswordForm = () => {
+  const errors = {};
+  let isValid = true;
+
+  // Reset errors
+  passwordFormErrors.value = {};
+
+  // Validate current password
+  if (!passwordForm.value.currentPassword.trim()) {
+    errors.currentPassword = 'Current password is required';
+    isValid = false;
+  }
+
+  // Validate new password
+  if (!passwordForm.value.newPassword.trim()) {
+    errors.newPassword = 'New password is required';
+    isValid = false;
+  } else if (passwordForm.value.newPassword.length < 8) {
+    errors.newPassword = 'Password must be at least 8 characters long';
+    isValid = false;
+  } else if (
+    passwordForm.value.newPassword === passwordForm.value.currentPassword
   ) {
-    toast.add({
-      severity: 'error',
-      summary: 'Validation Error',
-      detail: 'All password fields are required',
-      life: 3000,
-    });
-    return;
+    errors.newPassword =
+      'New password must be different from your current password';
+    isValid = false;
   }
 
-  if (passwordForm.value.new !== passwordForm.value.confirm) {
-    toast.add({
-      severity: 'error',
-      summary: 'Validation Error',
-      detail: 'New password and confirmation do not match',
-      life: 3000,
-    });
-    return;
+  // Validate confirm password
+  if (!passwordForm.value.confirmPassword.trim()) {
+    errors.confirmPassword = 'Please confirm your new password';
+    isValid = false;
+  } else if (
+    passwordForm.value.confirmPassword !== passwordForm.value.newPassword
+  ) {
+    errors.confirmPassword = 'Passwords do not match';
+    isValid = false;
   }
 
-  // In real implementation, call API to change password
-  // For mock purposes:
-  setTimeout(() => {
-    showChangePasswordDialog.value = false;
-
-    // Reset form
-    passwordForm.value = {
-      current: '',
-      new: '',
-      confirm: '',
-    };
-
-    toast.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Password changed successfully',
-      life: 3000,
-    });
-  }, 800);
+  // Update form errors
+  passwordFormErrors.value = errors;
+  return isValid;
 };
 
-const confirmDeactivation = () => {
-  confirm.require({
-    message:
-      'Are you sure you want to deactivate your account? This action cannot be undone.',
-    header: 'Confirm Deactivation',
-    icon: 'pi pi-exclamation-triangle',
-    acceptClass: 'p-button-danger',
-    accept: () => {
-      toast.add({
-        severity: 'info',
-        summary: 'Account Deactivation',
-        detail: 'Your account deactivation request has been submitted.',
-        life: 3000,
-      });
-    },
-  });
+const changePassword = async () => {
+  // Validate form first
+  if (!validatePasswordForm()) {
+    return;
+  }
+
+  changingPassword.value = true;
+  passwordSubmissionError.value = '';
+
+  try {
+    let response;
+
+    // First try: Use auth store if available
+    if (typeof auth?.changePassword === 'function') {
+      console.log('Using authStore.changePassword method');
+      response = await auth.changePassword(
+        passwordForm.value.currentPassword,
+        passwordForm.value.newPassword,
+        passwordForm.value.confirmPassword
+      );
+    }
+    // Fallback: Use direct API call
+    else {
+      console.log('Fallback: Using direct API call for password change');
+      // Example of a direct API call if needed
+      response = await axios.post(
+        'http://localhost:8080/api/auth/change-password',
+        {
+          currentPassword: passwordForm.value.currentPassword,
+          newPassword: passwordForm.value.newPassword,
+          confirmPassword: passwordForm.value.confirmPassword,
+        },
+        {
+          headers: { Authorization: getToken() },
+        }
+      );
+    }
+
+    if (response && response.status >= 200 && response.status < 300) {
+      // Reset form and close dialog
+      passwordForm.value = {
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      };
+      showChangePasswordDialog.value = false;
+
+      // Create a full-screen overlay
+      const overlay = document.createElement('div');
+      overlay.className =
+        'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity';
+      overlay.style.backdropFilter = 'blur(2px)';
+      document.body.appendChild(overlay);
+
+      // Create centered success message card
+      const successCard = document.createElement('div');
+      successCard.className =
+        'bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 transform transition-transform animate-fade-in-up';
+
+      // Create a counter variable for countdown
+      let secondsLeft = 3;
+
+      // Initial content with countdown
+      successCard.innerHTML = `
+        <div class="text-center mb-2">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
+            <i class="pi pi-check-circle text-3xl"></i>
+          </div>
+          <h2 class="text-xl font-bold text-gray-800 mb-2">Password Changed Successfully!</h2>
+          <p class="text-gray-600 mb-5">Your password has been updated. You'll need to log in again with your new password.</p>
+          
+          <div class="w-full bg-gray-200 h-2 rounded-full mb-5 overflow-hidden">
+            <div id="progress-bar" class="bg-green-500 h-full rounded-full transition-all duration-1000" style="width: 100%;"></div>
+          </div>
+          
+          <div class="flex flex-col space-y-3">
+            <p class="text-sm text-gray-500">Automatically logging out in <span id="countdown" class="font-bold text-green-600">${secondsLeft}</span> seconds</p>
+            <button id="logout-now" class="w-full py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+              Logout Now
+            </button>
+          </div>
+        </div>
+      `;
+
+      // Add the success card to the overlay
+      overlay.appendChild(successCard);
+
+      // Get references to dynamic elements
+      const countdownEl = successCard.querySelector('#countdown');
+      const progressBar = successCard.querySelector('#progress-bar');
+      const logoutNowBtn = successCard.querySelector('#logout-now');
+
+      // Define the logout function that also removes the overlay
+      const performLogout = () => {
+        // Start fade-out animation
+        overlay.classList.add('opacity-0');
+
+        // Remove the overlay after animation completes
+        setTimeout(() => {
+          if (document.body.contains(overlay)) {
+            document.body.removeChild(overlay);
+          }
+
+          // Perform the actual logout
+          if (typeof auth?.logout === 'function') {
+            auth.logout();
+          } else {
+            // Manual logout if auth store is not available
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+          }
+        }, 300); // Match this with CSS transition duration
+      };
+
+      // Add event listener to the Logout Now button
+      logoutNowBtn.addEventListener('click', performLogout);
+
+      // Start the countdown
+      const countdownInterval = setInterval(() => {
+        secondsLeft--;
+        countdownEl.textContent = secondsLeft;
+
+        // Update progress bar width
+        progressBar.style.width = `${(secondsLeft / 3) * 100}%`;
+
+        if (secondsLeft <= 0) {
+          clearInterval(countdownInterval);
+          performLogout();
+        }
+      }, 1000);
+
+      // Add a CSS transition for smooth fade-out
+      overlay.style.transition = 'opacity 300ms ease-out';
+    } else {
+      throw new Error('Failed to change password. Please try again.');
+    }
+  } catch (error) {
+    console.error('Password change error:', error);
+
+    // Get error message
+    let errorMessage = 'Failed to change password. Please try again.';
+
+    // Check for specific error cases
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    passwordSubmissionError.value = errorMessage;
+
+    toast.add({
+      severity: 'error',
+      summary: 'Password Change Failed',
+      detail: errorMessage,
+      life: 5000,
+    });
+  } finally {
+    changingPassword.value = false;
+  }
 };
 
 // Format the event date range for display

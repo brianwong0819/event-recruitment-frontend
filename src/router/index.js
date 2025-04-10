@@ -45,6 +45,9 @@ const CandidateAvailability = () =>
 const RecruiterLayout = () => import('../layouts/RecruiterLayout.vue');
 const RecruiterDashboard = () => import('../views/recruiter/Dashboard.vue');
 const RecruiterProfile = () => import('../views/recruiter/Profile.vue');
+const ManageJobs = () => import('../views/recruiter/ManageJobs.vue');
+const CreateJob = () => import('../views/recruiter/CreateJob.vue');
+const ProjectDetails = () => import('../views/recruiter/ProjectDetails.vue');
 
 // Route configuration
 const routes = [
@@ -145,6 +148,22 @@ const routes = [
         path: 'profile',
         name: 'RecruiterProfile',
         component: RecruiterProfile,
+      },
+      {
+        path: 'jobs',
+        name: 'ManageJobs',
+        component: ManageJobs,
+      },
+      {
+        path: 'jobs/create',
+        name: 'CreateJob',
+        component: CreateJob,
+      },
+      {
+        path: 'projects/:projectId',
+        name: 'ProjectDetails',
+        component: ProjectDetails,
+        props: true,
       },
     ],
   },
