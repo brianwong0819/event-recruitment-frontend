@@ -557,162 +557,14 @@
               :key="sectionIndex"
               class="bg-white rounded-lg shadow p-5 border border-gray-100 transition-all hover:shadow-md"
             >
-              <!-- Section header with delete button -->
-              <div
-                class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100"
-              >
-                <h4 class="text-lg font-medium flex items-center">
-                  <i class="pi pi-calendar-plus text-primary-400 mr-2"></i>
-                  Schedule Section {{ sectionIndex + 1 }}
-                </h4>
-                <Button
-                  icon="pi pi-trash"
-                  class="p-button-text p-button-danger p-button-sm"
-                  @click="removeScheduleSection(sectionIndex)"
-                />
-              </div>
-
-              <!-- Date selection -->
-              <div class="mb-5">
-                <label
-                  class="block text-gray-700 font-medium mb-2 flex items-center"
-                >
-                  <i class="pi pi-calendar text-primary-400 mr-2"></i>
-                  Working Dates <span class="text-red-500">*</span>
-                </label>
-                <div class="relative">
-                  <Calendar
-                    v-model="section.dates"
-                    selectionMode="multiple"
-                    :manualInput="false"
-                    dateFormat="dd M yy"
-                    placeholder="Select working dates"
-                    panelClass="date-picker-panel"
-                    class="w-full"
-                    :minDate="today"
-                    @date-select="updateDateRange"
-                    @month-change="updateDateRange"
-                  />
-                </div>
-                <div class="flex items-center mt-2">
-                  <i class="pi pi-info-circle text-primary-300 mr-2"></i>
-                  <div class="text-sm text-gray-600">
-                    <span class="font-medium">Selected dates: </span>
-                    <span
-                      v-if="section.dates && section.dates.length > 0"
-                      class="text-gray-700"
-                    >
-                      {{ formatSelectedDates(section.dates) }}
-                    </span>
-                    <span v-else class="italic text-gray-500"
-                      >None selected</span
-                    >
-                  </div>
-                </div>
-              </div>
-
-              <!-- Locations -->
-              <div>
-                <label
-                  class="block text-gray-700 font-medium mb-2 flex items-center"
-                >
-                  <i class="pi pi-map-marker text-primary-400 mr-2"></i>
-                  Locations <span class="text-red-500">*</span>
-                </label>
-
-                <!-- Location input with add button -->
-                <div class="flex items-center gap-2 mb-3">
-                  <div class="relative flex-grow">
-                    <InputText
-                      v-model="section.newLocation"
-                      placeholder="Enter location name"
-                      class="w-full"
-                      @keyup.enter="addLocation(section)"
-                    />
-                  </div>
-                  <Button
-                    icon="pi pi-plus"
-                    class="p-button-primary"
-                    @click="addLocation(section)"
-                    :disabled="!section.newLocation.trim()"
-                  />
-                </div>
-
-                <!-- Locations list -->
-                <div
-                  v-if="section.locations.length > 0"
-                  class="bg-gray-50 rounded-lg border border-gray-200 p-4 divide-y divide-gray-100"
-                >
-                  <div
-                    v-for="(location, locationIndex) in section.locations"
-                    :key="locationIndex"
-                    class="py-3 first:pt-0 last:pb-0"
-                  >
-                    <div class="flex justify-between items-start">
-                      <div class="flex items-start">
-                        <div
-                          class="flex-shrink-0 flex items-center justify-center h-6 w-6 rounded-full bg-primary-100 text-primary-600 text-xs font-medium mr-3 mt-1"
-                        >
-                          {{ locationIndex + 1 }}
-                        </div>
-                        <div>
-                          <div class="font-medium text-gray-800">
-                            {{ location.name }}
-                          </div>
-                          <div
-                            v-if="location.positions"
-                            class="text-sm text-gray-600 mt-1 flex items-center"
-                          >
-                            <i
-                              class="pi pi-users text-primary-300 mr-1 text-xs"
-                            ></i>
-                            {{ location.positions }} positions
-                          </div>
-                          <div
-                            v-else
-                            class="text-sm text-gray-500 mt-1 flex items-center"
-                          >
-                            <i
-                              class="pi pi-info-circle text-gray-300 mr-1 text-xs"
-                            ></i>
-                            Using default positions
-                          </div>
-                          <div
-                            v-if="location.notes"
-                            class="text-sm text-gray-600 mt-1 flex items-center"
-                          >
-                            <i
-                              class="pi pi-comment text-primary-300 mr-1 text-xs"
-                            ></i>
-                            {{ location.notes }}
-                          </div>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <Button
-                          icon="pi pi-pencil"
-                          class="p-button-text p-button-rounded p-button-sm"
-                          @click="editLocationPositions(section, locationIndex)"
-                        />
-                        <Button
-                          icon="pi pi-trash"
-                          class="p-button-text p-button-rounded p-button-danger p-button-sm"
-                          @click="removeLocation(section, locationIndex)"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Empty locations state -->
-                <div
-                  v-else
-                  class="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200"
-                >
-                  <i class="pi pi-map-marker text-gray-300 text-2xl mb-2"></i>
-                  <p class="text-gray-500 text-sm">No locations added yet</p>
-                </div>
-              </div>
+              <JobLocationScheduler
+                v-model="job.scheduleSections[sectionIndex]"
+                :title="`Schedule Section ${sectionIndex + 1}`"
+                :section-index="sectionIndex"
+                :min-date="today"
+                :default-positions="job.numberOfPositions"
+                @remove="removeScheduleSection(sectionIndex)"
+              />
             </div>
           </div>
         </div>
@@ -729,95 +581,6 @@
             @click="addScheduleSection"
           />
         </div>
-
-        <!-- Location Positions Dialog -->
-        <Dialog
-          v-model:visible="showLocationPositionsDialog"
-          header="Edit Location Details"
-          :style="{ width: '500px' }"
-          :modal="true"
-          class="location-edit-dialog"
-        >
-          <div class="p-4">
-            <div
-              class="mb-5 bg-indigo-50 p-4 rounded-lg border border-indigo-100 flex items-center"
-            >
-              <i class="pi pi-map-marker text-indigo-500 text-xl mr-3"></i>
-              <div>
-                <div class="text-sm text-indigo-600 font-medium mb-1">
-                  Location
-                </div>
-                <div class="text-lg font-bold text-gray-800">
-                  {{ editingLocation ? editingLocation.name : '' }}
-                </div>
-              </div>
-            </div>
-
-            <div class="field mb-5">
-              <label
-                for="locationPositions"
-                class="block text-gray-700 font-medium mb-2 flex items-center"
-              >
-                <i class="pi pi-users text-primary-400 mr-2"></i>
-                Number of Positions
-              </label>
-              <div class="relative">
-                <InputNumber
-                  id="locationPositions"
-                  v-model="editingLocation.positions"
-                  placeholder="Enter number of positions"
-                  :min="1"
-                  class="w-full border-2 border-indigo-200 rounded-lg focus:border-indigo-500"
-                />
-              </div>
-              <small class="text-gray-500 flex items-center mt-2 text-xs">
-                <i class="pi pi-info-circle mr-1 text-gray-400"></i>
-                Leave empty to use the job's default number of positions
-              </small>
-            </div>
-
-            <div class="field">
-              <label
-                for="locationNotes"
-                class="block text-gray-700 font-medium mb-2 flex items-center"
-              >
-                <i class="pi pi-comment text-primary-400 mr-2"></i>
-                Special Requirements/Notes
-              </label>
-              <div class="relative">
-                <Textarea
-                  id="locationNotes"
-                  v-model="editingLocation.notes"
-                  placeholder="e.g., 3 female, 2 male or Need typhoid certification"
-                  rows="4"
-                  class="w-full border-2 border-indigo-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                  autoResize
-                />
-              </div>
-              <small class="text-gray-500 flex items-center mt-2 text-xs">
-                <i class="pi pi-info-circle mr-1 text-gray-400"></i>
-                Add any specific requirements for this location
-              </small>
-            </div>
-          </div>
-          <template #footer>
-            <div class="flex justify-end gap-3 p-3 bg-gray-50 rounded-b-lg">
-              <Button
-                label="Cancel"
-                icon="pi pi-times"
-                @click="closeLocationPositionsDialog"
-                class="p-button-text p-button-secondary"
-              />
-              <Button
-                label="Save"
-                icon="pi pi-check"
-                @click="saveLocationPositions"
-                class="p-button-primary"
-                style="background-color: #6366f1; border-color: #6366f1"
-              />
-            </div>
-          </template>
-        </Dialog>
       </div>
 
       <!-- Step 3: Review & Submit -->
@@ -1076,16 +839,21 @@
                               <div class="font-medium">{{ location.name }}</div>
                               <div class="ml-auto text-blue-600 text-sm">
                                 {{
-                                  location.positions || job.numberOfPositions
+                                  getLocationPositionsForReview(
+                                    section,
+                                    location
+                                  ) || job.numberOfPositions
                                 }}
                                 positions
                               </div>
                             </div>
                             <div
-                              v-if="location.notes"
+                              v-if="
+                                getLocationNotesForReview(section, location)
+                              "
                               class="bg-gray-50 px-4 py-2 text-sm text-gray-600 ml-8 border-t border-gray-100"
                             >
-                              {{ location.notes }}
+                              {{ getLocationNotesForReview(section, location) }}
                             </div>
                           </div>
                         </div>
@@ -1131,7 +899,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useVuelidate } from '@vuelidate/core';
@@ -1145,6 +913,7 @@ import Dropdown from 'primevue/dropdown';
 import Textarea from 'primevue/textarea';
 import Dialog from 'primevue/dialog';
 import Calendar from 'primevue/calendar';
+import JobLocationScheduler from '@/components/shared/JobLocationScheduler.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -1243,13 +1012,23 @@ const calculatedDateRange = reactive({
   end: null,
 });
 
+// Watch for changes in schedule section dates to update the overall date range
+watch(
+  () => job.scheduleSections.map((section) => section.dates),
+  () => {
+    updateDateRange();
+  },
+  { deep: true }
+);
+
 // Function to update the date range based on all selected dates
 const updateDateRange = () => {
   // Collect all dates from all sections
   const allDates = [];
 
   job.scheduleSections.forEach((section) => {
-    if (section.dates && section.dates.length > 0) {
+    // Ensure section.dates exists and is an array before spreading
+    if (Array.isArray(section.dates) && section.dates.length > 0) {
       allDates.push(...section.dates);
     }
   });
@@ -1476,6 +1255,41 @@ const saveJobDetails = async () => {
     const restTimeMinutes =
       (job.restTimeHours || 0) * 60 + (job.restTimeMinutes || 0);
 
+    // Prepare schedule data from scheduler components
+    const scheduleDates = [];
+    job.scheduleSections.forEach((section) => {
+      // Get dates
+      const dates = section.dates || [];
+
+      // For each date, collect location data
+      dates.forEach((date) => {
+        const dateStr = new Date(date).toISOString();
+        const formattedDate = dateStr.split('T')[0]; // YYYY-MM-DD
+
+        // Get location schedules for this date
+        const jobLocations = [];
+        if (section.scheduleData && section.scheduleData[dateStr]) {
+          Object.values(section.scheduleData[dateStr]).forEach(
+            (locationData) => {
+              jobLocations.push({
+                locationId: locationData.locationId,
+                positionsNeeded:
+                  locationData.positionsNeeded || job.numberOfPositions,
+                notes: locationData.notes,
+              });
+            }
+          );
+        }
+
+        if (jobLocations.length > 0) {
+          scheduleDates.push({
+            workDate: formattedDate,
+            jobLocations,
+          });
+        }
+      });
+    });
+
     // Prepare job data from form
     const jobData = {
       projectId: parseInt(job.projectId),
@@ -1497,17 +1311,7 @@ const saveJobDetails = async () => {
       endDate: calculatedDateRange.end
         ? calculatedDateRange.end.toISOString().split('T')[0]
         : null,
-      scheduleSections: job.scheduleSections.map((section) => ({
-        // Format dates as yyyy-MM-dd for API
-        dates: section.dates.map(
-          (date) => new Date(date).toISOString().split('T')[0]
-        ),
-        locations: section.locations.map((location) => ({
-          name: location.name,
-          positions: location.positions || null, // Optional specific positions per location
-          notes: location.notes || '', // Location-specific notes
-        })),
-      })),
+      scheduleDates, // Use the new format for schedule dates
     };
 
     console.log('Saving job with data:', jobData);
@@ -1606,30 +1410,13 @@ const addScheduleSection = () => {
   job.scheduleSections.push({
     dates: [],
     locations: [],
-    newLocation: '',
+    scheduleData: {},
   });
 };
 
 // Remove a schedule section
 const removeScheduleSection = (index) => {
   job.scheduleSections.splice(index, 1);
-};
-
-// Add a location to a section
-const addLocation = (section) => {
-  if (section.newLocation.trim()) {
-    section.locations.push({
-      name: section.newLocation.trim(),
-      positions: null, // Will use global positions if null
-      notes: '', // Add empty notes field
-    });
-    section.newLocation = '';
-  }
-};
-
-// Remove a location from a section
-const removeLocation = (section, index) => {
-  section.locations.splice(index, 1);
 };
 
 // Format the selected dates for display
@@ -1658,49 +1445,6 @@ const getJobTitleTypeLabel = (value) => {
 const getSalaryTypeLabel = (value) => {
   const option = salaryTypeOptions.find((opt) => opt.value === value);
   return option ? option.label : value;
-};
-
-// Dialog for editing location positions
-const showLocationPositionsDialog = ref(false);
-const editingLocation = ref(null);
-const editingSectionIndex = ref(null);
-const editingLocationIndex = ref(null);
-
-// Open dialog to edit location positions
-const editLocationPositions = (section, locationIndex) => {
-  const sectionIndex = job.scheduleSections.indexOf(section);
-  if (sectionIndex !== -1) {
-    editingSectionIndex.value = sectionIndex;
-    editingLocationIndex.value = locationIndex;
-    // Clone the location object to avoid direct reference modification
-    editingLocation.value = { ...section.locations[locationIndex] };
-    showLocationPositionsDialog.value = true;
-  }
-};
-
-// Save location positions from dialog
-const saveLocationPositions = () => {
-  if (
-    editingSectionIndex.value !== null &&
-    editingLocationIndex.value !== null &&
-    editingLocation.value
-  ) {
-    // Update the location object with new positions value
-    job.scheduleSections[editingSectionIndex.value].locations[
-      editingLocationIndex.value
-    ] = {
-      ...editingLocation.value,
-    };
-    closeLocationPositionsDialog();
-  }
-};
-
-// Close location positions dialog
-const closeLocationPositionsDialog = () => {
-  showLocationPositionsDialog.value = false;
-  editingLocation.value = null;
-  editingSectionIndex.value = null;
-  editingLocationIndex.value = null;
 };
 
 // Add a function to format rest time
@@ -1745,6 +1489,9 @@ const decrementMinutes = () => {
   }
 };
 
+// Add isInitialized ref to track initialization state
+const isInitialized = ref(false);
+
 onMounted(() => {
   // Set project ID from query parameter
   if (projectId.value) {
@@ -1758,8 +1505,86 @@ onMounted(() => {
       life: 3000,
     });
     router.push({ name: 'ManageJobs' });
+    return;
   }
+
+  // Initialize schedule sections with an empty one
+  if (job.scheduleSections.length === 0) {
+    addScheduleSection();
+  }
+
+  // Fix to prevent maximum recursive updates
+  // This helps break the circular reactivity chain between parent and child components
+  nextTick(() => {
+    isInitialized.value = true;
+  });
 });
+
+// New function to get location positions for review
+const getLocationPositionsForReview = (section, location) => {
+  // If there's no schedule data, return default
+  if (!section.scheduleData || Object.keys(section.scheduleData).length === 0) {
+    return job.numberOfPositions;
+  }
+
+  // Get the first date in the schedule data
+  const firstDateStr = Object.keys(section.scheduleData)[0];
+
+  // If we have data for this location on the first date, use it
+  if (
+    section.scheduleData[firstDateStr] &&
+    section.scheduleData[firstDateStr][location.id] &&
+    section.scheduleData[firstDateStr][location.id].positionsNeeded
+  ) {
+    return section.scheduleData[firstDateStr][location.id].positionsNeeded;
+  }
+
+  // Otherwise check all dates for this location
+  for (const dateStr of Object.keys(section.scheduleData)) {
+    if (
+      section.scheduleData[dateStr][location.id] &&
+      section.scheduleData[dateStr][location.id].positionsNeeded
+    ) {
+      return section.scheduleData[dateStr][location.id].positionsNeeded;
+    }
+  }
+
+  // If no specific setting was found, return the default
+  return job.numberOfPositions;
+};
+
+// New function to get location notes for review
+const getLocationNotesForReview = (section, location) => {
+  // If there's no schedule data, return default
+  if (!section.scheduleData || Object.keys(section.scheduleData).length === 0) {
+    return '';
+  }
+
+  // Get the first date in the schedule data
+  const firstDateStr = Object.keys(section.scheduleData)[0];
+
+  // If we have data for this location on the first date, use it
+  if (
+    section.scheduleData[firstDateStr] &&
+    section.scheduleData[firstDateStr][location.id] &&
+    section.scheduleData[firstDateStr][location.id].notes
+  ) {
+    return section.scheduleData[firstDateStr][location.id].notes;
+  }
+
+  // Otherwise check all dates for this location
+  for (const dateStr of Object.keys(section.scheduleData)) {
+    if (
+      section.scheduleData[dateStr][location.id] &&
+      section.scheduleData[dateStr][location.id].notes
+    ) {
+      return section.scheduleData[dateStr][location.id].notes;
+    }
+  }
+
+  // If no specific setting was found, return the default
+  return '';
+};
 </script>
 
 <style scoped>
