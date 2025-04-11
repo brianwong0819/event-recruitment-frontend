@@ -2,6 +2,7 @@
   <div class="job-location-scheduler">
     <!-- Section Header -->
     <div
+      v-if="showHeader"
       class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100"
     >
       <h4 class="text-lg font-medium flex items-center">
@@ -126,9 +127,7 @@
       </div>
 
       <template #footer>
-        <div
-          class="flex justify-end space-x-2 p-3 -mx-5 -mb-5 rounded-b-lg"
-        >
+        <div class="flex justify-end space-x-2 p-3 -mx-5 -mb-5 rounded-b-lg">
           <Button
             label="Cancel"
             icon="pi pi-times"
@@ -183,6 +182,10 @@ const props = defineProps({
     default: 1,
   },
   showRemoveButton: {
+    type: Boolean,
+    default: true,
+  },
+  showHeader: {
     type: Boolean,
     default: true,
   },

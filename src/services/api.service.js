@@ -45,13 +45,10 @@ apiClient.interceptors.request.use(
 
     // If token exists, add Authorization header - exactly as shown in Postman
     if (token) {
-      // Make sure we don't add "Bearer " prefix if it's already in the token
-      const tokenValue = token.startsWith('Bearer ')
-        ? token
-        : `Bearer ${token}`;
-      config.headers.Authorization = tokenValue;
+      // Don't add "Bearer " prefix - per client requirements
+      config.headers.Authorization = token;
 
-      console.log('Using token:', tokenValue.substring(0, 20) + '...');
+      console.log('Using token:', token.substring(0, 20) + '...');
     } else {
       console.warn('No access token found in localStorage');
     }
@@ -169,7 +166,7 @@ apiClient.interceptors.response.use(
         return new Promise((resolve, reject) => {
           subscribeTokenRefresh((newToken) => {
             // Replace the expired token and retry
-            originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+            originalRequest.headers['Authorization'] = newToken;
             resolve(apiClient(originalRequest));
           });
         });
@@ -223,7 +220,7 @@ apiClient.interceptors.response.use(
           }
 
           // Update the Authorization header
-          originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+          originalRequest.headers['Authorization'] = newAccessToken;
 
           // Process all queued requests
           onTokenRefreshed(newAccessToken);

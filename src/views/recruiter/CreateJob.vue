@@ -915,6 +915,9 @@ import Dialog from 'primevue/dialog';
 import Calendar from 'primevue/calendar';
 import JobLocationScheduler from '@/components/shared/JobLocationScheduler.vue';
 
+// Import the job service
+import jobService from '@/services/job.service';
+
 const router = useRouter();
 const route = useRoute();
 const toast = useToast();
@@ -1134,6 +1137,63 @@ const validateCurrentStep = async () => {
       return false;
     }
 
+    // Check if any job date is today and if so, validate the start time
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let hasTodayDate = false;
+
+    // Check all schedule sections for today's date
+    for (const section of job.scheduleSections) {
+      if (Array.isArray(section.dates)) {
+        for (const date of section.dates) {
+          const scheduleDate = new Date(date);
+          const scheduleDateOnly = new Date(
+            scheduleDate.getFullYear(),
+            scheduleDate.getMonth(),
+            scheduleDate.getDate()
+          );
+
+          if (scheduleDateOnly.getTime() === today.getTime()) {
+            hasTodayDate = true;
+            break;
+          }
+        }
+      }
+      if (hasTodayDate) break;
+    }
+
+    // If today is one of the job dates, validate that start time hasn't passed
+    if (hasTodayDate && job.startTime) {
+      const startTime = new Date(job.startTime);
+      const currentTime = new Date();
+
+      // Add 10 minutes buffer to current time
+      const bufferTime = new Date(currentTime.getTime() + 10 * 60 * 1000);
+      const bufferTimeHours = bufferTime.getHours();
+      const bufferTimeMinutes = bufferTime.getMinutes();
+
+      // Check if job start time is earlier than current time + 10 minutes
+      if (
+        startTime.getHours() < bufferTimeHours ||
+        (startTime.getHours() === bufferTimeHours &&
+          startTime.getMinutes() < bufferTimeMinutes)
+      ) {
+        const formattedBufferTime = bufferTime.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        });
+
+        toast.add({
+          severity: 'error',
+          summary: 'Validation Error',
+          detail: `For jobs starting today, start time must be at least 10 minutes from now (after ${formattedBufferTime})`,
+          life: 5000,
+        });
+        return false;
+      }
+    }
+
     // Check if there are any schedule sections
     if (job.scheduleSections.length === 0) {
       toast.add({
@@ -1248,49 +1308,17 @@ const saveJobDetails = async () => {
       return `${t.getHours().toString().padStart(2, '0')}:${t
         .getMinutes()
         .toString()
-        .padStart(2, '0')}`;
+        .padStart(2, '0')}:00`;
     };
 
     // Format rest time for API (as minutes)
     const restTimeMinutes =
       (job.restTimeHours || 0) * 60 + (job.restTimeMinutes || 0);
 
-    // Prepare schedule data from scheduler components
-    const scheduleDates = [];
-    job.scheduleSections.forEach((section) => {
-      // Get dates
-      const dates = section.dates || [];
+    // Calculate rest time in decimal hours for the API
+    const hoursOfRestTime = restTimeMinutes > 0 ? restTimeMinutes / 60 : null;
 
-      // For each date, collect location data
-      dates.forEach((date) => {
-        const dateStr = new Date(date).toISOString();
-        const formattedDate = dateStr.split('T')[0]; // YYYY-MM-DD
-
-        // Get location schedules for this date
-        const jobLocations = [];
-        if (section.scheduleData && section.scheduleData[dateStr]) {
-          Object.values(section.scheduleData[dateStr]).forEach(
-            (locationData) => {
-              jobLocations.push({
-                locationId: locationData.locationId,
-                positionsNeeded:
-                  locationData.positionsNeeded || job.numberOfPositions,
-                notes: locationData.notes,
-              });
-            }
-          );
-        }
-
-        if (jobLocations.length > 0) {
-          scheduleDates.push({
-            workDate: formattedDate,
-            jobLocations,
-          });
-        }
-      });
-    });
-
-    // Prepare job data from form
+    // STEP 1: Create the job first
     const jobData = {
       projectId: parseInt(job.projectId),
       title: job.title,
@@ -1301,71 +1329,110 @@ const saveJobDetails = async () => {
       paymentTerms: job.paymentTerms || '',
       salaryType: job.salaryType,
       benefits: job.benefits || '',
-      numberOfPositions: job.numberOfPositions,
-      startTime: formatTimeForAPI(job.startTime),
-      endTime: formatTimeForAPI(job.endTime),
-      restTimeMinutes: restTimeMinutes,
-      startDate: calculatedDateRange.start
-        ? calculatedDateRange.start.toISOString().split('T')[0]
-        : null,
-      endDate: calculatedDateRange.end
-        ? calculatedDateRange.end.toISOString().split('T')[0]
-        : null,
-      scheduleDates, // Use the new format for schedule dates
+      status: 'OPEN', // Setting default status to OPEN
     };
 
-    console.log('Saving job with data:', jobData);
+    console.log('Creating job with data:', jobData);
 
-    // Get auth token
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      toast.add({
-        severity: 'error',
-        summary: 'Authentication Error',
-        detail: 'You are not logged in. Please log in to continue.',
-        life: 3000,
+    // Use the job service to create the job
+    const jobResponse = await jobService.createJob(jobData);
+
+    if (jobResponse.data && jobResponse.data.statusCode === 201) {
+      // Job created successfully, now create the schedule
+      const jobId = jobResponse.data.data.id;
+
+      // STEP 2: Prepare schedule data from scheduler components
+      const scheduleDates = [];
+      job.scheduleSections.forEach((section) => {
+        // Get dates
+        const dates = section.dates || [];
+
+        // For each date, collect location data
+        dates.forEach((date) => {
+          const dateObj = new Date(date);
+          const dateStr = dateObj.toISOString(); // This is how dates are stored in scheduleData
+          const formattedDate = formatDateForAPI(dateObj);
+
+          // Get location schedules for this date
+          const jobLocations = [];
+          if (section.scheduleData && section.scheduleData[dateStr]) {
+            Object.values(section.scheduleData[dateStr]).forEach(
+              (locationData) => {
+                jobLocations.push({
+                  locationId: locationData.locationId,
+                  positionsNeeded:
+                    locationData.positionsNeeded || job.numberOfPositions,
+                  notes: locationData.notes || null,
+                });
+              }
+            );
+          }
+
+          if (jobLocations.length > 0) {
+            scheduleDates.push({
+              workDate: formattedDate,
+              jobLocations,
+            });
+          }
+        });
       });
-      isLoading.value = false;
-      showConfirmDialog.value = false;
-      return;
-    }
 
-    // Make API call to create job
-    const response = await fetch('http://localhost:8080/api/jobs', {
-      method: 'POST',
-      headers: {
-        Authorization: token,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(jobData),
-    });
+      // STEP 3: Create the job schedule
+      const scheduleData = {
+        jobId: jobId,
+        startDate: calculatedDateRange.start
+          ? formatDateForAPI(calculatedDateRange.start)
+          : null,
+        endDate: calculatedDateRange.end
+          ? formatDateForAPI(calculatedDateRange.end)
+          : null,
+        startTime: formatTimeForAPI(job.startTime),
+        endTime: formatTimeForAPI(job.endTime),
+        hoursOfRestTime: hoursOfRestTime,
+        numPositions: job.numberOfPositions,
+        scheduleDates,
+      };
 
-    const responseData = await response.json();
+      console.log('Creating job schedule with data:', scheduleData);
 
-    if (response.ok && responseData.statusCode === 201) {
-      // Show success message
-      toast.add({
-        severity: 'success',
-        summary: 'Job Created',
-        detail: `Job "${job.title}" has been created successfully`,
-        life: 3000,
-      });
+      // Use the job service to create the schedule
+      const scheduleResponse = await jobService.createJobSchedule(scheduleData);
 
-      // Hide the confirmation dialog
-      showConfirmDialog.value = false;
+      if (scheduleResponse.data && scheduleResponse.data.statusCode === 201) {
+        // Both job and schedule created successfully
+        toast.add({
+          severity: 'success',
+          summary: 'Job Created',
+          detail: `Job "${job.title}" has been created successfully`,
+          life: 3000,
+        });
 
-      // Navigate back to project details
-      router.push({
-        name: 'ProjectDetails',
-        params: { projectId: projectId.value },
-      });
+        // Hide the confirmation dialog
+        showConfirmDialog.value = false;
+
+        // Navigate back to project details
+        router.push({
+          name: 'ProjectDetails',
+          params: { projectId: projectId.value },
+        });
+      } else {
+        // Job created but schedule creation failed
+        toast.add({
+          severity: 'warning',
+          summary: 'Partial Success',
+          detail: `Job created but schedule creation failed: ${
+            scheduleResponse.data.message || 'Unknown error'
+          }`,
+          life: 5000,
+        });
+      }
     } else {
-      // Show error message
+      // Job creation failed
       toast.add({
         severity: 'error',
         summary: 'Error',
         detail:
-          responseData.message || 'Failed to create job. Please try again.',
+          jobResponse.data.message || 'Failed to create job. Please try again.',
         life: 3000,
       });
     }
@@ -1508,11 +1575,6 @@ onMounted(() => {
     return;
   }
 
-  // Initialize schedule sections with an empty one
-  if (job.scheduleSections.length === 0) {
-    addScheduleSection();
-  }
-
   // Fix to prevent maximum recursive updates
   // This helps break the circular reactivity chain between parent and child components
   nextTick(() => {
@@ -1584,6 +1646,15 @@ const getLocationNotesForReview = (section, location) => {
 
   // If no specific setting was found, return the default
   return '';
+};
+
+// Add a new function to properly format dates for API without timezone issues
+const formatDateForAPI = (date) => {
+  if (!date) return null;
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // +1 because months are 0-indexed
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 </script>
 

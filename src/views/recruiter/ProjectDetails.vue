@@ -166,37 +166,47 @@
 
           <!-- Job Status Summary -->
           <div class="bg-purple-50 p-4 rounded-lg shadow-sm">
-            <div class="flex items-center">
+            <div class="flex items-center mb-2">
               <div class="bg-purple-100 rounded-full p-2 mr-3">
-                <i class="pi pi-chart-pie text-purple-700"></i>
+                <i class="pi pi-chart-line text-purple-700"></i>
               </div>
-              <div>
-                <h3 class="text-sm font-medium text-purple-700">Job Status</h3>
-                <div class="flex gap-2 mt-1">
-                  <Badge
-                    v-tooltip.top="'Open Jobs'"
-                    value="Open"
-                    :severity="'success'"
-                    class="mr-1"
-                  >
-                    {{ projectStats?.openJobs || 0 }}
-                  </Badge>
-                  <Badge
-                    v-tooltip.top="'Partially Filled'"
-                    value="Partial"
-                    :severity="'warning'"
-                    class="mr-1"
-                  >
-                    {{ projectStats?.partiallyFilledJobs || 0 }}
-                  </Badge>
-                  <Badge
-                    v-tooltip.top="'Filled Jobs'"
-                    value="Filled"
-                    :severity="'info'"
-                    class="mr-1"
-                  >
-                    {{ projectStats?.filledJobs || 0 }}
-                  </Badge>
+              <div class="flex-1">
+                <h3 class="text-sm font-medium text-purple-700">
+                  Recruitment Progress
+                </h3>
+                <div class="text-xs text-gray-600 mt-1">
+                  {{ projectStats?.totalPositionsFilled || 0 }} of
+                  {{ projectStats?.totalPositionsNeeded || 0 }} positions filled
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-lg font-bold text-purple-700">
+                  {{ calculateProgress }}%
+                </div>
+                <div class="text-xs text-gray-500">Complete</div>
+              </div>
+            </div>
+            <div class="relative pt-1">
+              <div
+                class="overflow-hidden h-3 text-xs flex rounded bg-purple-200"
+              >
+                <div
+                  :style="{ width: `${calculateProgress}%` }"
+                  class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-purple-500 transition-all duration-500"
+                ></div>
+              </div>
+              <div class="flex justify-between mt-2">
+                <div class="text-xs">
+                  <span class="text-gray-500">Total Positions:</span>
+                  <span class="font-semibold text-gray-700 ml-1">{{
+                    projectStats?.totalPositionsNeeded || 0
+                  }}</span>
+                </div>
+                <div class="text-xs">
+                  <span class="text-gray-500">Remaining:</span>
+                  <span class="font-semibold text-gray-700 ml-1">{{
+                    getRemainingPositions()
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -206,45 +216,59 @@
     </div>
 
     <!-- Jobs Section -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-      <div class="p-4 border-b flex justify-between items-center bg-gray-50">
-        <div class="flex items-center">
-          <i class="pi pi-list text-primary-500 mr-2"></i>
-          <h2 class="text-lg font-semibold">Jobs in this Project</h2>
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+      <div
+        class="bg-gradient-to-r from-primary-50 to-primary-100 p-6 border-b border-primary-100"
+      >
+        <div class="flex justify-between items-center">
+          <div>
+            <h2
+              class="text-xl font-semibold text-primary-800 flex items-center"
+            >
+              <i class="pi pi-briefcase text-primary-500 mr-3"></i>
+              Jobs in this Project
+            </h2>
+            <p class="text-gray-600 mt-1">
+              Manage all job listings and recruitment activities
+            </p>
+          </div>
+          <Button
+            v-if="!isDeletedProject"
+            label="New Job"
+            icon="pi pi-plus"
+            @click="navigateToCreateJob"
+            class="p-button-primary shadow-sm"
+          />
         </div>
-        <Button
-          v-if="!isDeletedProject"
-          label="New Job"
-          icon="pi pi-plus"
-          @click="navigateToCreateJob"
-          class="p-button-primary"
-        />
       </div>
 
       <div class="p-6">
-        <div v-if="loading" class="text-center py-8">
+        <!-- Loading state -->
+        <div v-if="loading" class="text-center py-16">
           <ProgressSpinner
-            style="width: 50px; height: 50px"
-            strokeWidth="8"
+            style="width: 60px; height: 60px"
+            strokeWidth="4"
             fill="var(--surface-ground)"
-            animationDuration=".5s"
+            animationDuration=".7s"
+            class="mb-4"
           />
-          <p class="mt-4 text-gray-600">Loading project details...</p>
+          <p class="text-gray-600 text-lg">Loading project jobs...</p>
         </div>
 
+        <!-- Empty state -->
         <div
           v-else-if="!project || project.jobs?.length === 0"
-          class="text-center py-12"
+          class="text-center py-16 bg-gray-50 rounded-xl border border-dashed border-gray-300"
         >
           <div
-            class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6"
+            class="w-24 h-24 rounded-full bg-primary-50 flex items-center justify-center mx-auto mb-6"
           >
-            <i class="pi pi-briefcase text-gray-400 text-3xl"></i>
+            <i class="pi pi-briefcase text-primary-300 text-4xl"></i>
           </div>
-          <h3 class="text-xl font-medium text-gray-700 mb-3">
+          <h3 class="text-2xl font-medium text-gray-700 mb-3">
             No Jobs in this Project Yet
           </h3>
-          <p class="text-gray-500 mb-6 max-w-md mx-auto">
+          <p class="text-gray-500 mb-8 max-w-md mx-auto">
             Start creating job listings for this project to begin recruiting
             talent
           </p>
@@ -253,81 +277,120 @@
             label="Create First Job"
             icon="pi pi-plus"
             @click="navigateToCreateJob"
-            class="p-button-primary px-4 py-2"
+            class="p-button-primary p-button-lg px-6 py-3 shadow-md"
           />
         </div>
 
-        <DataTable
+        <!-- Jobs list (card layout) -->
+        <div
           v-else
-          :value="project.jobs"
-          class="p-datatable-sm"
-          :rowHover="true"
-          stripedRows
-          tableStyle="min-width: 50rem"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          <Column field="title" header="Job Title">
-            <template #body="{ data }">
-              <div class="flex items-center">
-                <div
-                  class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center mr-3"
-                >
-                  <i class="pi pi-briefcase text-primary-700 text-sm"></i>
+          <div
+            v-for="job in project.jobs"
+            :key="job.id"
+            class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+          >
+            <!-- Job card header -->
+            <div class="relative">
+              <div class="absolute top-0 right-0 m-3">
+                <Tag
+                  :value="formatJobStatus(job.status)"
+                  :severity="getJobStatusSeverity(job.status)"
+                  class="rounded-full px-3 py-1"
+                />
+              </div>
+              <div
+                class="p-4 bg-gradient-to-r from-primary-100 via-primary-50 to-transparent border-b border-primary-100"
+              >
+                <div class="flex items-center">
+                  <div class="mr-3 p-3 rounded-lg bg-white shadow-sm">
+                    <i
+                      :class="getJobTypeIcon(job.jobTitleType)"
+                      class="text-primary-600 text-xl"
+                    ></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3
+                      class="text-lg font-semibold text-gray-900 truncate"
+                      v-tooltip="job.title"
+                    >
+                      {{ job.title }}
+                    </h3>
+                    <p class="text-sm text-gray-600">
+                      {{ getJobTypeName(job.jobTitleType) }}
+                    </p>
+                  </div>
                 </div>
-                <span class="font-medium">{{ data.title }}</span>
               </div>
-            </template>
-          </Column>
-          <Column field="salary" header="Salary">
-            <template #body="{ data }">
-              <div class="flex items-center">
+            </div>
+
+            <!-- Job card content -->
+            <div class="p-4">
+              <div class="flex items-center mb-3">
                 <i class="pi pi-money-bill text-green-500 mr-2"></i>
-                <span>{{ data.salary }}</span>
+                <div class="font-medium text-green-700">
+                  RM {{ job.salary }}
+                </div>
+                <div class="text-sm text-gray-500 ml-1">
+                  / {{ getSalaryTypeName(job.salaryType) }}
+                </div>
               </div>
-            </template>
-          </Column>
-          <Column field="status" header="Status">
-            <template #body="{ data }">
-              <Tag
-                :value="formatJobStatus(data.status)"
-                :severity="getJobStatusSeverity(data.status)"
-              />
-            </template>
-          </Column>
-          <Column field="applicantsCount" header="Applicants">
-            <template #body="{ data }">
-              <div class="flex items-center">
-                <i class="pi pi-users text-blue-500 mr-2"></i>
-                <Badge :value="data.applicantsCount || 0" severity="info" />
+
+              <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center">
+                  <div
+                    class="bg-blue-50 px-3 py-1 rounded-full flex items-center justify-center"
+                  >
+                    <i class="pi pi-users text-blue-500 mr-2"></i>
+                    <span class="text-blue-700 font-medium text-center">{{
+                      job.applicantsCount || 0
+                    }}</span>
+                  </div>
+                </div>
+
+                <div class="flex flex-col items-end">
+                  <div class="text-xs text-gray-500">Created on</div>
+                  <div class="text-sm font-medium">
+                    {{ formatShortDate(job.createdAt) }}
+                  </div>
+                </div>
               </div>
-            </template>
-          </Column>
-          <Column header="Actions" style="width: 12rem">
-            <template #body="{ data }">
-              <div class="flex gap-2">
+
+              <!-- Action buttons -->
+              <div
+                class="flex justify-between items-center border-t border-gray-100 pt-4 mt-2"
+              >
                 <Button
                   icon="pi pi-eye"
-                  class="p-button-text p-button-sm"
-                  tooltip="View Details"
-                  @click="viewJobDetails(data)"
+                  label="View"
+                  class="p-button-text flex-1 mr-1"
+                  @click="viewJobDetails(job)"
                 />
                 <Button
                   v-if="!isDeletedProject"
                   icon="pi pi-pencil"
-                  class="p-button-text p-button-sm"
-                  tooltip="Edit Job"
-                  @click="editJob(data)"
+                  label="Edit"
+                  class="p-button-outlined p-button-secondary flex-1 mx-1"
+                  @click="editJob(job)"
                 />
-                <Button
-                  v-if="!isDeletedProject"
-                  icon="pi pi-users"
-                  class="p-button-text p-button-sm"
-                  tooltip="View Applicants"
-                  @click="viewJobApplicants(data)"
-                />
+                <div class="relative">
+                  <Button
+                    v-if="!isDeletedProject"
+                    icon="pi pi-users"
+                    label=""
+                    class="p-button-outlined p-button-primary ml-1 applicants-btn"
+                    @click="viewJobApplicants(job)"
+                    v-tooltip="'View Applicants'"
+                  />
+                  <span class="custom-badge">{{
+                    job.applicantsCount || 0
+                  }}</span>
+                </div>
               </div>
-            </template>
-          </Column>
-        </DataTable>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -393,6 +456,64 @@ const getJobStatusSeverity = (status) => {
     CANCELLED: 'danger',
   };
   return severities[status] || 'info';
+};
+
+// Format short date for display
+const formatShortDate = (date) => {
+  if (!date) return 'N/A';
+  return format(new Date(date), 'dd MMM yyyy');
+};
+
+// Get job type name
+const getJobTypeName = (type) => {
+  if (!type) return 'Other';
+
+  const jobTypeMap = {
+    PROMOTER: 'Promoter',
+    SUPERVISOR: 'Supervisor',
+    SETUP_CREW: 'Setup Crew',
+    MASCOT_CREW: 'Mascot Crew',
+    BRAND_AMBASSADOR: 'Brand Ambassador',
+    EVENT_CREW: 'Event Crew',
+    USHER: 'Usher',
+    OTHER: 'Other',
+  };
+
+  return jobTypeMap[type] || 'Other';
+};
+
+// Get icon for job type
+const getJobTypeIcon = (type) => {
+  if (!type) return 'pi pi-briefcase';
+
+  const iconMap = {
+    PROMOTER: 'pi pi-shopping-bag',
+    SUPERVISOR: 'pi pi-id-card',
+    SETUP_CREW: 'pi pi-wrench',
+    MASCOT_CREW: 'pi pi-star',
+    BRAND_AMBASSADOR: 'pi pi-megaphone',
+    EVENT_CREW: 'pi pi-calendar-plus',
+    USHER: 'pi pi-user',
+    OTHER: 'pi pi-briefcase',
+  };
+
+  return iconMap[type] || 'pi pi-briefcase';
+};
+
+// Get salary type name
+const getSalaryTypeName = (type) => {
+  if (!type) return 'fixed';
+
+  const salaryTypeMap = {
+    PER_HOUR: 'hour',
+    PER_DAY: 'day',
+    PER_EVENT: 'event',
+    FIXED: 'fixed',
+    COMMISSION: 'commission',
+    NEGOTIABLE: 'negotiable',
+  };
+
+  return salaryTypeMap[type] || 'fixed';
 };
 
 // Get total applicants
@@ -956,6 +1077,15 @@ const getRemainingPositions = () => {
   );
 };
 
+// Add this computed property in the script section, after the other computed properties
+const calculateProgress = computed(() => {
+  if (!projectStats.value?.totalPositionsNeeded) return 0;
+  const filled =
+    projectStats.value.totalPositionsNeeded - getRemainingPositions();
+  const progress = (filled / projectStats.value.totalPositionsNeeded) * 100;
+  return Math.round(progress);
+});
+
 onMounted(() => {
   fetchProjectData();
 });
@@ -976,5 +1106,94 @@ onMounted(() => {
 :deep(.p-tag) {
   border-radius: 4px;
   padding: 0.3rem 0.6rem;
+}
+
+/* Job card styles */
+.rounded-xl {
+  border-radius: 0.75rem;
+}
+
+:deep(.p-button.p-button-outlined) {
+  border-width: 1px;
+}
+
+:deep(.p-button.p-button-text) {
+  background-color: transparent;
+  color: var(--primary-color);
+}
+
+:deep(.p-button.p-button-text:hover) {
+  background-color: var(--primary-50);
+  color: var(--primary-700);
+}
+
+:deep(.p-button.p-button-sm) {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.875rem;
+}
+
+:deep(.p-badge) {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+}
+
+/* Fix for applicants count badge alignment */
+:deep(.applicants-btn .p-badge) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  margin-left: 0.25rem;
+  line-height: 1;
+}
+
+.custom-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--blue-500);
+  color: white;
+  border-radius: 50%;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  padding: 0 0.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 1;
+}
+
+/* Transitions */
+.transition-shadow {
+  transition-property: box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+.hover\:shadow-md:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Card layout improvements */
+:deep(.p-tag) {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
 }
 </style>
