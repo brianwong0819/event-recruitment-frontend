@@ -2828,3 +2828,31 @@ const handleImageError = (event) => {
   });
 };
 </script>
+
+<style scoped>
+/* Remove inner border from dropdown component */
+:deep(.p-dropdown .p-dropdown-label.p-inputtext) {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:deep(.p-dropdown-items-wrapper) {
+  border: none !important;
+}
+
+:deep(.p-dropdown) {
+  padding: 0 !important;
+}
+
+:deep(.p-dropdown-panel .p-dropdown-items) {
+  padding: 0.5rem 0;
+}
+
+/* Ensure consistent sizing with other form elements */
+:deep(.p-dropdown .p-dropdown-label) {
+  padding: 0.75rem 1rem;
+  height: auto;
+  min-height: 2.75rem;
+  line-height: 1.5;
+}
+</style>

@@ -1,5 +1,8 @@
 <template>
   <div class="p-6">
+    <!-- Add Toast component directly in the template -->
+    <Toast position="top-right" />
+
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900 mb-2">Manage Projects</h1>
       <p class="text-gray-600">Create and manage your recruitment projects</p>
@@ -48,14 +51,14 @@
         <div class="flex items-center">
           <div class="relative w-64">
             <span
-              class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400"
+              class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400"
             >
               <i class="pi pi-search"></i>
             </span>
             <InputText
               v-model="searchQuery"
-              placeholder="    Search projects..."
-              class="pl-10 pr-3 py-2 w-full border border-gray-300 rounded-lg"
+              placeholder="Search projects..."
+              class="pl-12 pr-3 py-2 w-full border border-gray-300 rounded-lg search-input"
             />
           </div>
           <Button
@@ -73,8 +76,39 @@
         </div>
       </div>
 
+      <!-- Loading Indicator -->
+      <div v-if="loading" class="p-6 flex justify-center">
+        <div class="flex flex-col items-center">
+          <i class="pi pi-spin pi-spinner text-4xl text-primary-500 mb-3"></i>
+          <span class="text-gray-600">Loading projects...</span>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else-if="projects.length === 0" class="p-6 flex justify-center">
+        <div class="flex flex-col items-center max-w-md text-center">
+          <div
+            class="bg-gray-50 rounded-full w-20 h-20 flex items-center justify-center mb-4"
+          >
+            <i class="pi pi-folder-open text-4xl text-gray-300"></i>
+          </div>
+          <h3 class="text-lg font-medium text-gray-700 mb-2">
+            No projects found
+          </h3>
+          <p class="text-gray-500 mb-4">
+            Get started by creating your first recruitment project
+          </p>
+          <Button
+            label="Create Project"
+            icon="pi pi-plus"
+            class="p-button-primary"
+            @click="showNewProjectDialog = true"
+          />
+        </div>
+      </div>
+
       <!-- Grid View -->
-      <div v-if="viewMode === 'grid'" class="p-4">
+      <div v-else-if="viewMode === 'grid'" class="p-4">
         <div
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         >
@@ -127,7 +161,10 @@
                 {{ project.name }}
               </h3>
               <p class="text-gray-500 text-sm mb-3 line-clamp-2">
-                {{ project.description }}
+                <span v-if="project.description">{{
+                  project.description
+                }}</span>
+                <i v-else class="text-gray-400">No description</i>
               </p>
               <div class="flex justify-between items-center">
                 <span class="flex items-center gap-1">
@@ -147,7 +184,7 @@
       </div>
 
       <!-- List View -->
-      <div v-if="viewMode === 'list'" class="p-4">
+      <div v-else-if="viewMode === 'list'" class="p-4">
         <DataTable
           :value="filteredProjects"
           class="p-datatable-sm"
@@ -173,7 +210,10 @@
           </Column>
           <Column field="description" header="Description">
             <template #body="{ data }">
-              <div class="truncate max-w-xs">{{ data.description }}</div>
+              <div class="truncate max-w-xs">
+                <span v-if="data.description">{{ data.description }}</span>
+                <i v-else class="text-gray-400">No description</i>
+              </div>
             </template>
           </Column>
           <Column field="createdAt" header="Created At">
@@ -217,7 +257,7 @@
     <!-- New Project Dialog -->
     <Dialog
       v-model:visible="showNewProjectDialog"
-      header="Create New Project"
+      :header="newProject.id ? 'Edit Project' : 'Create New Project'"
       :style="{ width: '450px' }"
       modal
       :closable="false"
@@ -260,7 +300,7 @@
           @click="cancelNewProject"
         />
         <Button
-          label="Create"
+          :label="newProject.id ? 'Update' : 'Create'"
           icon="pi pi-check"
           class="p-button-primary"
           @click="createProject"
@@ -279,11 +319,20 @@
       <div class="p-3 bg-red-50 border-l-4 border-red-400 text-red-800 mb-4">
         <div class="flex">
           <i class="pi pi-info-circle mr-2 mt-0.5"></i>
-          <p>Items in trash cannot be restored.</p>
+          <p>
+            Items in trash cannot be restored. You can still view the jobs in
+            read-only mode.
+          </p>
         </div>
       </div>
 
-      <div v-if="deletedProjects.length === 0" class="text-center py-8">
+      <!-- Loading Indicator for Trash -->
+      <div v-if="loading" class="text-center py-8">
+        <i class="pi pi-spin pi-spinner text-3xl text-gray-400 mb-3"></i>
+        <p class="text-gray-500">Loading deleted projects...</p>
+      </div>
+
+      <div v-else-if="deletedProjects.length === 0" class="text-center py-8">
         <div
           class="bg-gray-50 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-4"
         >
@@ -318,7 +367,8 @@
           </template>
           <template #body="{ data }">
             <div class="truncate text-gray-600">
-              {{ data.description }}
+              <span v-if="data.description">{{ data.description }}</span>
+              <i v-else class="text-gray-400">No description</i>
             </div>
           </template>
         </Column>
@@ -340,7 +390,7 @@
           <template #body="{ data }">
             <div class="text-gray-600 whitespace-nowrap">
               <i class="pi pi-trash text-red-400 mr-1"></i>
-              {{ formatDate(data.deletedAt) }}
+              {{ formatDate(data.deletedAt || data.deletionDate) }}
             </div>
           </template>
         </Column>
@@ -383,6 +433,8 @@ import { useRouter } from 'vue-router';
 import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast';
 import { format } from 'date-fns';
+import axios from 'axios';
+import { useAuthStore } from '@/stores/auth';
 
 // PrimeVue components
 import Button from 'primevue/button';
@@ -397,10 +449,12 @@ import Calendar from 'primevue/calendar';
 import Dropdown from 'primevue/dropdown';
 import Menu from 'primevue/menu';
 import ConfirmDialog from 'primevue/confirmdialog';
+import Toast from 'primevue/toast';
 
 const router = useRouter();
 const confirm = useConfirm();
 const toast = useToast();
+const auth = useAuthStore();
 
 // State
 const viewMode = ref('grid');
@@ -409,6 +463,10 @@ const showNewProjectDialog = ref(false);
 const showTrashBin = ref(false);
 const submitted = ref(false);
 const projectMenuRefs = ref({});
+const loading = ref(false);
+
+// Add a flag to prevent multiple confirmation dialogs
+let isConfirmingDelete = false;
 
 // New project form
 const newProject = reactive({
@@ -416,106 +474,9 @@ const newProject = reactive({
   description: '',
 });
 
-// Mock data for projects
-const projects = ref([
-  {
-    id: 1,
-    name: 'Summer Sales Campaign',
-    description:
-      'Promotional events for our summer product line across major malls',
-    createdAt: new Date(2024, 3, 15), // April 15, 2024
-    jobCount: 3,
-    jobs: [
-      {
-        id: 101,
-        title: 'Dry Promoter',
-        location: 'MITC Melaka Outlet',
-        salary: 'RM 95/day',
-        dateRange: '02 May - 03 May 2024',
-        status: 'active',
-        applicantsCount: 5,
-      },
-      {
-        id: 102,
-        title: 'Event Assistant',
-        location: 'Kuala Lumpur City Centre',
-        salary: 'RM 100/day',
-        dateRange: '10 May - 12 May 2024',
-        status: 'draft',
-        applicantsCount: 0,
-      },
-      {
-        id: 103,
-        title: 'Product Demonstrator',
-        location: 'Penang Gurney Plaza',
-        salary: 'RM 110/day',
-        dateRange: '15 May - 16 May 2024',
-        status: 'active',
-        applicantsCount: 3,
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Tech Expo 2024',
-    description:
-      'Annual technology exhibition with product showcases and demonstrations',
-    createdAt: new Date(2024, 3, 10), // April 10, 2024
-    jobCount: 2,
-    jobs: [
-      {
-        id: 201,
-        title: 'Tech Product Demonstrator',
-        location: 'Kuala Lumpur Convention Centre',
-        salary: 'RM 120/day',
-        dateRange: '15 Jun - 18 Jun 2024',
-        status: 'draft',
-        applicantsCount: 0,
-      },
-      {
-        id: 202,
-        title: 'Registration Assistant',
-        location: 'Kuala Lumpur Convention Centre',
-        salary: 'RM 90/day',
-        dateRange: '15 Jun - 18 Jun 2024',
-        status: 'draft',
-        applicantsCount: 0,
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: 'Food Festival',
-    description: 'Food sampling and promotion for the annual food festival',
-    createdAt: new Date(2024, 2, 20), // March 20, 2024
-    jobCount: 5,
-    jobs: [],
-  },
-]);
-
-// Deleted projects for trash bin
-const deletedProjects = ref([
-  {
-    id: 4,
-    name: 'Fashion Week 2024',
-    description:
-      'Runway models and fashion event staff for the annual fashion week',
-    createdAt: new Date(2024, 1, 15), // February 15, 2024
-    deletedAt: new Date(2024, 3, 5), // April 5, 2024
-    jobCount: 4,
-    jobs: [
-      {
-        id: 301,
-        title: 'Fashion Assistant',
-        location: 'Pavilion Shopping Mall',
-        salary: 'RM 150/day',
-        dateRange: '05 Mar - 12 Mar 2024',
-        status: 'completed',
-        applicantsCount: 8,
-      },
-    ],
-  },
-]);
+// Projects data
+const projects = ref([]);
+const deletedProjects = ref([]);
 
 // Filtered projects based on search query
 const filteredProjects = computed(() => {
@@ -528,6 +489,66 @@ const filteredProjects = computed(() => {
       project.description.toLowerCase().includes(query)
   );
 });
+
+// API Functions
+const fetchProjects = async () => {
+  try {
+    console.log('Fetching projects...');
+    loading.value = true;
+    const token = localStorage.getItem('accessToken');
+
+    console.log(
+      'Using authorization token:',
+      token ? 'Token exists' : 'No token'
+    );
+
+    const response = await axios.get('http://localhost:8080/api/projects', {
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    console.log('Projects API response:', response.data);
+
+    if (response.data && response.data.statusCode === 200) {
+      console.log('Successfully fetched projects:', response.data.data);
+
+      // Filter projects - active projects (not deleted)
+      projects.value = response.data.data.filter(
+        (project) => !project.isDeleted
+      );
+      // Deleted projects for trash bin
+      deletedProjects.value = response.data.data.filter(
+        (project) => project.isDeleted
+      );
+
+      console.log('Active projects:', projects.value.length);
+      console.log('Deleted projects:', deletedProjects.value.length);
+    } else {
+      console.error('API returned unexpected response:', response.data);
+      createToast({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to fetch projects',
+        life: 3000,
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    if (error.response) {
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
+    }
+    createToast({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'An error occurred while fetching projects',
+      life: 3000,
+    });
+  } finally {
+    loading.value = false;
+  }
+};
 
 // Methods
 const formatDate = (date) => {
@@ -552,7 +573,12 @@ const projectMenuItems = (project) => [
     label: 'Delete Project',
     icon: 'pi pi-trash',
     class: 'text-red-500',
-    command: () => confirmDeleteProject(project),
+    command: () => {
+      // Only proceed if we're not already showing a confirmation dialog
+      if (!isConfirmingDelete) {
+        confirmDeleteProject(project);
+      }
+    },
   },
 ];
 
@@ -577,85 +603,283 @@ const viewDeletedProjectDetails = (project) => {
   });
 };
 
-const editProject = (project) => {
-  // For now we'll just show a toast since the edit functionality isn't implemented
-  toast.add({
-    severity: 'info',
-    summary: 'Edit Project',
-    detail: `Editing project: ${project.name}`,
-    life: 3000,
-  });
+const editProject = async (project) => {
+  newProject.name = project.name;
+  newProject.description = project.description;
+  newProject.id = project.id;
+  showNewProjectDialog.value = true;
 };
 
 const confirmDeleteProject = (project) => {
+  // Prevent multiple confirmation dialogs
+  if (isConfirmingDelete) return;
+
+  isConfirmingDelete = true;
+
   confirm.require({
-    message: `Are you sure you want to move the project "${project.name}" to trash? You can restore it later from the trash bin.`,
+    message: `Are you sure you want to move the project "${project.name}" to trash? This action cannot be undone.`,
     header: 'Move to Trash',
     icon: 'pi pi-exclamation-triangle',
     acceptClass: 'p-button-danger',
     accept: () => deleteProject(project),
     reject: () => {
-      // No action on reject
+      // Reset flag when rejected
+      isConfirmingDelete = false;
     },
   });
 };
 
-const deleteProject = (project) => {
-  // Move the project to deleted projects
-  const deletedProject = { ...project, deletedAt: new Date() };
-  deletedProjects.value.unshift(deletedProject);
+const deleteProject = async (project) => {
+  try {
+    const token = localStorage.getItem('accessToken');
 
-  // Remove from active projects
-  projects.value = projects.value.filter((p) => p.id !== project.id);
+    const response = await axios.delete(
+      `http://localhost:8080/api/projects/${project.id}`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
 
+    if (response.data.statusCode === 200) {
+      // Refresh the projects list
+      await fetchProjects();
+
+      showCustomToast(
+        'success',
+        'Success',
+        `Project "${project.name}" has been moved to trash`
+      );
+    } else {
+      showCustomToast(
+        'error',
+        'Error',
+        response.data.message || 'Failed to delete project'
+      );
+    }
+  } catch (error) {
+    console.error('Error deleting project:', error);
+    showCustomToast(
+      'error',
+      'Error',
+      'An error occurred while deleting the project'
+    );
+  } finally {
+    // Reset the flag after deletion process completes
+    isConfirmingDelete = false;
+  }
+};
+
+const createToast = (options) => {
+  // Convert old format to new format
+  const { severity, summary, detail, life } = options;
+
+  // Add slight delay to ensure dialog is closed
+  setTimeout(() => {
+    showCustomToast(severity, summary, detail);
+  }, 300);
+};
+
+const showCustomToast = (type, title, message) => {
+  // Force 'success' class by manually constructing element and appending to DOM
+  const isErrorWithSuccessMessage =
+    type === 'success' &&
+    (title === 'Error' || message.includes('successfully'));
+
+  console.log(
+    `Showing toast: type=${type}, title=${title}, message=${message}`
+  );
+  console.log(`isErrorWithSuccessMessage = ${isErrorWithSuccessMessage}`);
+
+  // Always force specific titles to ensure proper display
+  if (type === 'success') {
+    title = 'Success';
+  } else if (type === 'error') {
+    title = 'Error';
+  } else if (type === 'info') {
+    title = 'Information';
+  } else if (type === 'warn') {
+    title = 'Warning';
+  }
+
+  // Use the built-in toast service
   toast.add({
-    severity: 'success',
-    summary: 'Project Moved to Trash',
-    detail: `Project "${project.name}" has been moved to trash`,
+    severity: type,
+    summary: title,
+    detail: message,
     life: 3000,
   });
+
+  // Set up a mutation observer to fix any incorrectly styled toasts
+  setTimeout(() => {
+    // Look for toasts with incorrect styling
+    const toasts = document.querySelectorAll('.p-toast-message');
+
+    toasts.forEach((toast) => {
+      // Find toasts with success messages but error styling
+      const toastDetail = toast.querySelector('.p-toast-detail');
+      const toastSummary = toast.querySelector('.p-toast-summary');
+
+      if (toastDetail && toastSummary) {
+        const detailText = toastDetail.textContent || '';
+        const summaryText = toastSummary.textContent || '';
+
+        console.log(
+          `Found toast: summary=${summaryText}, detail=${detailText}`
+        );
+
+        // If this is a success message with error styling
+        if (
+          (detailText.includes('successfully') || summaryText === 'Success') &&
+          !toast.classList.contains('p-toast-message-success')
+        ) {
+          console.log('Fixing incorrectly styled success toast');
+
+          // Remove error class
+          toast.classList.remove('p-toast-message-error');
+
+          // Add success class
+          toast.classList.add('p-toast-message-success');
+
+          // Update icon from error to check
+          const icon = toast.querySelector('.p-toast-message-icon');
+          if (icon) {
+            icon.classList.remove('pi-times-circle');
+            icon.classList.add('pi-check-circle');
+          }
+
+          // Fix any other styling as needed
+          const content = toast.querySelector('.p-toast-message-content');
+          if (content) {
+            content.style.color = '#065f46';
+          }
+
+          console.log('Toast styling fixed');
+        }
+      }
+    });
+  }, 100);
+
+  // Log toast display for debugging
+  console.log(
+    `Toast displayed with: severity=${type}, summary=${title}, detail=${message}`
+  );
 };
 
-const getDaysRemaining = (deletedDate) => {
-  const deleteDate = new Date(deletedDate);
-  const expiryDate = new Date(deleteDate);
-  expiryDate.setDate(expiryDate.getDate() + 30); // 30 days retention policy
-
-  const today = new Date();
-  const diffTime = expiryDate - today;
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  return diffDays > 0 ? diffDays : 0;
-};
-
-const createProject = () => {
+const createProject = async () => {
   submitted.value = true;
 
   if (!newProject.name) {
     return;
   }
 
-  // Here you would typically call an API to create the project
-  const project = {
-    id: Date.now(), // Temporary ID for mock data
-    name: newProject.name,
-    description: newProject.description || 'No description provided',
-    createdAt: new Date(),
-    jobCount: 0,
-    jobs: [],
-  };
+  // Store the project info before clearing the form
+  const projectName = newProject.name;
+  const isUpdate = !!newProject.id;
+  const projectId = newProject.id;
 
-  projects.value.unshift(project);
-  showNewProjectDialog.value = false;
-  resetNewProjectForm();
-  submitted.value = false;
+  try {
+    let response;
+    const token = localStorage.getItem('accessToken');
+    console.log(
+      'Creating/updating project with token:',
+      token ? 'Token exists' : 'No token'
+    );
 
-  toast.add({
-    severity: 'success',
-    summary: 'Project Created',
-    detail: `Project "${project.name}" has been created`,
-    life: 3000,
-  });
+    if (isUpdate) {
+      // Update existing project
+      console.log('Updating existing project:', projectId);
+      response = await axios.put(
+        'http://localhost:8080/api/projects',
+        {
+          id: projectId,
+          name: projectName,
+          description: newProject.description || '',
+        },
+        {
+          headers: {
+            Authorization: token,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    } else {
+      // Create new project
+      console.log('Creating new project:', projectName);
+      response = await axios.post(
+        'http://localhost:8080/api/projects',
+        {
+          name: projectName,
+          description: newProject.description || '',
+        },
+        {
+          headers: {
+            Authorization: token,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
+
+    // Debug: Log the exact response
+    console.log('API full response:', response);
+    console.log('API response data:', response.data);
+    console.log('API response status:', response.status);
+    console.log('API response statusCode:', response.data?.statusCode);
+    console.log('API response message:', response.data?.message);
+
+    // Clear form and close dialog first to ensure UI responsiveness
+    resetNewProjectForm();
+    submitted.value = false;
+    showNewProjectDialog.value = false;
+
+    // Then handle the response data
+    if (
+      response.data &&
+      (response.data.statusCode === 200 || response.data.statusCode === 201)
+    ) {
+      console.log('Project saved successfully, refreshing list');
+
+      // Ensure we trigger a fresh reload of projects
+      try {
+        loading.value = true;
+        await fetchProjects();
+        console.log('Project list refreshed successfully');
+      } catch (refreshError) {
+        console.error('Error refreshing project list:', refreshError);
+      } finally {
+        loading.value = false;
+      }
+
+      // Use our custom toast function
+      const successMessage = isUpdate
+        ? `Project "${projectName}" has been updated successfully`
+        : `Project "${projectName}" has been created successfully`;
+
+      showCustomToast('success', 'Success', successMessage);
+    } else {
+      console.error('API returned non-200 status code:', response.data);
+
+      showCustomToast(
+        'error',
+        'Error',
+        response.data.message || 'Failed to save project'
+      );
+    }
+  } catch (error) {
+    console.error('Error saving project:', error);
+    // Reset form and close dialog even on error
+    resetNewProjectForm();
+    submitted.value = false;
+    showNewProjectDialog.value = false;
+
+    showCustomToast(
+      'error',
+      'Error',
+      'An error occurred while saving the project'
+    );
+  }
 };
 
 const cancelNewProject = () => {
@@ -665,13 +889,13 @@ const cancelNewProject = () => {
 };
 
 const resetNewProjectForm = () => {
+  newProject.id = null;
   newProject.name = '';
   newProject.description = '';
 };
 
-onMounted(() => {
-  // Here you would typically fetch projects from an API
-  console.log('ManageJobs component mounted');
+onMounted(async () => {
+  await fetchProjects();
 });
 </script>
 
@@ -720,5 +944,68 @@ onMounted(() => {
   background: #f8fafc;
   color: #475569;
   font-weight: 600;
+}
+
+/* Fix Toast styling */
+:deep(.p-toast) {
+  opacity: 1 !important;
+}
+
+:deep(.p-toast .p-toast-message) {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-width: 0;
+  margin-bottom: 1rem;
+}
+
+:deep(.p-toast .p-toast-message.p-toast-message-success) {
+  background-color: #ecfdf5;
+  border-left: 6px solid #10b981;
+  color: #065f46;
+}
+
+:deep(.p-toast .p-toast-message.p-toast-message-info) {
+  background-color: #eff6ff;
+  border-left: 6px solid #3b82f6;
+  color: #1e40af;
+}
+
+:deep(.p-toast .p-toast-message.p-toast-message-warn) {
+  background-color: #fffbeb;
+  border-left: 6px solid #f59e0b;
+  color: #92400e;
+}
+
+:deep(.p-toast .p-toast-message.p-toast-message-error) {
+  background-color: #fef2f2;
+  border-left: 6px solid #ef4444;
+  color: #991b1b;
+}
+
+:deep(.p-toast .p-toast-message .p-toast-message-content .p-toast-summary) {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+:deep(.p-toast .p-toast-message .p-toast-message-content .p-toast-detail) {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+:deep(.p-toast .p-toast-icon-close) {
+  color: inherit;
+  opacity: 0.7;
+}
+
+:deep(.p-toast .p-toast-icon-close:hover) {
+  opacity: 1;
+}
+</style>
+
+<style>
+/* Override PrimeVue InputText component styling */
+.search-input.p-inputtext {
+  padding-left: 2.5rem !important;
 }
 </style>

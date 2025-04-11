@@ -45,7 +45,8 @@
         <span class="text-white font-medium">Project Overview</span>
       </div>
       <div class="p-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Created At -->
           <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
             <div class="flex items-center">
               <div class="bg-primary-100 rounded-full p-2 mr-3">
@@ -59,6 +60,8 @@
               </div>
             </div>
           </div>
+
+          <!-- Total Jobs -->
           <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
             <div class="flex items-center">
               <div class="bg-primary-100 rounded-full p-2 mr-3">
@@ -67,23 +70,134 @@
               <div>
                 <h3 class="text-sm font-medium text-gray-500">Total Jobs</h3>
                 <p class="text-lg font-semibold text-gray-900">
-                  {{ project?.jobs?.length || 0 }}
+                  {{ projectStats?.totalJobs || 0 }}
                 </p>
               </div>
             </div>
           </div>
+
+          <!-- Total Locations -->
           <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
             <div class="flex items-center">
               <div class="bg-primary-100 rounded-full p-2 mr-3">
-                <i class="pi pi-users text-primary-700"></i>
+                <i class="pi pi-map-marker text-primary-700"></i>
               </div>
               <div>
                 <h3 class="text-sm font-medium text-gray-500">
-                  Total Applicants
+                  Total Locations
                 </h3>
                 <p class="text-lg font-semibold text-gray-900">
-                  {{ getTotalApplicants() }}
+                  {{ projectStats?.totalUniqueLocations || 0 }}
                 </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Working Days -->
+          <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+            <div class="flex items-center">
+              <div class="bg-primary-100 rounded-full p-2 mr-3">
+                <i class="pi pi-clock text-primary-700"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-gray-500">
+                  Total Working Days
+                </h3>
+                <p class="text-lg font-semibold text-gray-900">
+                  {{ projectStats?.totalWorkingDays || 0 }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Second Row for Recruitment Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+          <!-- Positions Needed -->
+          <div class="bg-blue-50 p-4 rounded-lg shadow-sm">
+            <div class="flex items-center">
+              <div class="bg-blue-100 rounded-full p-2 mr-3">
+                <i class="pi pi-users text-blue-700"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-blue-700">
+                  Total Positions
+                </h3>
+                <p class="text-lg font-semibold text-blue-900">
+                  {{ projectStats?.totalPositionsNeeded || 0 }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Positions Filled -->
+          <div class="bg-green-50 p-4 rounded-lg shadow-sm">
+            <div class="flex items-center">
+              <div class="bg-green-100 rounded-full p-2 mr-3">
+                <i class="pi pi-check-circle text-green-700"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-green-700">
+                  Positions Filled
+                </h3>
+                <p class="text-lg font-semibold text-green-900">
+                  {{ projectStats?.totalPositionsFilled || 0 }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Positions Remaining -->
+          <div class="bg-orange-50 p-4 rounded-lg shadow-sm">
+            <div class="flex items-center">
+              <div class="bg-orange-100 rounded-full p-2 mr-3">
+                <i class="pi pi-user-plus text-orange-700"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-orange-700">
+                  Positions Remaining
+                </h3>
+                <p class="text-lg font-semibold text-orange-900">
+                  {{ getRemainingPositions() }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Job Status Summary -->
+          <div class="bg-purple-50 p-4 rounded-lg shadow-sm">
+            <div class="flex items-center">
+              <div class="bg-purple-100 rounded-full p-2 mr-3">
+                <i class="pi pi-chart-pie text-purple-700"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-purple-700">Job Status</h3>
+                <div class="flex gap-2 mt-1">
+                  <Badge
+                    v-tooltip.top="'Open Jobs'"
+                    value="Open"
+                    :severity="'success'"
+                    class="mr-1"
+                  >
+                    {{ projectStats?.openJobs || 0 }}
+                  </Badge>
+                  <Badge
+                    v-tooltip.top="'Partially Filled'"
+                    value="Partial"
+                    :severity="'warning'"
+                    class="mr-1"
+                  >
+                    {{ projectStats?.partiallyFilledJobs || 0 }}
+                  </Badge>
+                  <Badge
+                    v-tooltip.top="'Filled Jobs'"
+                    value="Filled"
+                    :severity="'info'"
+                    class="mr-1"
+                  >
+                    {{ projectStats?.filledJobs || 0 }}
+                  </Badge>
+                </div>
               </div>
             </div>
           </div>
@@ -163,14 +277,6 @@
               </div>
             </template>
           </Column>
-          <Column field="location" header="Location">
-            <template #body="{ data }">
-              <div class="flex items-center">
-                <i class="pi pi-map-marker text-gray-500 mr-2"></i>
-                <span>{{ data.location }}</span>
-              </div>
-            </template>
-          </Column>
           <Column field="salary" header="Salary">
             <template #body="{ data }">
               <div class="flex items-center">
@@ -179,37 +285,19 @@
               </div>
             </template>
           </Column>
-          <Column field="dateRange" header="Dates">
-            <template #body="{ data }">
-              <div class="flex items-center">
-                <i class="pi pi-calendar text-blue-500 mr-2"></i>
-                <span>{{ data.dateRange }}</span>
-              </div>
-            </template>
-          </Column>
           <Column field="status" header="Status">
             <template #body="{ data }">
               <Tag
                 :value="formatJobStatus(data.status)"
                 :severity="getJobStatusSeverity(data.status)"
-                class="text-xs font-medium uppercase"
               />
             </template>
           </Column>
           <Column field="applicantsCount" header="Applicants">
             <template #body="{ data }">
               <div class="flex items-center">
-                <span
-                  class="flex items-center justify-center w-7 h-7 rounded-full bg-blue-50 mr-2"
-                >
-                  <Badge :value="data.applicantsCount" severity="info" />
-                </span>
-                <Button
-                  v-if="data.applicantsCount > 0 && !isDeletedProject"
-                  icon="pi pi-arrow-right"
-                  class="p-button-text p-button-rounded p-button-sm text-blue-500"
-                  @click.stop="viewJobApplicants(data)"
-                />
+                <i class="pi pi-users text-blue-500 mr-2"></i>
+                <Badge :value="data.applicantsCount || 0" severity="info" />
               </div>
             </template>
           </Column>
@@ -250,6 +338,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { format } from 'date-fns';
+import axios from 'axios';
 
 // PrimeVue components
 import Button from 'primevue/button';
@@ -266,6 +355,8 @@ const toast = useToast();
 // State
 const project = ref(null);
 const loading = ref(true);
+const projectStats = ref(null);
+const jobSchedules = ref([]);
 
 // Check if project is from trash (read-only mode)
 const isDeletedProject = computed(() => {
@@ -280,6 +371,10 @@ const formatJobStatus = (status) => {
     closed: 'Closed',
     paused: 'Paused',
     completed: 'Completed',
+    OPEN: 'Open',
+    CLOSED: 'Closed',
+    FILLED: 'Filled',
+    CANCELLED: 'Cancelled',
   };
   return statusMap[status] || status;
 };
@@ -292,6 +387,10 @@ const getJobStatusSeverity = (status) => {
     closed: 'secondary',
     paused: 'warning',
     completed: 'secondary',
+    OPEN: 'success',
+    CLOSED: 'secondary',
+    FILLED: 'info',
+    CANCELLED: 'danger',
   };
   return severities[status] || 'info';
 };
@@ -309,6 +408,415 @@ const getTotalApplicants = () => {
 const formatDate = (date) => {
   if (!date) return 'N/A';
   return format(new Date(date), 'dd MMM yyyy');
+};
+
+// Get auth token from localStorage
+const getAuthToken = () => {
+  return localStorage.getItem('accessToken');
+};
+
+// API CALLS FOR JOB MANAGEMENT
+
+// Create a new job
+const createJob = async (jobData) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.post(
+      'http://localhost:8080/api/jobs',
+      jobData,
+      {
+        headers: {
+          Authorization: token,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (response.data && response.data.statusCode === 201) {
+      toast.add({
+        severity: 'success',
+        summary: 'Job Created',
+        detail: `Job "${jobData.title}" has been created successfully`,
+        life: 3000,
+      });
+      fetchProjectJobs();
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error('Error creating job:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to create job: ${
+        error.response?.data?.message || 'Unknown error'
+      }`,
+      life: 3000,
+    });
+    return null;
+  }
+};
+
+// Get job by ID
+const getJobById = async (jobId) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.get(
+      `http://localhost:8080/api/jobs/${jobId}`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    if (response.data && response.data.statusCode === 200) {
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error(`Error fetching job ${jobId}:`, error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to fetch job details: ${
+        error.response?.data?.message || 'Unknown error'
+      }`,
+      life: 3000,
+    });
+    return null;
+  }
+};
+
+// Get jobs by project ID
+const getJobsByProjectId = async (projectId) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.get(
+      `http://localhost:8080/api/jobs/project/${projectId}`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    if (response.data && response.data.statusCode === 200) {
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error(`Error fetching jobs for project ${projectId}:`, error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to fetch jobs: ${
+        error.response?.data?.message || 'Unknown error'
+      }`,
+      life: 3000,
+    });
+    return [];
+  }
+};
+
+// Get all jobs for current recruiter
+const getAllJobs = async () => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.get(`http://localhost:8080/api/jobs`, {
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    if (response.data && response.data.statusCode === 200) {
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error('Error fetching all jobs:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to fetch jobs: ${
+        error.response?.data?.message || 'Unknown error'
+      }`,
+      life: 3000,
+    });
+    return [];
+  }
+};
+
+// Change job status
+const changeJobStatus = async (jobId, newStatus) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.put(
+      `http://localhost:8080/api/jobs/${jobId}/status`,
+      { newStatus },
+      {
+        headers: {
+          Authorization: token,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (response.data && response.data.statusCode === 200) {
+      toast.add({
+        severity: 'success',
+        summary: 'Status Updated',
+        detail: `Job status changed to ${formatJobStatus(newStatus)}`,
+        life: 3000,
+      });
+      fetchProjectJobs();
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error(`Error changing job status for job ${jobId}:`, error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to update job status: ${
+        error.response?.data?.message || 'Unknown error'
+      }`,
+      life: 3000,
+    });
+    return null;
+  }
+};
+
+// JOB SCHEDULE API CALLS
+
+// Create job schedule
+const createJobSchedule = async (scheduleData) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.post(
+      'http://localhost:8080/api/job-schedules',
+      scheduleData,
+      {
+        headers: {
+          Authorization: token,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (response.data && response.data.statusCode === 201) {
+      toast.add({
+        severity: 'success',
+        summary: 'Schedule Created',
+        detail: 'Job schedule has been created successfully',
+        life: 3000,
+      });
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error('Error creating job schedule:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to create job schedule: ${
+        error.response?.data?.message || 'Unknown error'
+      }`,
+      life: 3000,
+    });
+    return null;
+  }
+};
+
+// Get job schedules by job ID
+const getJobSchedulesByJobId = async (jobId) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.get(
+      `http://localhost:8080/api/job-schedules/job/${jobId}`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    if (response.data && response.data.statusCode === 200) {
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error(`Error fetching schedules for job ${jobId}:`, error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to fetch job schedules: ${
+        error.response?.data?.message || 'Unknown error'
+      }`,
+      life: 3000,
+    });
+    return [];
+  }
+};
+
+// Get job schedule by ID
+const getJobScheduleById = async (scheduleId) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.get(
+      `http://localhost:8080/api/job-schedules/${scheduleId}`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    if (response.data && response.data.statusCode === 200) {
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error(`Error fetching schedule ${scheduleId}:`, error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to fetch schedule details: ${
+        error.response?.data?.message || 'Unknown error'
+      }`,
+      life: 3000,
+    });
+    return null;
+  }
+};
+
+// Update job schedule
+const updateJobSchedule = async (scheduleId, scheduleData) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.put(
+      `http://localhost:8080/api/job-schedules/${scheduleId}`,
+      scheduleData,
+      {
+        headers: {
+          Authorization: token,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (response.data && response.data.statusCode === 200) {
+      toast.add({
+        severity: 'success',
+        summary: 'Schedule Updated',
+        detail: 'Job schedule has been updated successfully',
+        life: 3000,
+      });
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error(`Error updating schedule ${scheduleId}:`, error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to update job schedule: ${
+        error.response?.data?.message || 'Unknown error'
+      }`,
+      life: 3000,
+    });
+    return null;
+  }
+};
+
+// Delete job schedule
+const deleteJobSchedule = async (scheduleId) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.delete(
+      `http://localhost:8080/api/job-schedules/${scheduleId}`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    if (response.data && response.data.statusCode === 200) {
+      toast.add({
+        severity: 'success',
+        summary: 'Schedule Deleted',
+        detail: 'Job schedule has been deleted successfully',
+        life: 3000,
+      });
+      return true;
+    }
+  } catch (error) {
+    console.error(`Error deleting schedule ${scheduleId}:`, error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to delete job schedule: ${
+        error.response?.data?.message || 'Unknown error'
+      }`,
+      life: 3000,
+    });
+    return false;
+  }
+};
+
+// Find job schedules in date range
+const findJobSchedulesInDateRange = async (startDate, endDate) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.get(
+      `http://localhost:8080/api/job-schedules/date-range?startDate=${startDate}&endDate=${endDate}`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    if (response.data && response.data.statusCode === 200) {
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error(`Error fetching schedules in date range:`, error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to fetch schedules: ${
+        error.response?.data?.message || 'Unknown error'
+      }`,
+      life: 3000,
+    });
+    return [];
+  }
+};
+
+// Get available positions for a schedule
+const getAvailablePositions = async (scheduleId) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.get(
+      `http://localhost:8080/api/job-schedules/${scheduleId}/available-positions`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    if (response.data && response.data.statusCode === 200) {
+      return response.data.data;
+    }
+  } catch (error) {
+    console.error(
+      `Error fetching available positions for schedule ${scheduleId}:`,
+      error
+    );
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to fetch available positions: ${
+        error.response?.data?.message || 'Unknown error'
+      }`,
+      life: 3000,
+    });
+    return 0;
+  }
 };
 
 // Navigation
@@ -330,156 +838,75 @@ const navigateToCreateJob = () => {
 
 // Job actions
 const viewJobDetails = (job) => {
-  toast.add({
-    severity: 'info',
-    summary: 'View Job',
-    detail: `Viewing job details: ${job.title}`,
-    life: 3000,
+  router.push({
+    name: 'JobDetails',
+    params: { jobId: job.id },
+    query: { projectId: project.value.id },
   });
 };
 
 const editJob = (job) => {
   if (isDeletedProject.value) return;
 
-  toast.add({
-    severity: 'info',
-    summary: 'Edit Job',
-    detail: `Editing job: ${job.title}`,
-    life: 3000,
+  router.push({
+    name: 'EditJob',
+    params: { jobId: job.id },
+    query: { projectId: project.value.id },
   });
 };
 
 const viewJobApplicants = (job) => {
   if (isDeletedProject.value) return;
 
-  toast.add({
-    severity: 'info',
-    summary: 'View Applicants',
-    detail: `Viewing applicants for: ${job.title}`,
-    life: 3000,
+  router.push({
+    name: 'JobApplicants',
+    params: { jobId: job.id },
+    query: { projectId: project.value.id },
   });
 };
 
 // Fetch project data
-const fetchProjectData = () => {
+const fetchProjectData = async () => {
   loading.value = true;
 
-  // In a real app, this would be an API call
-  // For now, simulating an API call with mock data
-  setTimeout(() => {
-    // Mock project data - in a real app, this would come from an API
-    const mockProjects = [
-      {
-        id: '1',
-        name: 'Summer Sales Campaign',
-        description:
-          'Promotional events for our summer product line across major malls',
-        createdAt: new Date(2024, 3, 15), // April 15, 2024
-        jobCount: 3,
-        jobs: [
-          {
-            id: 101,
-            title: 'Dry Promoter',
-            location: 'MITC Melaka Outlet',
-            salary: 'RM 95/day',
-            dateRange: '02 May - 03 May 2024',
-            status: 'active',
-            applicantsCount: 5,
-          },
-          {
-            id: 102,
-            title: 'Event Assistant',
-            location: 'Kuala Lumpur City Centre',
-            salary: 'RM 100/day',
-            dateRange: '10 May - 12 May 2024',
-            status: 'draft',
-            applicantsCount: 0,
-          },
-          {
-            id: 103,
-            title: 'Product Demonstrator',
-            location: 'Penang Gurney Plaza',
-            salary: 'RM 110/day',
-            dateRange: '15 May - 16 May 2024',
-            status: 'active',
-            applicantsCount: 3,
-          },
-        ],
-      },
-      {
-        id: '2',
-        name: 'Tech Expo 2024',
-        description:
-          'Annual technology exhibition with product showcases and demonstrations',
-        createdAt: new Date(2024, 3, 10), // April 10, 2024
-        jobCount: 2,
-        jobs: [
-          {
-            id: 201,
-            title: 'Tech Product Demonstrator',
-            location: 'Kuala Lumpur Convention Centre',
-            salary: 'RM 120/day',
-            dateRange: '15 Jun - 18 Jun 2024',
-            status: 'draft',
-            applicantsCount: 0,
-          },
-          {
-            id: 202,
-            title: 'Registration Assistant',
-            location: 'Kuala Lumpur Convention Centre',
-            salary: 'RM 90/day',
-            dateRange: '15 Jun - 18 Jun 2024',
-            status: 'draft',
-            applicantsCount: 0,
-          },
-        ],
-      },
-      {
-        id: '3',
-        name: 'Food Festival',
-        description: 'Food sampling and promotion for the annual food festival',
-        createdAt: new Date(2024, 2, 20), // March 20, 2024
-        jobCount: 0,
-        jobs: [],
-      },
-      // Add mock data for deleted projects
-      {
-        id: '4',
-        name: 'Fashion Week 2024',
-        description:
-          'Runway models and fashion event staff for the annual fashion week',
-        createdAt: new Date(2024, 1, 15), // February 15, 2024
-        deletedAt: new Date(2024, 3, 5), // April 5, 2024
-        jobCount: 4,
-        jobs: [
-          {
-            id: 301,
-            title: 'Fashion Assistant',
-            location: 'Pavilion Shopping Mall',
-            salary: 'RM 150/day',
-            dateRange: '05 Mar - 12 Mar 2024',
-            status: 'completed',
-            applicantsCount: 8,
-          },
-          {
-            id: 302,
-            title: 'Runway Model',
-            location: 'Pavilion Shopping Mall',
-            salary: 'RM 300/day',
-            dateRange: '07 Mar - 10 Mar 2024',
-            status: 'completed',
-            applicantsCount: 12,
-          },
-        ],
-      },
-    ];
+  try {
+    const token = getAuthToken();
+    const projectId = route.params.projectId;
 
-    const foundProject = mockProjects.find(
-      (p) => p.id === route.params.projectId
+    // Fetch project details
+    const response = await axios.get(
+      `http://localhost:8080/api/projects/${projectId}`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
     );
 
-    if (foundProject) {
-      project.value = foundProject;
+    if (response.data && response.data.statusCode === 200) {
+      project.value = response.data.data;
+
+      // Fetch project statistics
+      const statsResponse = await axios.get(
+        `http://localhost:8080/api/projects/${projectId}/statistics`,
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+
+      if (statsResponse.data && statsResponse.data.statusCode === 200) {
+        projectStats.value = statsResponse.data.data;
+      } else {
+        console.error(
+          'Failed to fetch project statistics:',
+          statsResponse.data
+        );
+      }
+
+      // Fetch project jobs
+      await fetchProjectJobs();
     } else {
       toast.add({
         severity: 'error',
@@ -489,9 +916,44 @@ const fetchProjectData = () => {
       });
       router.push({ name: 'ManageJobs' });
     }
-
+  } catch (error) {
+    console.error('Error fetching project data:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'An error occurred while fetching project data',
+      life: 3000,
+    });
+    router.push({ name: 'ManageJobs' });
+  } finally {
     loading.value = false;
-  }, 1000); // Simulate network delay
+  }
+};
+
+// Fetch jobs for the current project
+const fetchProjectJobs = async () => {
+  try {
+    const projectId = route.params.projectId;
+    const jobs = await getJobsByProjectId(projectId);
+
+    if (jobs && Array.isArray(jobs)) {
+      // Update the project's jobs array
+      if (project.value) {
+        project.value.jobs = jobs;
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching project jobs:', error);
+  }
+};
+
+// Get remaining positions to fill
+const getRemainingPositions = () => {
+  if (!projectStats.value) return 0;
+  return (
+    projectStats.value.totalPositionsNeeded -
+    projectStats.value.totalPositionsFilled
+  );
 };
 
 onMounted(() => {

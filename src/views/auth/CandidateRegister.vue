@@ -94,7 +94,7 @@
                     id="name"
                     v-model="form.name"
                     type="text"
-                    class="w-full p-inputtext-sm"
+                    class="w-full p-inputtext-sm input-with-padding"
                     placeholder="Enter your full name"
                     :class="{ 'p-invalid': hasError('name') }"
                   />
@@ -113,7 +113,7 @@
                     id="email"
                     v-model="form.email"
                     type="email"
-                    class="w-full p-inputtext-lg"
+                    class="w-full p-inputtext-lg input-with-padding"
                     placeholder="your.email@example.com"
                     :class="{ 'p-invalid': hasError('email') }"
                   />
@@ -132,7 +132,7 @@
                     id="username"
                     v-model="form.username"
                     type="text"
-                    class="w-full p-inputtext-lg"
+                    class="w-full p-inputtext-lg input-with-padding"
                     placeholder="Choose a unique username"
                     :class="{ 'p-invalid': hasError('username') }"
                   />
@@ -155,6 +155,14 @@
                     :class="{ 'p-invalid': hasError('password') }"
                     :feedback="true"
                     placeholder="Create a secure password"
+                    inputClass="password-input-no-padding"
+                    :pt="{
+                      input: {
+                        style: {
+                          padding: '0.75rem 1rem',
+                        },
+                      },
+                    }"
                   />
                 </div>
                 <small v-if="hasError('password')" class="p-error">
@@ -177,6 +185,14 @@
                     :class="{ 'p-invalid': hasError('confirmPassword') }"
                     :feedback="false"
                     placeholder="Confirm your password"
+                    inputClass="password-input-no-padding"
+                    :pt="{
+                      input: {
+                        style: {
+                          padding: '0.75rem 1rem',
+                        },
+                      },
+                    }"
                   />
                 </div>
                 <small v-if="hasError('confirmPassword')" class="p-error">
@@ -234,7 +250,7 @@
                       id="phoneNumber"
                       v-model="form.phoneNumber"
                       type="tel"
-                      class="w-full p-inputtext-lg"
+                      class="w-full p-inputtext-lg input-with-padding"
                       placeholder="+60 12 345 6789"
                       :class="{ 'p-invalid': hasError('phoneNumber') }"
                     />
@@ -402,7 +418,7 @@
                     v-model="form.bio"
                     rows="4"
                     placeholder="Share a brief description about yourself, your skills, and work preferences..."
-                    class="w-full p-inputtext-lg"
+                    class="w-full p-inputtext-lg input-with-padding"
                     :class="{ 'p-invalid': hasError('bio') }"
                   />
                 </div>
@@ -899,6 +915,13 @@ onMounted(() => {
   width: 100% !important;
   padding: 0.75rem 1rem !important;
   border: none !important;
+  border-radius: 0.375rem;
+  transition: all 0.3s;
+}
+
+:deep(.p-password .p-password-input::placeholder) {
+  padding-left: 0 !important;
+  text-indent: 0 !important;
 }
 
 /* Remove focus outlines and box shadows */
@@ -1104,7 +1127,12 @@ onMounted(() => {
 :deep(.p-inputtext):not(.p-dropdown-label):not(.p-multiselect-label):not(
     .p-calendar-label
   ) {
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1rem !important;
+}
+
+/* Add proper padding to placeholders */
+:deep(.p-inputtext)::placeholder {
+  padding-left: 1rem;
 }
 
 :deep(.p-inputtext:hover),
@@ -1322,5 +1350,24 @@ onMounted(() => {
 .custom-step-item.active .step-label {
   color: var(--primary-color);
   font-weight: 600;
+}
+
+/* Fix for input placeholder alignment */
+:deep(.input-with-padding) {
+  padding-left: 1rem !important;
+}
+
+:deep(.input-with-padding::placeholder) {
+  padding-left: 0 !important;
+}
+
+/* Fix password field placeholder alignment */
+:deep(.password-input-no-padding) {
+  padding: 0.75rem 0 0.75rem 1rem !important;
+  text-indent: 0 !important;
+}
+
+:deep(.password-input-no-padding::placeholder) {
+  text-indent: 0 !important;
 }
 </style>
