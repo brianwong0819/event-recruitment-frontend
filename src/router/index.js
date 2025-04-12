@@ -40,6 +40,7 @@ const CandidateDashboard = () => import('../views/candidate/Dashboard.vue');
 const CandidateProfile = () => import('../views/candidate/Profile.vue');
 const CandidateAvailability = () =>
   import('../views/candidate/Availability.vue');
+const FindJobs = () => import('../views/candidate/FindJobs.vue');
 
 // Recruiter views
 const RecruiterLayout = () => import('../layouts/RecruiterLayout.vue');
@@ -133,6 +134,11 @@ const routes = [
         path: 'availability',
         name: 'CandidateAvailability',
         component: CandidateAvailability,
+      },
+      {
+        path: 'jobs',
+        name: 'FindJobs',
+        component: FindJobs,
       },
     ],
   },
