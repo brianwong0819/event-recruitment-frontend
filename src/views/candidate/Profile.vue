@@ -73,13 +73,14 @@
           ></div>
           <div class="w-24 h-24 relative mb-4 z-10 sm:w-28 sm:h-28">
             <div
-              v-if="profile?.profilePictureUrl"
+              v-if="hasValidProfilePicture"
               class="w-full h-full overflow-hidden rounded-full border-4 border-white shadow-lg"
             >
               <img
-                :src="getImageUrl(profile.profilePictureUrl)"
+                :src="profilePictureSource"
                 alt="Profile"
                 class="w-full h-full object-cover"
+                @error="handleProfileImageError"
               />
             </div>
             <div
@@ -96,9 +97,11 @@
           <p class="text-gray-600 text-sm text-center z-10">
             {{ profile?.username || '@username' }}
           </p>
-          <div class="flex items-center mt-1 text-xs text-gray-500 z-10">
-            <i class="pi pi-map-marker mr-1 text-primary-500"></i>
-            <p>{{ getLocation(profile) }}</p>
+          <div
+            class="flex justify-center items-center mt-1 text-xs text-gray-600 z-10 text-center px-4"
+          >
+            <i class="pi pi-map-marker mr-1 text-primary-500 flex-shrink-0"></i>
+            <span class="truncate">{{ getLocation(profile) }}</span>
           </div>
           <input
             type="file"
@@ -347,10 +350,10 @@
                       class="text-sm text-gray-500 mb-1 font-medium flex items-center"
                     >
                       <i class="pi pi-map-marker text-primary-400 mr-1"></i>
-                      Location
+                      Preferred Location
                     </p>
                     <p class="text-base text-gray-800 pl-5">
-                      {{ getLocation(profile) }}
+                      <span>{{ getLocation(profile) }}</span>
                     </p>
                   </div>
                   <div
@@ -508,17 +511,26 @@
                         ><i class="pi pi-map-marker text-primary-400 mr-1"></i
                         >Location</label
                       >
-                      <InputText
+                      <LocationSearch
                         id="location"
-                        v-model="editForm.location"
-                        class="w-full shadow-sm"
-                        style="
-                          border-radius: 0.5rem;
-                          background-color: #f9fafb;
-                          padding: 0.5rem 0.75rem;
-                        "
-                        placeholder="e.g., Kuala Lumpur, Malaysia"
+                        :multiple="false"
+                        :show-selections="false"
+                        @location-selected="handleLocationSelected"
+                        class="w-full"
+                        v-model="selectedLocation"
                       />
+                      <!-- Display selected location -->
+                      <div
+                        v-if="editForm.locationId && editForm.location"
+                        class="mt-2 flex items-center bg-primary-50 p-2 rounded-md"
+                      >
+                        <i
+                          class="pi pi-map-marker mr-2 text-primary-500 text-sm"
+                        ></i>
+                        <span class="text-sm font-medium text-primary-700">
+                          {{ editForm.location }}
+                        </span>
+                      </div>
                     </div>
                     <div class="form-group">
                       <label
@@ -1293,11 +1305,12 @@
                       Profile Photo
                     </h3>
                     <div class="flex items-center bg-gray-50 p-4 rounded-xl">
-                      <div v-if="profile?.profilePictureUrl" class="mr-5">
+                      <div v-if="hasValidProfilePicture" class="mr-5">
                         <img
-                          :src="getImageUrl(profile.profilePictureUrl)"
+                          :src="profilePictureSource"
                           alt="Profile"
                           class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
+                          @error="handleProfileImageError"
                         />
                       </div>
                       <div
@@ -2118,6 +2131,7 @@ import {
   onMounted,
   nextTick,
   onBeforeUnmount,
+  onBeforeMount,
 } from 'vue';
 import { useProfileStore } from '@/stores/profile';
 import { useAuthStore } from '@/stores/auth';
@@ -2140,6 +2154,7 @@ import InputText from 'primevue/inputtext';
 import ConfirmDialog from 'primevue/confirmdialog';
 import { useRoute, useRouter } from 'vue-router';
 import AvailabilityComponent from '@/components/candidate/Availability.vue';
+import LocationSearch from '@/components/shared/LocationSearch.vue';
 
 // Initialize toast service
 const toast = useToast();
@@ -2195,6 +2210,24 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (isClient.value) {
     window?.removeEventListener('resize', updateWindowWidth);
+  }
+});
+
+// Add this at the start of the script, after variable declarations but before onMounted
+// Preload any cached profile picture
+onBeforeMount(() => {
+  const cachedProfilePicUrl = localStorage.getItem('cachedProfilePictureUrl');
+  if (
+    cachedProfilePicUrl &&
+    (!profile.value || !profile.value.profilePictureUrl)
+  ) {
+    // Create a minimal profile if needed
+    if (!profile.value) {
+      profile.value = {};
+    }
+    // Set the cached URL as the profile picture
+    profile.value.profilePictureUrl = cachedProfilePicUrl;
+    console.debug('Preloaded cached profile picture URL:', cachedProfilePicUrl);
   }
 });
 
@@ -2287,6 +2320,9 @@ const selectedWorkingPhoto = ref(null);
 const workingPhotoDialogVisible = ref(false);
 const workingPhotoPreviewIndex = ref(0);
 
+// Add this next to other refs
+const selectedLocation = ref([]);
+
 // Load profile data on component mount
 onMounted(async () => {
   loading.value = true;
@@ -2311,24 +2347,43 @@ onMounted(async () => {
         // Check if we have a profile picture URL, and if it's a relative path
         // Try to load from assets if needed
         if (profile.value && !profile.value.profilePictureUrl) {
-          // Try to load default profile picture for this user
-          const username = profile.value.username || '';
-          if (username) {
-            // Check common image formats
-            const formats = ['jpg', 'jpeg', 'png', 'gif'];
-            for (const format of formats) {
-              try {
-                const imgUrl = new URL(
-                  `../../assets/profile-pictures/${username}.${format}`,
-                  import.meta.url
-                ).href;
-                profile.value.profilePictureUrl = imgUrl;
-                console.log('Found profile picture:', imgUrl);
-                break;
-              } catch (e) {
-                // Continue trying other formats
+          // Check for cached profile picture URL
+          const cachedProfilePicUrl = localStorage.getItem(
+            'cachedProfilePictureUrl'
+          );
+          if (cachedProfilePicUrl) {
+            console.log(
+              'Using cached profile picture from localStorage:',
+              cachedProfilePicUrl
+            );
+            profile.value.profilePictureUrl = cachedProfilePicUrl;
+          } else {
+            // Try to load default profile picture for this user
+            const username = profile.value.username || '';
+            if (username) {
+              // Check common image formats
+              const formats = ['jpg', 'jpeg', 'png', 'gif'];
+              for (const format of formats) {
+                try {
+                  const imgUrl = new URL(
+                    `../../assets/profile-pictures/${username}.${format}`,
+                    import.meta.url
+                  ).href;
+                  profile.value.profilePictureUrl = imgUrl;
+                  console.log('Found profile picture:', imgUrl);
+                  break;
+                } catch (e) {
+                  // Continue trying other formats
+                }
               }
             }
+          }
+        } else if (profile.value && profile.value.profilePictureUrl) {
+          // Use getImageUrl to resolve and possibly cache the profile picture
+          const resolvedUrl = getImageUrl(profile.value.profilePictureUrl);
+          if (resolvedUrl) {
+            // This will also cache the URL in localStorage if needed
+            profile.value.profilePictureUrl = resolvedUrl;
           }
         }
 
@@ -2360,24 +2415,43 @@ onMounted(async () => {
 
         // Check if we have a profile picture URL, and if it's a relative path
         if (profile.value && !profile.value.profilePictureUrl) {
-          // Try to load default profile picture for this user
-          const username = profile.value.username || '';
-          if (username) {
-            // Check common image formats
-            const formats = ['jpg', 'jpeg', 'png', 'gif'];
-            for (const format of formats) {
-              try {
-                const imgUrl = new URL(
-                  `../../assets/profile-pictures/${username}.${format}`,
-                  import.meta.url
-                ).href;
-                profile.value.profilePictureUrl = imgUrl;
-                console.log('Found profile picture:', imgUrl);
-                break;
-              } catch (e) {
-                // Continue trying other formats
+          // Check for cached profile picture URL
+          const cachedProfilePicUrl = localStorage.getItem(
+            'cachedProfilePictureUrl'
+          );
+          if (cachedProfilePicUrl) {
+            console.log(
+              'Using cached profile picture from localStorage:',
+              cachedProfilePicUrl
+            );
+            profile.value.profilePictureUrl = cachedProfilePicUrl;
+          } else {
+            // Try to load default profile picture for this user
+            const username = profile.value.username || '';
+            if (username) {
+              // Check common image formats
+              const formats = ['jpg', 'jpeg', 'png', 'gif'];
+              for (const format of formats) {
+                try {
+                  const imgUrl = new URL(
+                    `../../assets/profile-pictures/${username}.${format}`,
+                    import.meta.url
+                  ).href;
+                  profile.value.profilePictureUrl = imgUrl;
+                  console.log('Found profile picture:', imgUrl);
+                  break;
+                } catch (e) {
+                  // Continue trying other formats
+                }
               }
             }
+          }
+        } else if (profile.value && profile.value.profilePictureUrl) {
+          // Use getImageUrl to resolve and possibly cache the profile picture
+          const resolvedUrl = getImageUrl(profile.value.profilePictureUrl);
+          if (resolvedUrl) {
+            // This will also cache the URL in localStorage if needed
+            profile.value.profilePictureUrl = resolvedUrl;
           }
         }
 
@@ -2810,10 +2884,69 @@ const formatAvailabilityDate = (dateString) => {
 
 const getLocation = (profile) => {
   // Check if preferredLocation exists in the profile (API response)
-  if (profile?.preferredLocation) return profile.preferredLocation;
+  if (profile?.preferredLocation) {
+    try {
+      // Check if it's a JSON string (starts with {)
+      if (
+        typeof profile.preferredLocation === 'string' &&
+        profile.preferredLocation.trim().startsWith('{')
+      ) {
+        const locationObj = JSON.parse(profile.preferredLocation);
+        return (
+          locationObj.name || locationObj.address || 'Location not available'
+        );
+      }
+
+      // Check if it's already an object
+      if (
+        typeof profile.preferredLocation === 'object' &&
+        profile.preferredLocation !== null
+      ) {
+        return (
+          profile.preferredLocation.name ||
+          profile.preferredLocation.address ||
+          'Location not available'
+        );
+      }
+
+      // It's a simple string, return as is
+      return profile.preferredLocation;
+    } catch (error) {
+      console.error('Error parsing location:', error);
+      return String(profile.preferredLocation);
+    }
+  }
 
   // Check if location exists in the profile (fallback)
-  if (profile?.location) return profile.location;
+  if (profile?.location) {
+    try {
+      // Check if it's a JSON string (starts with {)
+      if (
+        typeof profile.location === 'string' &&
+        profile.location.trim().startsWith('{')
+      ) {
+        const locationObj = JSON.parse(profile.location);
+        return (
+          locationObj.name || locationObj.address || 'Location not available'
+        );
+      }
+
+      // Check if it's already an object
+      if (typeof profile.location === 'object' && profile.location !== null) {
+        return (
+          profile.location.name ||
+          profile.location.address ||
+          'Location not available'
+        );
+      }
+
+      // It's a simple string, return as is
+      return profile.location;
+    } catch (error) {
+      console.error('Error parsing location:', error);
+      return String(profile.location);
+    }
+  }
 
   // Return default message if neither exists
   return 'No location set';
@@ -2831,16 +2964,40 @@ const formatResumeUploadDate = () => {
 // Format image URLs properly
 const getImageUrl = (url) => {
   if (!url) {
-    // Return a default avatar or empty string when no URL is provided
-    return '';
+    // Check if we have a cached profile picture URL in localStorage
+    const cachedProfilePicUrl = localStorage.getItem('cachedProfilePictureUrl');
+    if (cachedProfilePicUrl) {
+      console.debug('Using cached profile picture URL from localStorage');
+      return cachedProfilePicUrl;
+    }
+    return ''; // Return empty string for null/undefined URLs
+  }
+
+  // Check for invalid URL patterns first
+  if (
+    typeof url === 'string' &&
+    (url.includes('/undefined') || url.includes('undefined'))
+  ) {
+    console.debug('Invalid image URL detected and handled:', url);
+
+    // Check for cached URL if available
+    const cachedProfilePicUrl = localStorage.getItem('cachedProfilePictureUrl');
+    if (cachedProfilePicUrl) {
+      console.debug(
+        'Using cached profile picture URL from localStorage instead of invalid URL'
+      );
+      return cachedProfilePicUrl;
+    }
+
+    return ''; // Return empty string to avoid broken images
   }
 
   // Handle URLs that start with http or https
   if (url.startsWith('http')) {
-    // Check if the URL contains 'undefined' which indicates an error
-    if (url.includes('/undefined')) {
-      console.warn('Invalid image URL detected:', url);
-      return ''; // Return empty string to avoid broken images
+    // Cache valid URLs in localStorage for profile pictures
+    if (url.includes('profile-picture') || url.includes('profilePicture')) {
+      localStorage.setItem('cachedProfilePictureUrl', url);
+      console.debug('Cached profile picture URL in localStorage:', url);
     }
     return url;
   }
@@ -2851,23 +3008,43 @@ const getImageUrl = (url) => {
 
     // Make sure filename is valid
     if (!filename || filename === 'undefined') {
-      console.warn('Invalid filename detected in profile picture path', url);
+      console.debug('Invalid filename detected in profile picture path', url);
+
+      // Check for cached URL if available
+      const cachedProfilePicUrl = localStorage.getItem(
+        'cachedProfilePictureUrl'
+      );
+      if (cachedProfilePicUrl) {
+        return cachedProfilePicUrl;
+      }
+
       return '';
     }
 
     // Try direct import from assets
     try {
       // Use relative path to assets directory
-      return new URL(
+      const resolvedUrl = new URL(
         `../../assets/profile-pictures/${filename}`,
         import.meta.url
       ).href;
+
+      // Cache the resolved URL for profile pictures
+      localStorage.setItem('cachedProfilePictureUrl', resolvedUrl);
+      console.debug('Cached profile picture URL in localStorage:', resolvedUrl);
+
+      return resolvedUrl;
     } catch (error) {
-      console.warn('Could not import profile picture:', error);
+      console.debug('Could not import profile picture:', error);
 
       // If not found via import, try as absolute path
       if (url.startsWith('/')) {
-        return `${window.location.origin}${url}`;
+        const absoluteUrl = `${window.location.origin}${url}`;
+
+        // Cache the absolute URL for profile pictures
+        localStorage.setItem('cachedProfilePictureUrl', absoluteUrl);
+
+        return absoluteUrl;
       }
 
       return '';
@@ -2876,7 +3053,14 @@ const getImageUrl = (url) => {
 
   // Handle relative paths from backend
   if (url.startsWith('/')) {
-    return `${window.location.origin}${url}`;
+    const absoluteUrl = `${window.location.origin}${url}`;
+
+    // Cache the URL if it looks like a profile picture
+    if (url.includes('profile-picture') || url.includes('profilePicture')) {
+      localStorage.setItem('cachedProfilePictureUrl', absoluteUrl);
+    }
+
+    return absoluteUrl;
   }
 
   // Default case
@@ -2910,21 +3094,9 @@ const employmentStatusOptions = [
 
 const languageOptions = [
   { label: 'English', value: 'ENGLISH' },
+  { label: 'Mandarin', value: 'MANDARIN' },
   { label: 'Malay', value: 'MALAY' },
-  { label: 'Chinese', value: 'CHINESE' },
   { label: 'Tamil', value: 'TAMIL' },
-  { label: 'Arabic', value: 'ARABIC' },
-  { label: 'Cantonese', value: 'CANTONESE' },
-  { label: 'French', value: 'FRENCH' },
-  { label: 'German', value: 'GERMAN' },
-  { label: 'Hakka', value: 'HAKKA' },
-  { label: 'Hindi', value: 'HINDI' },
-  { label: 'Hokkien', value: 'HOKKIEN' },
-  { label: 'Japanese', value: 'JAPANESE' },
-  { label: 'Korean', value: 'KOREAN' },
-  { label: 'Spanish', value: 'SPANISH' },
-  { label: 'Thai', value: 'THAI' },
-  { label: 'Vietnamese', value: 'VIETNAMESE' },
   { label: 'Other', value: 'OTHER' },
 ];
 
@@ -3004,9 +3176,6 @@ const profileCompletionStatus = computed(() => {
 
 // Form actions for basic info
 const startEditingBasicInfo = () => {
-  // Get location from profile using helper function
-  const locationValue = getLocation(profile.value);
-
   // Reset error states
   formErrors.value = {};
   formSubmissionError.value = '';
@@ -3016,12 +3185,25 @@ const startEditingBasicInfo = () => {
     dateOfBirth: profile.value?.dateOfBirth
       ? parseISO(profile.value.dateOfBirth)
       : null,
-    location: locationValue !== 'No location set' ? locationValue : '',
+    location: profile.value?.preferredLocation || '',
+    locationId: profile.value?.preferredLocationId || null,
     // Make sure race is explicitly assigned (not undefined)
     race: profile.value?.race || null,
     gender: profile.value?.gender || null,
     employmentStatus: profile.value?.employmentStatus || null,
   };
+
+  // Initialize location selection with existing location if available
+  if (profile.value?.preferredLocation && profile.value?.preferredLocationId) {
+    selectedLocation.value = [
+      {
+        id: profile.value.preferredLocationId,
+        name: profile.value.preferredLocation,
+      },
+    ];
+  } else {
+    selectedLocation.value = [];
+  }
 
   editingBasicInfo.value = true;
 };
@@ -3075,8 +3257,8 @@ const saveBasicInfo = async () => {
       dateOfBirth: editForm.value.dateOfBirth
         ? format(editForm.value.dateOfBirth, 'yyyy-MM-dd')
         : null,
-      // Set preferredLocation for API compatibility
-      preferredLocation: editForm.value.location || null,
+      // Use locationId instead of location name
+      preferredLocationId: editForm.value.locationId || null,
       // Ensure race field is included
       race: editForm.value.race || null,
     };
@@ -3086,7 +3268,7 @@ const saveBasicInfo = async () => {
       name: formattedData.name,
       bio: formattedData.bio || null,
       phoneNumber: formattedData.phoneNumber || null,
-      preferredLocation: formattedData.preferredLocation || null,
+      preferredLocationId: formattedData.preferredLocationId || null, // Use locationId here
       dateOfBirth: formattedData.dateOfBirth || null,
       race: formattedData.race || null,
       gender: formattedData.gender || null,
@@ -3119,8 +3301,23 @@ const saveBasicInfo = async () => {
         responseData = requestData;
       }
 
-      // Update local profile state with the response data
-      profile.value = { ...profile.value, ...responseData };
+      // Make sure languages from the form are properly set in the profile
+      // This ensures the UI updates immediately even if the response doesn't include languages
+      const updatedProfile = {
+        ...profile.value,
+        ...responseData,
+      };
+
+      // Ensure languages are properly set from the form data if not in the response
+      if (
+        (!updatedProfile.languages || updatedProfile.languages.length === 0) &&
+        editForm.value.languages &&
+        editForm.value.languages.length > 0
+      ) {
+        updatedProfile.languages = [...editForm.value.languages];
+      }
+
+      profile.value = updatedProfile;
 
       // Add success message
       const successMessage = document.createElement('div');
@@ -3412,7 +3609,34 @@ const handleProfilePictureUpload = async (event) => {
     }
 
     if (profilePictureUrl) {
-      profile.value = { ...profile.value, profilePictureUrl };
+      // First, create a direct object URL for the file for immediate display
+      const localUrl = URL.createObjectURL(file);
+
+      // Cache the local URL first for immediate display
+      localStorage.setItem('cachedProfilePictureUrl', localUrl);
+
+      // Update the profile with the new URL
+      profile.value = {
+        ...profile.value,
+        profilePictureUrl: localUrl,
+      };
+
+      // Then, in the background, resolve the server URL
+      setTimeout(() => {
+        // Get the resolved URL from the server response
+        const resolvedUrl = getImageUrl(profilePictureUrl);
+
+        // Update localStorage with the server URL for persistent storage
+        if (resolvedUrl) {
+          localStorage.setItem('cachedProfilePictureUrl', resolvedUrl);
+        }
+
+        // Update the profile with the server URL
+        profile.value = {
+          ...profile.value,
+          profilePictureUrl: profilePictureUrl,
+        };
+      }, 1000); // Delay to ensure UI shows the local image first
     }
   } catch (error) {
     console.error('Error uploading profile picture:', error);
@@ -4147,6 +4371,101 @@ const handleDrop = (event) => {
     validateAndSetWorkingPhoto(file);
   }
 };
+
+const handleLocationSelected = (location) => {
+  console.log('Location selected:', location);
+
+  // When a location is selected in the component
+  if (location && location.length > 0) {
+    const selectedLoc = location[0];
+
+    // Update both the ID and the location name in the profile data
+    editForm.value.locationId = selectedLoc.id;
+    // Store location as a simple name property for consistency and readability
+    editForm.value.location = selectedLoc.name;
+  } else {
+    editForm.value.locationId = null;
+    editForm.value.location = null;
+  }
+};
+
+const editProfile = () => {
+  editMode.value = true;
+  editForm.value = {
+    fullName: profile.value.fullName || '',
+    phoneNumber: profile.value.phoneNumber || '',
+    location: profile.value.location || '',
+    locationId: profile.value.locationId || null,
+    dateOfBirth: profile.value.dateOfBirth
+      ? new Date(profile.value.dateOfBirth)
+      : null,
+    race: profile.value.race || null,
+    gender: profile.value.gender || null,
+    employmentStatus: profile.value.employmentStatus || null,
+    languages: profile.value.languages || [],
+    bio: profile.value.bio || '',
+  };
+
+  // Initialize location selection with existing location if available
+  if (profile.value.location && profile.value.locationId) {
+    selectedLocation.value = [
+      {
+        id: profile.value.locationId,
+        name: profile.value.location,
+      },
+    ];
+  } else {
+    selectedLocation.value = [];
+  }
+};
+
+// Add this computed property after other computed properties
+const profilePictureSource = computed(() => {
+  // First try to get from profile
+  if (profile.value?.profilePictureUrl) {
+    const url = getImageUrl(profile.value.profilePictureUrl);
+    if (url && url.trim() !== '') {
+      // Successfully resolved a URL from the profile data
+      return url;
+    }
+  }
+
+  // If not in profile or invalid, try local storage
+  const cachedUrl = localStorage.getItem('cachedProfilePictureUrl');
+  if (cachedUrl && cachedUrl.trim() !== '') {
+    // Ensure we update the profile value for consistency
+    if (profile.value) {
+      profile.value.profilePictureUrl = cachedUrl;
+    }
+    return cachedUrl;
+  }
+
+  // No valid URL found
+  return '';
+});
+
+// Add this computed property to check if we should show the profile picture
+const hasValidProfilePicture = computed(() => {
+  return !!profilePictureSource.value;
+});
+
+// Add this after the computed properties
+// Handle profile image error when it fails to load
+const handleProfileImageError = (event) => {
+  console.debug(
+    'Profile image failed to load, removing invalid URL from cache'
+  );
+  // Remove the invalid URL from cache
+  localStorage.removeItem('cachedProfilePictureUrl');
+
+  // Remove the URL from the profile to trigger the fallback
+  if (profile.value) {
+    profile.value.profilePictureUrl = '';
+  }
+
+  // Prevent infinite error events
+  event.target.onerror = null;
+};
 </script>
 
 <style scoped>
@@ -4437,5 +4756,35 @@ const handleDrop = (event) => {
   background-color: #fcfcfc;
   border-bottom-left-radius: 0.5rem;
   border-bottom-right-radius: 0.5rem;
+}
+
+/* Remove dropdown inner border and make consistent sizing */
+:deep(.p-dropdown .p-dropdown-label.p-inputtext) {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:deep(.p-dropdown) {
+  width: 100%;
+  height: auto;
+}
+
+:deep(.p-dropdown .p-dropdown-label) {
+  padding: 0.5rem 0.75rem;
+  min-height: 2.75rem;
+  line-height: 1.5;
+}
+
+:deep(.p-multiselect) {
+  width: 100%;
+  height: auto;
+}
+
+:deep(.p-multiselect-label) {
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.5rem 0.75rem;
+  min-height: 2.75rem;
+  line-height: 1.5;
 }
 </style>

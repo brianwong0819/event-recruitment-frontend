@@ -384,17 +384,29 @@
                     {{ showCompanyNameField ? 'Company Location' : 'Location' }}
                     <span class="text-red-500">*</span>
                   </label>
-                  <div class="flex items-center">
-                    <i class="pi pi-map-marker mr-2 text-gray-500 text-sm"></i>
-                    <InputText
-                      id="companyLocation"
-                      v-model="form.companyLocation"
-                      type="text"
-                      placeholder="e.g., Kuala Lumpur, Malaysia"
-                      class="w-full p-inputtext-sm"
+                  <div class="location-field-container">
+                    <LocationSearch
+                      :multiple="false"
+                      :show-selections="false"
+                      @location-selected="handleLocationSelected"
+                      class="w-full"
                       :class="{ 'p-invalid': hasError('companyLocation') }"
                     />
                   </div>
+
+                  <!-- Display selected location -->
+                  <div
+                    v-if="form.companyLocationId && form.companyLocation"
+                    class="mt-2 flex items-center bg-primary-50 p-2 rounded-md"
+                  >
+                    <i
+                      class="pi pi-map-marker mr-2 text-primary-500 text-sm"
+                    ></i>
+                    <span class="text-sm font-medium text-primary-700">{{
+                      form.companyLocation
+                    }}</span>
+                  </div>
+
                   <small
                     v-if="hasError('companyLocation')"
                     class="p-error text-xs"
@@ -521,6 +533,7 @@
 import { ref, reactive, computed, watch, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import LocationSearch from '@/components/shared/LocationSearch.vue';
 
 // Component setup
 const router = useRouter();
@@ -543,6 +556,7 @@ const form = reactive({
   // Step 3: Company Details
   companyDescription: '',
   companyLocation: '',
+  companyLocationId: null,
   companyWebsite: '',
   terms: false,
 });
@@ -678,7 +692,7 @@ const validateCurrentStep = () => {
       isValid = false;
     }
 
-    if (!form.companyLocation) {
+    if (!form.companyLocationId) {
       formErrors.companyLocation = true;
       isValid = false;
     }
@@ -744,6 +758,7 @@ const submitForm = async () => {
     const formData = { ...form };
     delete formData.terms;
     delete formData.confirmPassword;
+    delete formData.companyLocation; // Remove the text field as we'll use companyLocationId instead
 
     // If recruiter type is individual, clear the company name
     if (formData.recruiterType === 'INDIVIDUAL') {
@@ -764,6 +779,19 @@ const submitForm = async () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } finally {
     isLoading.value = false;
+  }
+};
+
+// Handle location selection
+const handleLocationSelected = (location) => {
+  console.log('Location selected:', location);
+  if (location && location.length > 0) {
+    const selectedLocation = location[0];
+    form.companyLocationId = selectedLocation.id;
+    form.companyLocation = selectedLocation.name;
+  } else {
+    form.companyLocationId = null;
+    form.companyLocation = '';
   }
 };
 </script>

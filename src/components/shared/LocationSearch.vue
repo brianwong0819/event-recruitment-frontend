@@ -110,8 +110,8 @@
       </div>
     </div>
 
-    <!-- Selected locations list -->
-    <div class="mt-4">
+    <!-- Selected locations list - Only show when showSelections prop is true -->
+    <div v-if="showSelections" class="mt-4">
       <div class="text-sm font-medium text-gray-700 mb-2">
         Selected Locations ({{ selectedLocations.length }})
       </div>
@@ -223,9 +223,21 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  multiple: {
+    type: Boolean,
+    default: true,
+  },
+  showSelections: {
+    type: Boolean,
+    default: true,
+  },
 });
 
-const emit = defineEmits(['update:modelValue', 'editLocation']);
+const emit = defineEmits([
+  'update:modelValue',
+  'editLocation',
+  'location-selected',
+]);
 
 const toast = useToast();
 const searchQuery = ref('');
@@ -339,7 +351,12 @@ const selectLocation = async (location) => {
     // Add to list with temporary loading state
     const tempIndex = selectedLocations.value.length;
     const tempLocation = { ...location, isLoading: true };
-    selectedLocations.value = [...selectedLocations.value, tempLocation];
+
+    if (!props.multiple) {
+      selectedLocations.value = [tempLocation];
+    } else {
+      selectedLocations.value = [...selectedLocations.value, tempLocation];
+    }
 
     try {
       const response = await locationService.saveGooglePlaceLocation(
@@ -356,8 +373,13 @@ const selectLocation = async (location) => {
         // Make sure the saved location is correctly assigned back
         // Need to ensure reactivity is maintained correctly
         const updatedLocations = [...selectedLocations.value];
-        updatedLocations[tempIndex] = savedLocation;
+        updatedLocations[props.multiple ? tempIndex : 0] = savedLocation;
         selectedLocations.value = updatedLocations;
+
+        // Emit the selected location for single selection mode
+        if (!props.multiple) {
+          emit('location-selected', [savedLocation]);
+        }
 
         toast.add({
           severity: 'success',
@@ -371,9 +393,13 @@ const selectLocation = async (location) => {
     } catch (err) {
       console.error('Error saving Google Places location:', err);
       // Remove the temporary location on error
-      selectedLocations.value = selectedLocations.value.filter(
-        (_, i) => i !== tempIndex
-      );
+      if (props.multiple) {
+        selectedLocations.value = selectedLocations.value.filter(
+          (_, i) => i !== tempIndex
+        );
+      } else {
+        selectedLocations.value = [];
+      }
 
       toast.add({
         severity: 'error',
@@ -384,7 +410,13 @@ const selectLocation = async (location) => {
     }
   } else {
     // Regular database location, just add it
-    selectedLocations.value = [...selectedLocations.value, location];
+    if (!props.multiple) {
+      selectedLocations.value = [location];
+      // Emit the selected location for single selection mode
+      emit('location-selected', [location]);
+    } else {
+      selectedLocations.value = [...selectedLocations.value, location];
+    }
   }
 
   // Clear search after selection

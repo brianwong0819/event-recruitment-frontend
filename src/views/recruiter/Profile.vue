@@ -107,7 +107,9 @@
               </div>
               <div v-if="profile.companyLocation" class="flex items-center">
                 <i class="pi pi-map-marker text-gray-500 mr-2"></i>
-                <span>{{ profile.companyLocation }}</span>
+                <span>{{
+                  displayLocationName(profile.companyLocation) || 'Not provided'
+                }}</span>
               </div>
               <div v-if="profile.companyWebsite" class="flex items-center">
                 <i class="pi pi-globe text-gray-500 mr-2"></i>
@@ -294,6 +296,24 @@
                   </div>
                   <div
                     v-if="profile.recruiterType === 'INDIVIDUAL'"
+                    class="md:col-span-2"
+                  >
+                    <p class="text-gray-500 text-sm mb-1">Location</p>
+                    <p v-if="profile.companyLocation" class="font-medium">
+                      {{
+                        displayLocationName(profile.companyLocation) ||
+                        'Not provided'
+                      }}
+                    </p>
+                    <p v-else class="text-gray-600 italic">
+                      No location provided.
+                      <span class="text-amber-500 text-xs ml-1">
+                        (Recommended)
+                      </span>
+                    </p>
+                  </div>
+                  <div
+                    v-if="profile.recruiterType === 'INDIVIDUAL'"
                     class="md:col-span-2 mt-2"
                   >
                     <p class="text-gray-500 text-sm mb-1">Bio</p>
@@ -350,7 +370,10 @@
                   <div>
                     <p class="text-gray-500 text-sm mb-1">Company Location</p>
                     <p class="font-medium">
-                      {{ profile.companyLocation || 'Not provided' }}
+                      {{
+                        displayLocationName(profile.companyLocation) ||
+                        'Not provided'
+                      }}
                       <span
                         v-if="!profile.companyLocation"
                         class="text-amber-500 text-xs ml-1"
@@ -982,6 +1005,39 @@
                     />
                   </div>
                   <div
+                    class="field"
+                    v-if="editedProfile.recruiterType === 'INDIVIDUAL'"
+                  >
+                    <label
+                      for="location"
+                      class="block text-gray-700 text-sm font-medium mb-2"
+                      >Location</label
+                    >
+                    <LocationSearch
+                      :multiple="false"
+                      :show-selections="false"
+                      @location-selected="handleLocationSelected"
+                      class="w-full"
+                      v-model="selectedIndividualLocation"
+                    />
+                    <!-- Display selected location -->
+                    <div
+                      v-if="
+                        editedProfile.companyLocationId &&
+                        editedProfile.companyLocation
+                      "
+                      class="mt-2 flex items-center bg-primary-50 p-2 rounded-md"
+                    >
+                      <i
+                        class="pi pi-map-marker mr-2 text-primary-500 text-sm"
+                      ></i>
+                      <span class="text-sm font-medium text-primary-700">
+                        {{ editedProfile.companyLocation }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
                     v-if="editedProfile.recruiterType === 'INDIVIDUAL'"
                     class="field md:col-span-2"
                   >
@@ -1033,17 +1089,35 @@
                       placeholder="https://example.com"
                     />
                   </div>
+                  <!-- Only show location in Company Information for non-individual accounts -->
                   <div class="field">
                     <label
                       for="companyLocation"
                       class="block text-gray-700 text-sm font-medium mb-2"
                       >Company Location</label
                     >
-                    <InputText
-                      id="companyLocation"
-                      v-model="editedProfile.companyLocation"
+                    <LocationSearch
+                      :multiple="false"
+                      :show-selections="false"
+                      @location-selected="handleCompanyLocationSelected"
                       class="w-full"
+                      v-model="selectedCompanyLocation"
                     />
+                    <!-- Display selected location -->
+                    <div
+                      v-if="
+                        editedProfile.companyLocationId &&
+                        editedProfile.companyLocation
+                      "
+                      class="mt-2 flex items-center bg-primary-50 p-2 rounded-md"
+                    >
+                      <i
+                        class="pi pi-map-marker mr-2 text-primary-500 text-sm"
+                      ></i>
+                      <span class="text-sm font-medium text-primary-700">
+                        {{ editedProfile.companyLocation }}
+                      </span>
+                    </div>
                   </div>
                   <div class="field md:col-span-2">
                     <label
@@ -1249,8 +1323,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
+import { useDialog } from 'primevue/usedialog';
 import { useConfirm } from 'primevue/useconfirm';
 import { format } from 'date-fns';
 import axios from 'axios';
@@ -1273,6 +1348,7 @@ import Dialog from 'primevue/dialog';
 import Password from 'primevue/password';
 import Rating from 'primevue/rating';
 import Tooltip from 'primevue/tooltip';
+import LocationSearch from '@/components/shared/LocationSearch.vue';
 
 // Initialize services
 const toast = useToast();
@@ -1681,9 +1757,44 @@ const checkRequiredProfileFields = () => {
   }
 };
 
+// In script setup section, define initialLocationSelection
+const selectedIndividualLocation = ref([]);
+const selectedCompanyLocation = ref([]);
+
+// Start editing profile
 const startEdit = () => {
   editedProfile.value = { ...profile.value };
   showValidationErrors.value = false;
+
+  // Initialize location selections with the existing location
+  if (profile.value && profile.value.companyLocation) {
+    try {
+      // Get a clean location name using our display function
+      const locationName = displayLocationName(profile.value.companyLocation);
+      const locationId =
+        profile.value.companyLocationId || 'existing-location-id';
+
+      // Make sure we only use the clean name string, not an object or JSON
+      const cleanLocationObj = {
+        id: locationId,
+        name: locationName,
+      };
+
+      console.log('Setting initial location to:', cleanLocationObj);
+
+      // Set both location arrays with the same value
+      selectedIndividualLocation.value = [cleanLocationObj];
+      selectedCompanyLocation.value = [cleanLocationObj];
+    } catch (error) {
+      console.error('Error setting up location:', error);
+      selectedIndividualLocation.value = [];
+      selectedCompanyLocation.value = [];
+    }
+  } else {
+    selectedIndividualLocation.value = [];
+    selectedCompanyLocation.value = [];
+  }
+
   editMode.value = true;
 };
 
@@ -1715,6 +1826,18 @@ const saveProfile = async () => {
 
     loading.value = true;
     console.log('Saving profile with data:', editedProfile.value);
+
+    // For location, if no new location was selected, keep the original one
+    if (
+      selectedIndividualLocation.value.length === 0 &&
+      selectedCompanyLocation.value.length === 0 &&
+      profile.value.companyLocation
+    ) {
+      console.log('No new location selected, keeping original');
+      editedProfile.value.companyLocation = profile.value.companyLocation;
+      editedProfile.value.companyLocationId = profile.value.companyLocationId;
+    }
+
     console.log(
       'Full name value being saved:',
       editedProfile.value.recruiterRepName
@@ -2827,6 +2950,200 @@ const handleImageError = (event) => {
     life: 5000,
   });
 };
+
+// Add the getLocationDisplay function right before the end of the script
+const getLocationDisplay = (location) => {
+  // If location is null or undefined
+  if (!location) {
+    return 'Location not available';
+  }
+
+  // If location is already an object with name/address properties
+  if (typeof location === 'object' && location !== null) {
+    if (location.name) return location.name;
+    if (location.address) return location.address;
+
+    // If we have city and state, form a location string
+    if (location.city && location.state) {
+      return `${location.city}, ${location.state}${
+        location.country ? ', ' + location.country : ''
+      }`;
+    }
+  }
+
+  // If location is a string that looks like JSON, try to parse it
+  if (typeof location === 'string') {
+    if (
+      location.includes('"name":') ||
+      location.includes('"address":') ||
+      location.startsWith('{')
+    ) {
+      try {
+        const parsedLocation = JSON.parse(location);
+
+        if (parsedLocation.name) return parsedLocation.name;
+        if (parsedLocation.address) return parsedLocation.address;
+
+        // If we have city and state, form a location string
+        if (parsedLocation.city && parsedLocation.state) {
+          return `${parsedLocation.city}, ${parsedLocation.state}${
+            parsedLocation.country ? ', ' + parsedLocation.country : ''
+          }`;
+        }
+      } catch (error) {
+        console.error('Error parsing location JSON:', error);
+        // If parsing fails, just return the string
+        return location;
+      }
+    }
+
+    // If it's a regular string, just return it
+    return location;
+  }
+
+  // Fallback to string representation
+  return String(location);
+};
+
+// Add a new simple function for displaying location
+const displayLocationName = (location) => {
+  if (!location) return 'Location not available';
+
+  try {
+    // If it's a string that looks like JSON, parse it
+    if (typeof location === 'string') {
+      if (
+        location.includes('{') ||
+        location.includes('"name"') ||
+        location.includes('"id"')
+      ) {
+        try {
+          const locationObj = JSON.parse(location);
+          return locationObj.name || locationObj.address || String(location);
+        } catch (e) {
+          // If parsing fails, just return the string
+          return location;
+        }
+      }
+      // Plain string, return as is
+      return location;
+    }
+    // If it's already an object
+    else if (typeof location === 'object' && location !== null) {
+      if (location.name) return location.name;
+      if (location.address) return location.address;
+
+      // Handle object that might be stringified during display
+      if (JSON.stringify(location) === '[object Object]') {
+        // Extract any useful property we can find
+        const keys = Object.keys(location);
+        if (keys.length > 0) {
+          for (const key of [
+            'name',
+            'address',
+            'city',
+            'state',
+            'country',
+            'description',
+          ]) {
+            if (location[key] && typeof location[key] === 'string') {
+              return location[key];
+            }
+          }
+          // If we can't find a good property, use the first one
+          return String(location[keys[0]]);
+        }
+      }
+      return String(location);
+    }
+    // For any other type, convert to string
+    return String(location);
+  } catch (e) {
+    console.error('Error parsing location:', e);
+    return String(location);
+  }
+};
+
+const handleLocationSelected = (location) => {
+  console.log('Location selected for individual profile:', location);
+
+  // When a location is selected in the component
+  if (location && location.length > 0) {
+    const selectedLocation = location[0];
+
+    // Update both the ID and the location name in the profile data
+    editedProfile.value.companyLocationId = selectedLocation.id;
+
+    // Store location as a simple name property for consistency and readability
+    editedProfile.value.companyLocation = selectedLocation.name;
+
+    // Also update the company location selection to stay in sync
+    // when account type might change
+    selectedCompanyLocation.value = [selectedLocation];
+  } else {
+    editedProfile.value.companyLocationId = null;
+    editedProfile.value.companyLocation = null;
+  }
+};
+
+const handleCompanyLocationSelected = (location) => {
+  console.log('Location selected for company profile:', location);
+
+  // When a location is selected in the component
+  if (location && location.length > 0) {
+    const selectedLocation = location[0];
+
+    // Update both the ID and the location name in the profile data
+    editedProfile.value.companyLocationId = selectedLocation.id;
+
+    // Store location as a simple name property for consistency and readability
+    editedProfile.value.companyLocation = selectedLocation.name;
+
+    // Also update the individual location selection to stay in sync
+    // when account type might change
+    selectedIndividualLocation.value = [selectedLocation];
+  } else {
+    editedProfile.value.companyLocationId = null;
+    editedProfile.value.companyLocation = null;
+  }
+};
+
+// Add a watch for recruiter type changes to sync location data
+watch(
+  () => editedProfile.value?.recruiterType,
+  (newType) => {
+    if (editedProfile.value?.companyLocation) {
+      // If changing to individual, make sure individual location is synced
+      if (
+        newType === 'INDIVIDUAL' &&
+        selectedIndividualLocation.value.length === 0
+      ) {
+        const location = {
+          id: editedProfile.value.companyLocationId || 'temp-location-id',
+          name:
+            typeof editedProfile.value.companyLocation === 'object'
+              ? editedProfile.value.companyLocation.name
+              : displayLocationName(editedProfile.value.companyLocation),
+        };
+        selectedIndividualLocation.value = [location];
+      }
+      // If changing to company/agency, make sure company location is synced
+      else if (
+        newType !== 'INDIVIDUAL' &&
+        selectedCompanyLocation.value.length === 0
+      ) {
+        const location = {
+          id: editedProfile.value.companyLocationId || 'temp-location-id',
+          name:
+            typeof editedProfile.value.companyLocation === 'object'
+              ? editedProfile.value.companyLocation.name
+              : displayLocationName(editedProfile.value.companyLocation),
+        };
+        selectedCompanyLocation.value = [location];
+      }
+    }
+  }
+);
 </script>
 
 <style scoped>
