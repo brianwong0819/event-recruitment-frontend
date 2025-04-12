@@ -41,6 +41,8 @@ const CandidateProfile = () => import('../views/candidate/Profile.vue');
 const CandidateAvailability = () =>
   import('../views/candidate/Availability.vue');
 const FindJobs = () => import('../views/candidate/FindJobs.vue');
+const RecruiterInfo = () => import('../views/candidate/RecruiterInfo.vue');
+const PortfolioDetail = () => import('../views/candidate/PortfolioDetail.vue');
 
 // Recruiter views
 const RecruiterLayout = () => import('../layouts/RecruiterLayout.vue');
@@ -139,6 +141,18 @@ const routes = [
         path: 'jobs',
         name: 'FindJobs',
         component: FindJobs,
+      },
+      {
+        path: 'recruiter-info/:recruiterId',
+        name: 'RecruiterInfo',
+        component: RecruiterInfo,
+        props: true,
+      },
+      {
+        path: 'portfolio/:recruiterId/portfolios/:portfolioId',
+        name: 'PortfolioDetail',
+        component: PortfolioDetail,
+        props: true,
       },
     ],
   },

@@ -45,7 +45,19 @@
               />
             </div>
             <div class="flex items-center gap-1 mb-2">
-              <p class="text-lg text-gray-700">{{ job.company }}</p>
+              <!-- Company name now as a router link -->
+              <router-link
+                :to="{
+                  name: 'RecruiterInfo',
+                  params: { recruiterId: job.recruiterId || '1' },
+                  query: { jobId: job.id },
+                }"
+                class="text-lg text-indigo-600 font-medium hover:text-indigo-800 hover:underline transition-colors flex items-center gap-1"
+                @click="saveCurrentJobId(job.id)"
+              >
+                {{ job.company }}
+                <i class="pi pi-external-link text-xs"></i>
+              </router-link>
               <!-- Recruiter Type Tag - Smaller -->
               <Tag
                 v-if="job.recruiterType"
@@ -358,6 +370,13 @@ const defaultCompanyLogo = ref(
 const locationDialog = ref(false);
 const selectedLocation = ref(null);
 const loadingLocation = ref(false);
+
+// Save current job ID to session storage for returning to this job later
+const saveCurrentJobId = (jobId) => {
+  if (jobId) {
+    sessionStorage.setItem('lastViewedJobId', jobId);
+  }
+};
 
 // Location API call
 const showLocationDetails = async (locationId) => {

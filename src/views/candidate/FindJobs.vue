@@ -226,20 +226,6 @@
               }"
               @click="selectJob(job)"
             >
-              <!-- Save Button -->
-              <div class="flex justify-end">
-                <Button
-                  icon="pi pi-bookmark"
-                  :class="
-                    job.saved
-                      ? 'p-button-warning'
-                      : 'p-button-outlined p-button-secondary'
-                  "
-                  class="p-button-rounded p-button-sm"
-                  @click.stop="toggleSaveJob(job)"
-                />
-              </div>
-
               <!-- Job Layout with Logo on Left -->
               <div class="flex gap-4 mb-4">
                 <!-- Company Logo - Left side -->
@@ -385,6 +371,7 @@ import Tag from 'primevue/tag';
 import JobService from '@/services/JobService';
 import ProgressSpinner from 'primevue/progressspinner';
 import JobDetail from '@/components/candidate/JobDetail.vue';
+import axios from 'axios';
 
 // Default company logo (base64 encoded simple building icon)
 const defaultCompanyLogo = ref(
@@ -619,6 +606,26 @@ const selectJob = async (job) => {
   try {
     // Get detailed job information when selecting
     const jobDetail = await JobService.getJobById(job.id);
+
+    // Also call the job view tracking API (requires auth token)
+    try {
+      const token = JobService.getAuthToken();
+      if (token) {
+        // Make the job view tracking API call
+        await axios.post(
+          `http://localhost:8080/api/jobs/${job.id}/view`,
+          {},
+          {
+            headers: { Authorization: token },
+          }
+        );
+        console.log(`Tracked view for job ${job.id}`);
+      }
+    } catch (viewError) {
+      // Just log the error, don't prevent showing job details
+      console.error('Error tracking job view:', viewError);
+    }
+
     if (jobDetail) {
       // Keep saved status from the job card
       jobDetail.saved = job.saved;
