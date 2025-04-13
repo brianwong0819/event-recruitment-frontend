@@ -39,7 +39,7 @@
             label="View Applications"
             class="p-button-sm p-button-outlined w-full"
             icon="pi pi-list"
-            @click="$router.push('/candidate/jobs')"
+            @click="$router.push('/candidate/applications')"
           />
         </div>
       </div>
@@ -351,7 +351,7 @@ const upcomingTrainings = ref([
 // Navigate to job application
 const navigateToJobApplication = (jobId) => {
   router.push({
-    name: 'JobApplication',
+    name: 'ApplyJob',
     params: { jobId },
   });
 };

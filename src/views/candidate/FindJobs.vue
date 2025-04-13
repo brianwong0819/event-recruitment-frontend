@@ -661,7 +661,7 @@ const applyForJob = async (job) => {
   // Navigate to the job application page
   if (job && job.id) {
     router.push({
-      name: 'JobApplication',
+      name: 'ApplyJob',
       params: { jobId: job.id },
     });
   }

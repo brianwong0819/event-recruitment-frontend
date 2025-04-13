@@ -43,7 +43,8 @@ const CandidateAvailability = () =>
 const FindJobs = () => import('../views/candidate/FindJobs.vue');
 const RecruiterInfo = () => import('../views/candidate/RecruiterInfo.vue');
 const PortfolioDetail = () => import('../views/candidate/PortfolioDetail.vue');
-const JobApplication = () => import('../views/candidate/JobApplication.vue');
+const ApplyJob = () => import('../views/candidate/ApplyJob.vue');
+const MyApplications = () => import('../views/candidate/MyApplications.vue');
 
 // Recruiter views
 const RecruiterLayout = () => import('../layouts/RecruiterLayout.vue');
@@ -144,9 +145,20 @@ const routes = [
         component: FindJobs,
       },
       {
+        path: 'applications',
+        name: 'MyApplications',
+        component: MyApplications,
+      },
+      {
         path: 'jobs/:jobId/apply',
-        name: 'JobApplication',
-        component: JobApplication,
+        name: 'ApplyJob',
+        component: ApplyJob,
+        props: true,
+      },
+      {
+        path: 'recruiter-info/:recruiterId',
+        name: 'RecruiterInfo',
+        component: RecruiterInfo,
         props: true,
       },
       {

@@ -37,14 +37,8 @@ onMounted(() => {
   // If no job ID is provided, navigate back to job listing
   if (!jobId) {
     router.push({ name: 'FindJobs' });
-  } else {
-    // Redirect to the first step of the application process
-    router.push({
-      name: 'RecruiterInfo',
-      params: { recruiterId: '1' }, // This is a placeholder, not actually used
-      query: { jobId: jobId },
-    });
   }
+  // Removed redirection to RecruiterInfo
 });
 </script>
 

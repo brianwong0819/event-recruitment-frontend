@@ -635,6 +635,15 @@ class AuthService {
       return null;
     }
   }
+
+  /**
+   * Get the current access token
+   * @returns {string} - The current access token with 'Bearer ' prefix
+   */
+  getToken() {
+    const token = localStorage.getItem('accessToken');
+    return token || '';
+  }
 }
 
 export default new AuthService();

@@ -591,7 +591,7 @@ const formatDateShort = (dateString) => {
 const navigateToApplication = () => {
   if (props.job && props.job.id) {
     router.push({
-      name: 'JobApplication',
+      name: 'ApplyJob',
       params: { jobId: props.job.id },
     });
   }
