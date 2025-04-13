@@ -276,7 +276,7 @@
           label="Apply Now"
           icon="pi pi-send"
           class="p-button-lg"
-          @click="$emit('apply', job)"
+          @click="navigateToApplication"
           :loading="loading"
         />
       </div>
@@ -360,6 +360,10 @@ import Tag from 'primevue/tag';
 import Dialog from 'primevue/dialog';
 import JobService from '@/services/JobService';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
+
+// Router for navigation
+const router = useRouter();
 
 // Default company logo (base64 encoded simple building icon)
 const defaultCompanyLogo = ref(
@@ -580,6 +584,16 @@ const formatDateShort = (dateString) => {
   } catch (error) {
     console.error('Error formatting date short:', error);
     return dateString;
+  }
+};
+
+// Navigate to application page
+const navigateToApplication = () => {
+  if (props.job && props.job.id) {
+    router.push({
+      name: 'JobApplication',
+      params: { jobId: props.job.id },
+    });
   }
 };
 

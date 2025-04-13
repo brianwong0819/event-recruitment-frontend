@@ -360,7 +360,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
@@ -652,22 +653,17 @@ const toggleSaveJob = async (job) => {
   }
 };
 
+// Router
+const router = useRouter();
+
 // Apply for a job
 const applyForJob = async (job) => {
-  try {
-    applyLoading.value = true;
-    // This would typically call an API to submit an application
-    const result = await JobService.applyForJob(job.id, {
-      candidateId: 1, // This would come from the auth store in a real app
-      message: 'I am interested in this position and would like to apply.',
+  // Navigate to the job application page
+  if (job && job.id) {
+    router.push({
+      name: 'JobApplication',
+      params: { jobId: job.id },
     });
-
-    console.log('Application result:', result);
-    // Here you could show a confirmation message or navigate to an application form
-  } catch (error) {
-    console.error('Error applying for job:', error);
-  } finally {
-    applyLoading.value = false;
   }
 };
 

@@ -34,6 +34,14 @@
         </div>
         <div class="text-3xl font-bold mb-2">3</div>
         <p class="text-gray-600 text-sm">Active applications</p>
+        <div class="mt-3">
+          <Button
+            label="View Applications"
+            class="p-button-sm p-button-outlined w-full"
+            icon="pi pi-list"
+            @click="$router.push('/candidate/jobs')"
+          />
+        </div>
       </div>
 
       <!-- Upcoming Events Card -->
@@ -90,7 +98,11 @@
                 <Tag value="Sales" class="mr-2" />
                 <Tag value="Promotion" />
               </div>
-              <Button label="Apply" class="p-button-sm" />
+              <Button
+                label="Apply"
+                class="p-button-sm"
+                @click="navigateToJobApplication('job-123')"
+              />
             </div>
           </div>
         </div>
@@ -122,7 +134,11 @@
                 <Tag value="Customer Service" class="mr-2" />
                 <Tag value="Registration" />
               </div>
-              <Button label="Apply" class="p-button-sm" />
+              <Button
+                label="Apply"
+                class="p-button-sm"
+                @click="navigateToJobApplication('job-456')"
+              />
             </div>
           </div>
         </div>
@@ -267,11 +283,14 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
 import Badge from 'primevue/badge';
 import Tag from 'primevue/tag';
 import ProgressBar from 'primevue/progressbar';
+import Button from 'primevue/button';
 
 const authStore = useAuthStore();
+const router = useRouter();
 
 // User greeting
 const userGreeting = computed(() => {
@@ -328,6 +347,14 @@ const upcomingTrainings = ref([
     status: 'Required',
   },
 ]);
+
+// Navigate to job application
+const navigateToJobApplication = (jobId) => {
+  router.push({
+    name: 'JobApplication',
+    params: { jobId },
+  });
+};
 
 onMounted(() => {
   // Here you would normally fetch dashboard data from API
