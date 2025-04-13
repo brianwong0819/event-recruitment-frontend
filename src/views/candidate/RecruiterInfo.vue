@@ -42,10 +42,10 @@
       <!-- Back to Jobs Button -->
       <div class="back-button-container px-4 py-2">
         <Button
-          label="Back to Job Details"
+          label="Back"
           icon="pi pi-arrow-left"
           class="p-button-text"
-          @click="goBackToJob"
+          @click="goBack"
         />
       </div>
 
@@ -551,6 +551,7 @@ const recruiter = ref(null);
 const loading = ref(true);
 const error = ref(null);
 const previousJobId = ref(null);
+const sourcePage = ref('jobDetails'); // Default source page
 const portfolios = ref([]);
 const loadingPortfolios = ref(false);
 const portfolioError = ref(null);
@@ -680,13 +681,20 @@ onMounted(() => {
   previousJobId.value =
     route.query.jobId || sessionStorage.getItem('lastViewedJobId');
 
+  // Determine source page
+  sourcePage.value = route.query.source || 'jobDetails';
+
   // Fetch recruiter data
   fetchRecruiterData();
 });
 
 // Function to navigate back to the previous job details or to the jobs listing
-const goBackToJob = () => {
-  if (previousJobId.value) {
+const goBack = () => {
+  if (sourcePage.value === 'applications') {
+    // If coming from applications page
+    router.push({ name: 'MyApplications' });
+  } else if (previousJobId.value) {
+    // If coming from job details with a known job ID
     router.push({
       name: 'FindJobs',
       query: {
@@ -694,6 +702,7 @@ const goBackToJob = () => {
       },
     });
   } else {
+    // Default fallback
     router.back();
   }
 };

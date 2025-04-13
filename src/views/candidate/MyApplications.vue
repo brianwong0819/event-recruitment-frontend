@@ -37,7 +37,6 @@
           <!-- Search input -->
           <div class="relative">
             <span class="p-input-icon-left w-full">
-              <i class="pi pi-search" />
               <InputText
                 v-model="filters.search"
                 placeholder="Search jobs, companies, locations..."
@@ -348,8 +347,9 @@
                       <i class="pi pi-building text-indigo-400 mr-2"></i>
                       <router-link
                         :to="{
-                          name: 'FindJobs',
-                          query: { jobId: application.jobId },
+                          name: 'RecruiterInfo',
+                          params: { recruiterId: application.recruiterId },
+                          query: { source: 'applications' },
                         }"
                         class="text-gray-700 hover:text-indigo-600 hover:underline transition-colors flex items-center gap-1"
                       >
@@ -506,7 +506,7 @@
       <div v-if="selectedApplication" class="flex flex-col">
         <!-- Custom Header with Job Title and Status -->
         <div
-          class="relative px-6 py-5 border-b border-gray-200"
+          class="relative px-6 py-5 border-b border-gray-200 sticky top-0 z-10"
           :class="getStatusBackgroundClass(selectedApplication.status)"
         >
           <div class="flex justify-between items-start">
@@ -518,8 +518,9 @@
                 <i class="pi pi-building mr-2"></i>
                 <router-link
                   :to="{
-                    name: 'FindJobs',
-                    query: { jobId: selectedApplication.jobId },
+                    name: 'RecruiterInfo',
+                    params: { recruiterId: selectedApplication.recruiterId },
+                    query: { source: 'applications' },
                   }"
                   class="text-white text-opacity-90 hover:text-white hover:underline transition-colors flex items-center gap-1"
                 >
@@ -534,7 +535,7 @@
             </div>
 
             <div
-              class="px-4 py-1 rounded-full text-white text-sm font-medium"
+              class="px-4 py-1 rounded-full text-white text-sm font-medium mr-8"
               :class="getStatusHighlightClass(selectedApplication.status)"
             >
               {{ formatStatus(selectedApplication.status) }}
@@ -551,18 +552,9 @@
         </div>
 
         <!-- Application Content -->
-        <div class="p-6">
-          <!-- Reference Number and Date -->
-          <div class="flex items-center justify-between mb-6 px-2">
-            <div class="flex items-center">
-              <i class="pi pi-hashtag text-indigo-400 mr-2"></i>
-              <span class="text-sm text-gray-500"
-                >Ref:
-                <span class="font-medium text-gray-700">{{
-                  selectedApplication.referenceNumber
-                }}</span></span
-              >
-            </div>
+        <div class="p-6 overflow-y-auto" style="max-height: 70vh">
+          <!-- Date only (removed reference) -->
+          <div class="flex items-center justify-end mb-6 px-2">
             <div class="flex items-center">
               <i class="pi pi-calendar text-indigo-400 mr-2"></i>
               <span class="text-sm text-gray-500"
@@ -606,7 +598,7 @@
                   <i class="pi pi-dollar text-green-500"></i>
                 </div>
                 <div>
-                  <h4 class="font-medium text-gray-900 mb-1">Compensation</h4>
+                  <h4 class="font-medium text-gray-900 mb-1">Payment</h4>
                   <p class="text-gray-700">
                     RM {{ selectedApplication.salary }}
                     <span class="text-gray-500 text-sm">
@@ -672,11 +664,11 @@
           <div class="mb-6">
             <h3 class="font-semibold text-gray-800 mb-4 flex items-center">
               <i class="pi pi-list text-indigo-400 mr-2"></i>
-              Job Description
+              Job Scope
             </h3>
             <div class="bg-gray-50 p-5 rounded-xl border border-gray-100">
               <p class="text-gray-700 leading-relaxed">
-                {{ selectedApplication.jobDescription }}
+                {{ selectedApplication.jobScope }}
               </p>
             </div>
           </div>
@@ -724,11 +716,11 @@
 
           <!-- Footer Actions -->
           <div
-            class="flex justify-between items-center mt-8 pt-4 border-t border-gray-200"
+            class="flex justify-between items-center mt-8 pt-4 border-t border-gray-200 sticky bottom-0 bg-white z-10"
           >
             <Button
-              label="Contact Recruiter"
-              icon="pi pi-envelope"
+              label="View Recruiter"
+              icon="pi pi-user"
               class="p-button-outlined p-button-rounded"
               @click="contactRecruiter(selectedApplication)"
             />
@@ -744,7 +736,7 @@
       </div>
     </Dialog>
 
-    <!-- New improved withdraw confirmation dialog -->
+    <!-- Withdraw confirmation dialog -->
     <Dialog
       v-model:visible="withdrawDialogVisible"
       :modal="true"
@@ -755,9 +747,11 @@
       contentClass="p-0 rounded-xl overflow-hidden"
       class="withdraw-dialog"
     >
-      <div class="bg-white rounded-xl overflow-hidden">
-        <!-- Header with warning icon -->
-        <div class="bg-red-50 p-6 flex items-center">
+      <div
+        class="bg-white rounded-xl overflow-hidden flex flex-col max-h-[85vh]"
+      >
+        <!-- Header with warning icon - fixed -->
+        <div class="bg-red-50 p-6 flex items-center flex-shrink-0">
           <div
             class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mr-4 flex-shrink-0"
           >
@@ -766,8 +760,8 @@
           <h2 class="text-xl font-bold text-red-800">Withdraw Application</h2>
         </div>
 
-        <!-- Content -->
-        <div class="p-6">
+        <!-- Content - scrollable -->
+        <div class="p-6 overflow-y-auto">
           <p class="text-gray-700 mb-4">
             You are about to withdraw your application for:
           </p>
@@ -784,6 +778,46 @@
               <i class="pi pi-map-marker mr-2"></i>
               <span>{{ withdrawApplication?.location }}</span>
             </div>
+          </div>
+
+          <!-- Withdrawal reason -->
+          <div class="mb-6">
+            <label
+              for="withdrawal-reason"
+              class="block text-gray-700 font-medium mb-2"
+              >Reason for withdrawal</label
+            >
+            <Dropdown
+              id="withdrawal-reason"
+              v-model="withdrawalReason"
+              :options="withdrawalReasons"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select a reason"
+              class="w-full"
+            />
+
+            <div v-if="withdrawalReason === 'OTHER'" class="mt-3">
+              <label
+                for="other-reason-details"
+                class="block text-gray-700 text-sm mb-2"
+                >Please specify</label
+              >
+              <Textarea
+                id="other-reason-details"
+                v-model="otherReasonDetails"
+                rows="3"
+                placeholder="Tell us more about your reason for withdrawing..."
+                class="w-full"
+              />
+              <small v-if="showOtherReasonError" class="p-error block mt-1">
+                Please provide details for your withdrawal reason
+              </small>
+            </div>
+
+            <small v-if="showReasonError" class="p-error block mt-2">
+              Please select a reason for withdrawal
+            </small>
           </div>
 
           <!-- Warning message -->
@@ -814,23 +848,25 @@
           <p class="text-gray-700 mb-6 font-medium text-center">
             Are you sure you want to withdraw this application?
           </p>
+        </div>
 
-          <!-- Action buttons -->
-          <div class="flex justify-center gap-4">
-            <Button
-              label="Keep Application"
-              icon="pi pi-check"
-              class="p-button-outlined p-button-rounded"
-              @click="withdrawDialogVisible = false"
-            />
-            <Button
-              label="Withdraw Application"
-              icon="pi pi-times"
-              class="p-button-danger p-button-rounded"
-              @click="withdrawApplicationConfirmed"
-              :loading="withdrawing"
-            />
-          </div>
+        <!-- Action buttons - fixed at bottom -->
+        <div
+          class="flex justify-center gap-4 p-6 pt-0 border-t border-gray-100 flex-shrink-0"
+        >
+          <Button
+            label="Keep Application"
+            icon="pi pi-check"
+            class="p-button-outlined p-button-rounded"
+            @click="withdrawDialogVisible = false"
+          />
+          <Button
+            label="Withdraw Application"
+            icon="pi pi-times"
+            class="p-button-danger p-button-rounded"
+            @click="withdrawApplicationConfirmed"
+            :loading="withdrawing"
+          />
         </div>
       </div>
     </Dialog>
@@ -876,6 +912,7 @@ import Toast from 'primevue/toast';
 import Chip from 'primevue/chip';
 import InputSwitch from 'primevue/inputswitch';
 import Paginator from 'primevue/paginator';
+import Textarea from 'primevue/textarea';
 
 const router = useRouter();
 const toast = useToast();
@@ -888,6 +925,10 @@ const selectedApplication = ref(null);
 const withdrawDialogVisible = ref(false);
 const withdrawApplication = ref(null);
 const withdrawing = ref(false);
+const withdrawalReason = ref('');
+const showReasonError = ref(false);
+const otherReasonDetails = ref('');
+const showOtherReasonError = ref(false);
 
 // New state for filter collapse behavior
 const isScrolled = ref(false);
@@ -1062,6 +1103,18 @@ const getStatusSeverity = (status) => {
   }
 };
 
+// Withdrawal reason options
+const withdrawalReasons = [
+  { label: 'Found another job', value: 'FOUND_ANOTHER_JOB' },
+  { label: 'Schedule conflict', value: 'SCHEDULE_CONFLICT' },
+  { label: 'Changed my mind', value: 'CHANGED_MIND' },
+  { label: 'Travel issues', value: 'TRAVEL_ISSUES' },
+  { label: 'Payment too low', value: 'COMPENSATION_ISSUE' },
+  { label: 'Health reasons', value: 'HEALTH_REASONS' },
+  { label: 'Personal reasons', value: 'PERSONAL_REASONS' },
+  { label: 'Other', value: 'OTHER' },
+];
+
 // Fetch applications from API
 const fetchApplications = async () => {
   loading.value = true;
@@ -1083,12 +1136,16 @@ const fetchApplications = async () => {
       applications.value = response.data.data.map((app) => {
         const jobDetails = app.jobSummary;
 
+        // Deduplicate location names
+        const uniqueLocationNames = [...new Set(app.locationNames)];
+        const locationString = uniqueLocationNames.join(', ');
+
         return {
           id: app.id,
           jobId: app.jobId,
           jobTitle: app.jobTitle,
           companyName: app.companyName,
-          location: app.locationNames.join(', '),
+          location: locationString,
           appliedAt: app.applicationDate,
           status: app.applicationStatus,
           salary: jobDetails.salary,
@@ -1096,7 +1153,8 @@ const fetchApplications = async () => {
           workStartDate: jobDetails.earliestStartDate,
           workEndDate: jobDetails.latestEndDate,
           referenceNumber: app.applicationGroupId.substring(0, 8).toUpperCase(),
-          jobDescription: jobDetails.benefits || 'No description provided',
+          applicationGroupId: app.applicationGroupId,
+          jobScope: jobDetails.jobScope || 'No description provided',
           notes: app.notes,
           workTime: `${jobDetails.startTime} - ${jobDetails.endTime}`,
           paymentTerms: jobDetails.paymentTerms,
@@ -1260,6 +1318,10 @@ const viewApplicationDetails = (applicationId) => {
 
 const confirmWithdraw = (application) => {
   withdrawApplication.value = application;
+  withdrawalReason.value = ''; // Reset the reason
+  otherReasonDetails.value = ''; // Reset the other reason details
+  showReasonError.value = false; // Reset error states
+  showOtherReasonError.value = false;
   withdrawDialogVisible.value = true;
   applicationDetailDialog.value = false; // Close details dialog if open
 };
@@ -1267,29 +1329,61 @@ const confirmWithdraw = (application) => {
 const withdrawApplicationConfirmed = async () => {
   if (!withdrawApplication.value) return;
 
+  // Validate reason is selected
+  if (!withdrawalReason.value) {
+    showReasonError.value = true;
+    return;
+  }
+
+  // Validate other reason details if "Other" is selected
+  if (withdrawalReason.value === 'OTHER' && !otherReasonDetails.value.trim()) {
+    showOtherReasonError.value = true;
+    return;
+  }
+
   withdrawing.value = true;
 
   try {
     const token = authService.getToken();
 
-    // Make the API call to withdraw the application
-    await axios.post(
-      `http://localhost:8080/api/candidates/applications/${withdrawApplication.value.id}/withdraw`,
-      {},
+    // Prepare the withdrawal reason
+    let reasonText = '';
+
+    if (withdrawalReason.value === 'OTHER') {
+      // For "Other" use what the candidate entered
+      reasonText = otherReasonDetails.value.trim();
+    } else {
+      // For standard reasons, use the exact label text from options
+      const selectedOption = withdrawalReasons.find(
+        (option) => option.value === withdrawalReason.value
+      );
+      reasonText = selectedOption ? selectedOption.label : '';
+    }
+
+    // Prepare the request data with the exact JSON structure required
+    const requestData = {
+      withdrawalReason: reasonText,
+    };
+
+    // Make the API call to withdraw the application using applicationGroupId with DELETE method
+    await axios.delete(
+      `http://localhost:8080/api/candidates/applications/group/${withdrawApplication.value.applicationGroupId}`,
       {
         headers: {
           Authorization: token,
         },
+        data: requestData,
       }
     );
 
-    // Update the application status in our local state
-    const index = applications.value.findIndex(
-      (app) => app.id === withdrawApplication.value.id
-    );
-    if (index !== -1) {
-      applications.value[index].status = 'WITHDRAWN';
-    }
+    // Update the application status for all applications with the same group ID
+    applications.value.forEach((app, index) => {
+      if (
+        app.applicationGroupId === withdrawApplication.value.applicationGroupId
+      ) {
+        applications.value[index].status = 'WITHDRAWN';
+      }
+    });
 
     toast.add({
       severity: 'success',
@@ -1300,6 +1394,8 @@ const withdrawApplicationConfirmed = async () => {
 
     withdrawDialogVisible.value = false;
     withdrawApplication.value = null;
+    withdrawalReason.value = '';
+    otherReasonDetails.value = '';
   } catch (error) {
     console.error('Error withdrawing application:', error);
     toast.add({
@@ -1316,13 +1412,15 @@ const withdrawApplicationConfirmed = async () => {
 };
 
 const contactRecruiter = (application) => {
-  toast.add({
-    severity: 'info',
-    summary: 'Contact Requested',
-    detail: `Sending message to ${application.companyName} recruiter...`,
-    life: 3000,
+  // Close the application detail dialog
+  applicationDetailDialog.value = false;
+
+  // Navigate to RecruiterInfo page with the recruiter ID
+  router.push({
+    name: 'RecruiterInfo',
+    params: { recruiterId: application.recruiterId },
+    query: { source: 'applications', action: 'contact' },
   });
-  // This would typically open a message compose dialog or redirect to a messaging page
 };
 
 const goToJobSearch = () => {
@@ -1529,6 +1627,7 @@ const getImagePath = (url) => {
   padding: 0;
   border-radius: 0.75rem;
   overflow: hidden;
+  max-height: 85vh; /* Limit max height to 85% of viewport height */
 }
 
 .application-detail-dialog :deep(.p-dialog-mask) {
@@ -1910,5 +2009,33 @@ const getImagePath = (url) => {
 
 :deep(.p-input-icon-left) > .p-inputtext {
   padding-left: 35px;
+}
+
+.withdraw-dialog :deep(.p-dialog-content) {
+  padding: 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.withdraw-dialog .overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(203, 213, 225, 0.8) transparent;
+}
+
+.withdraw-dialog .overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.withdraw-dialog .overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.withdraw-dialog .overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(203, 213, 225, 0.8);
+  border-radius: 20px;
+}
+
+.withdraw-dialog .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.8);
 }
 </style>
