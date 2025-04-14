@@ -1,4 +1,5 @@
 import axios from 'axios';
+import fileService from './file.service';
 
 class JobService {
   // Base API URL
@@ -174,9 +175,7 @@ class JobService {
         id: job.id,
         title: job.title,
         company: job.companyName,
-        companyLogoUrl: job.companyLogoUrl
-          ? this.formatImageUrl(job.companyLogoUrl)
-          : null,
+        companyLogoUrl: this.formatImageUrl(job.companyLogoUrl),
         location: job.locations
           ? job.locations.join(', ')
           : 'Multiple locations',
@@ -226,9 +225,7 @@ class JobService {
             id: job.id,
             title: job.title,
             company: job.companyName,
-            companyLogoUrl: job.companyLogoUrl
-              ? this.formatImageUrl(job.companyLogoUrl)
-              : null,
+            companyLogoUrl: this.formatImageUrl(job.companyLogoUrl),
             location: job.locations
               ? job.locations.join(', ')
               : 'Multiple locations',
@@ -274,9 +271,7 @@ class JobService {
           id: job.id,
           title: job.title,
           company: job.companyName,
-          companyLogoUrl: job.companyLogoUrl
-            ? this.formatImageUrl(job.companyLogoUrl)
-            : null,
+          companyLogoUrl: this.formatImageUrl(job.companyLogoUrl),
           location: job.locations
             ? job.locations.join(', ')
             : 'Multiple locations',
@@ -520,9 +515,7 @@ class JobService {
           id: job.id,
           title: job.title,
           company: job.companyName,
-          companyLogoUrl: job.companyLogoUrl
-            ? this.formatImageUrl(job.companyLogoUrl)
-            : null,
+          companyLogoUrl: this.formatImageUrl(job.companyLogoUrl),
           location: this.getLocationsFromSchedules(job.jobSchedules),
           salary: this.formatSalary(job.salary, job.salaryType),
           paymentTerms: job.paymentTerms,
@@ -832,9 +825,28 @@ class JobService {
   static formatImageUrl(url) {
     if (!url) return null;
 
-    // If it's already an absolute URL, return it unchanged
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
+    // If it's already an absolute URL, check if it's on the dev server or backend
+    if (url.startsWith('http')) {
+      // If it's on the dev server, convert it to the backend URL
+      if (url.includes('localhost:5173')) {
+        // Extract the filename and determine the type
+        if (url.includes('company-logos')) {
+          const filename = url.split('/').pop();
+          return fileService.getCompanyLogoUrl(filename);
+        }
+        // For other types, extract the filename and use generic handling
+        const filename = url.split('/').pop();
+        return `${this.API_URL}/files/${filename}`;
+      }
+      // Return it unchanged if it's already on the backend
+      if (url.includes('localhost:8080')) {
+        return url;
+      }
+    }
+
+    // Check for company logos in different formats
+    if (url.includes('company-logos') || url.includes('companyLogos')) {
+      return fileService.getCompanyLogoUrl(url);
     }
 
     // Handle paths that start with /assets/profile-pictures/
@@ -846,18 +858,38 @@ class JobService {
       const parts = url.split('/');
       const filename = parts[parts.length - 1];
       // Return the correct path to the local assets directory
-      return `/src/assets/profile-pictures/${filename}`;
+      return fileService.getProfilePictureUrl(filename);
     }
 
     // If it's a relative URL starting with a slash
     if (url.startsWith('/')) {
+      // Check if it's a company logo
+      if (url.includes('/company-logos/')) {
+        return fileService.getCompanyLogoUrl(url);
+      }
+
       // Remove the leading slash if present
       const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+
+      // Check if it's an API path
+      if (cleanUrl.startsWith('api/')) {
+        return `http://localhost:8080/${cleanUrl}`;
+      }
+
       return `${window.location.origin}/${cleanUrl}`;
     }
 
+    // For just filenames, check if they might be company logos based on context
+    if (
+      !url.includes('/') &&
+      (url.toLowerCase().includes('logo') ||
+        url.toLowerCase().includes('company'))
+    ) {
+      return fileService.getCompanyLogoUrl(url);
+    }
+
     // Otherwise, assume it's a relative path and prepend the base URL
-    return `${window.location.origin}/${url}`;
+    return `${this.API_URL}/files/${url}`;
   }
 }
 

@@ -29,7 +29,7 @@
               :src="job.companyLogoUrl"
               :alt="`${job.company} logo`"
               class="w-full h-full object-contain"
-              @error="$event.target.src = defaultCompanyLogo"
+              @error="onImageError"
             />
             <i v-else class="pi pi-building text-gray-400 text-3xl"></i>
           </div>
@@ -415,7 +415,14 @@ const props = defineProps({
 });
 
 const onImageError = (event) => {
-  event.target.src = 'https://via.placeholder.com/300x200?text=Select+a+job';
+  // If it's a company logo image
+  if (event.target.alt && event.target.alt.includes('logo')) {
+    event.target.src = defaultCompanyLogo;
+  } else if (
+    event.target.src !== 'https://via.placeholder.com/300x200?text=Select+a+job'
+  ) {
+    event.target.src = 'https://via.placeholder.com/300x200?text=Select+a+job';
+  }
 };
 
 // Format date to readable format

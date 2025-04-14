@@ -398,9 +398,18 @@ class FileService {
     // If it's a blob URL, return it as is
     if (filename.includes('blob:')) return filename;
 
-    // If it's an already formed URL from another domain, extract just the filename
-    if (filename.startsWith('http') && !filename.includes('localhost:8080')) {
-      filename = filename.split('/').pop();
+    // If it's an already formed URL from another domain or dev server
+    if (filename.startsWith('http')) {
+      if (filename.includes('localhost:5173')) {
+        // Extract just the filename if it's from dev server
+        filename = filename.split('/').pop();
+      } else if (!filename.includes('localhost:8080')) {
+        // Extract just the filename if it's from any other domain
+        filename = filename.split('/').pop();
+      } else {
+        // Already points to backend, return as is
+        return filename;
+      }
     }
 
     // Clean the path from any prefixes

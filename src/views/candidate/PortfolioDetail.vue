@@ -48,10 +48,10 @@
       <!-- Back Button -->
       <div class="back-button-container px-4 py-3">
         <Button
-          label="Back to Recruiter"
+          label="Back to Portfolio"
           icon="pi pi-arrow-left"
           class="p-button-text p-button-rounded hover:bg-gray-100 transition-colors"
-          @click="$router.back()"
+          @click="goBackToPortfolio"
         />
       </div>
 
@@ -489,7 +489,24 @@ const formatDate = (startDate, endDate) => {
 const getImageUrl = (url) => {
   if (!url) return defaultImage.value;
 
-  // If it's already an absolute URL, return it
+  // If it's already an absolute URL from the backend server, return it
+  if (url.startsWith('http') && url.includes('localhost:8080')) {
+    return url;
+  }
+
+  // If it's an absolute URL from dev server, convert to backend URL
+  if (url.startsWith('http') && url.includes('localhost:5173')) {
+    // Extract the path and determine the type
+    if (url.includes('portfolio-media')) {
+      const filename = url.split('/').pop();
+      return fileService.getPortfolioMediaUrl(filename);
+    }
+    // For other dev server URLs, extract filename and construct backend URL
+    const filename = url.split('/').pop();
+    return `http://localhost:8080/api/files/${filename}`;
+  }
+
+  // If it's any other absolute URL, return as is
   if (url.startsWith('http')) {
     return url;
   }
@@ -636,6 +653,15 @@ const scrollToGallery = () => {
   if (gallerySection) {
     gallerySection.scrollIntoView({ behavior: 'smooth' });
   }
+};
+
+// Function to go back to portfolio section
+const goBackToPortfolio = () => {
+  router.push({
+    name: 'RecruiterInfo',
+    params: { recruiterId: recruiterId.value },
+    query: { activeTab: 'portfolio' },
+  });
 };
 </script>
 

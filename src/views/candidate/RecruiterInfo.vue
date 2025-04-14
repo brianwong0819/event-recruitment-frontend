@@ -184,7 +184,7 @@
 
       <!-- Tabs -->
       <div class="tabs-section mb-6">
-        <TabView>
+        <TabView v-model:activeIndex="activeTabIndex">
           <!-- About Tab -->
           <TabPanel header="About">
             <div class="about-section p-4">
@@ -559,6 +559,7 @@ const portfolioError = ref(null);
 const selectedPortfolio = ref(null);
 const portfolioMedia = ref([]);
 const loadingPortfolioDetails = ref(false);
+const activeTabIndex = ref(0);
 
 // Default company logo (base64 encoded simple building icon)
 const defaultCompanyLogo = ref(
@@ -624,18 +625,16 @@ const getImageUrl = (url) => {
     return url;
   }
 
-  // If it comes from profile-pictures folder
-  if (url.includes('profile-pictures')) {
+  // If it's a company logo
+  if (
+    url.includes('company-logos') ||
+    url.includes('companyLogo') ||
+    (recruiter.value && url === recruiter.value.companyLogoUrl)
+  ) {
     try {
-      // Extract the filename
-      const filename = url.split('/').pop();
-      // Import directly from assets
-      return new URL(
-        `/src/assets/profile-pictures/${filename}`,
-        import.meta.url
-      ).href;
+      return fileService.getCompanyLogoUrl(url);
     } catch (error) {
-      console.error('Error loading profile picture:', error);
+      console.error('Error loading company logo:', error);
       return defaultCompanyLogo.value;
     }
   }
@@ -659,11 +658,30 @@ const getImageUrl = (url) => {
     return url;
   }
 
-  // For other relative URLs, try to load directly from assets
+  // If it's a path we know is for a company logo, use the company logo service
+  if (
+    url.includes('/profile-pictures/') ||
+    (recruiter.value && recruiter.value.companyLogoUrl === url)
+  ) {
+    try {
+      // Extract just the filename
+      const filename = url.split('/').pop();
+      return fileService.getCompanyLogoUrl(filename);
+    } catch (error) {
+      console.error('Error loading from company logo service:', error);
+      return defaultCompanyLogo.value;
+    }
+  }
+
+  // For other relative URLs, try to load from the backend
   try {
-    return new URL(`/src/assets${url}`, import.meta.url).href;
+    if (url.startsWith('/')) {
+      return `http://localhost:8080${url}`;
+    } else {
+      return `http://localhost:8080/${url}`;
+    }
   } catch (error) {
-    console.error('Error loading image from assets:', error);
+    console.error('Error loading image from backend:', error);
     // If all else fails, use the original URL (may be a server path)
     return url;
   }
@@ -672,7 +690,15 @@ const getImageUrl = (url) => {
 // Handle image loading errors
 const onImageError = (event) => {
   console.log('Image failed to load:', event.target.src);
-  event.target.src = defaultCompanyLogo.value;
+
+  // Check if it's a company logo by looking at the alt text or parent container
+  if (event.target.alt && event.target.alt.includes('logo')) {
+    event.target.src = defaultCompanyLogo.value;
+  } else {
+    // For other images, use a generic error image
+    event.target.src =
+      'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOWNhM2FmIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHJlY3QgeD0iNCIgeT0iMiIgd2lkdGg9IjE2IiBoZWlnaHQ9IjIwIiByeD0iMiIgcnk9IjIiPjwvcmVjdD48bGluZSB4MT0iOSIgeTE9IjIiIHgyPSI5IiB5Mj0iMjIiPjwvbGluZT48bGluZSB4MT0iMTUiIHkxPSIyIiB4Mj0iMTUiIHkyPSIyMiI+PC9saW5lPjxsaW5lIHgxPSI0IiB5MT0iMTIiIHgyPSIyMCIgeTI9IjEyIj48L2xpbmU+PC9zdmc+';
+  }
 };
 
 // Check if we have a previous job ID stored in query params or sessionStorage
@@ -683,6 +709,11 @@ onMounted(() => {
 
   // Determine source page
   sourcePage.value = route.query.source || 'jobDetails';
+
+  // Set active tab based on query parameter
+  if (route.query.activeTab === 'portfolio') {
+    activeTabIndex.value = 1; // Portfolio tab is at index 1
+  }
 
   // Fetch recruiter data
   fetchRecruiterData();
@@ -720,6 +751,20 @@ const fetchPortfolios = async () => {
 
     if (response.data && response.data.data) {
       portfolios.value = response.data.data;
+
+      // Process portfolio image URLs
+      portfolios.value = portfolios.value.map((portfolio) => {
+        if (portfolio.coverImageUrl) {
+          try {
+            portfolio.coverImageUrl = fileService.getPortfolioMediaUrl(
+              portfolio.coverImageUrl
+            );
+          } catch (error) {
+            console.warn('Error processing portfolio image URL:', error);
+          }
+        }
+        return portfolio;
+      });
     } else {
       throw new Error('Invalid response format');
     }
@@ -739,7 +784,7 @@ const fetchPortfolios = async () => {
             'A successful product launch event showcasing our latest innovations.',
           uploadedAt: '2025-04-13T00:41:54.555495',
           coverImageUrl:
-            '/assets/portfolio-media/cc61c36b-08f5-43b3-bee6-773f9dc34f8b.png',
+            '/portfolio-media/cc61c36b-08f5-43b3-bee6-773f9dc34f8b.png',
           mediaCount: 6,
         },
         {
@@ -750,7 +795,7 @@ const fetchPortfolios = async () => {
           eventDescription:
             'Annual tech conference with industry leaders and innovative showcases.',
           uploadedAt: '2025-04-10T14:22:12.123456',
-          coverImageUrl: '/assets/portfolio-media/tech-conference.jpg',
+          coverImageUrl: '/portfolio-media/tech-conference.jpg',
           mediaCount: 12,
         },
         {
@@ -761,10 +806,25 @@ const fetchPortfolios = async () => {
           eventDescription:
             'Campus recruitment event targeting top talent in engineering and business.',
           uploadedAt: '2025-03-01T09:30:00.000000',
-          coverImageUrl: '/assets/portfolio-media/recruitment-drive.jpg',
+          coverImageUrl: '/portfolio-media/recruitment-drive.jpg',
           mediaCount: 8,
         },
       ];
+
+      // Process mock portfolio image URLs
+      portfolios.value = portfolios.value.map((portfolio) => {
+        if (portfolio.coverImageUrl) {
+          try {
+            portfolio.coverImageUrl = fileService.getPortfolioMediaUrl(
+              portfolio.coverImageUrl
+            );
+          } catch (error) {
+            console.warn('Error processing mock portfolio image URL:', error);
+          }
+        }
+        return portfolio;
+      });
+
       portfolioError.value = null;
     }
   } finally {
@@ -909,41 +969,23 @@ const fetchRecruiterData = async () => {
     // Check if response has the expected structure
     if (response.data && response.data.data) {
       recruiter.value = response.data.data;
+
+      // Process company logo URL if exists
+      if (recruiter.value.companyLogoUrl) {
+        try {
+          // Pre-process the company logo URL to ensure it's correctly formatted
+          recruiter.value.companyLogoUrl = fileService.getCompanyLogoUrl(
+            recruiter.value.companyLogoUrl
+          );
+        } catch (logoError) {
+          console.warn('Error processing company logo URL:', logoError);
+        }
+      }
+
       console.log('Recruiter data loaded:', recruiter.value);
     } else {
       throw new Error('Invalid response format');
     }
-
-    /* Mock data - kept for reference or fallback
-    const mockData = {
-      id: recruiterId.value,
-      recruiterRepName: 'Recruiter Test',
-      recruiterType: 'COMPANY',
-      email: 'recruiter@gmail.com',
-      phoneNumber: '0123456789',
-      companyName: 'Insight Recruitment',
-      companyLogoUrl:
-        '/assets/profile-pictures/ae0c3fb4-9ad9-4a0a-a9a0-bb1ec80866f1.png',
-      companyDescription: 'Insight Recruitment testing description',
-      companyLocation: {
-        id: 2,
-        name: 'Kuala Lumpur',
-        address: 'Kuala Lumpur, Federal Territory of Kuala Lumpur, Malaysia',
-        city: 'Kuala Lumpur',
-        state: 'Federal Territory of Kuala Lumpur',
-        country: 'Malaysia',
-        postalCode: '',
-        latitude: 3.1499222,
-        longitude: 101.6944619,
-        placeId: 'ChIJ5-rvAcdJzDERfSgcL1uO2fQ',
-        googleMapsUrl:
-          'https://www.google.com/maps/place/?q=place_id:ChIJ5-rvAcdJzDERfSgcL1uO2fQ',
-        distanceFromUser: null,
-      },
-      companyWebsite: 'https://insight.com',
-      verificationStatus: 'PENDING',
-    };
-    */
   } catch (err) {
     console.error('Error loading recruiter data:', err);
     error.value = err.message || 'Failed to load recruiter information';
@@ -958,8 +1000,7 @@ const fetchRecruiterData = async () => {
         email: 'recruiter@gmail.com',
         phoneNumber: '0123456789',
         companyName: 'Insight Recruitment',
-        companyLogoUrl:
-          '/assets/profile-pictures/ae0c3fb4-9ad9-4a0a-a9a0-bb1ec80866f1.png',
+        companyLogoUrl: '/company-logos/company-logo-insight.png', // Updated path for consistency
         companyDescription: 'Insight Recruitment testing description',
         companyLocation: {
           id: 2,
@@ -979,6 +1020,18 @@ const fetchRecruiterData = async () => {
         companyWebsite: 'https://insight.com',
         verificationStatus: 'PENDING',
       };
+
+      // Process company logo URL for mock data too
+      if (recruiter.value.companyLogoUrl) {
+        try {
+          recruiter.value.companyLogoUrl = fileService.getCompanyLogoUrl(
+            recruiter.value.companyLogoUrl
+          );
+        } catch (logoError) {
+          console.warn('Error processing mock company logo URL:', logoError);
+        }
+      }
+
       error.value = null; // Clear error if using mock data
     }
   } finally {

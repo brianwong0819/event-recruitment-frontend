@@ -2,7 +2,8 @@
   <div class="p-6">
     <!-- Search and Filter Section -->
     <div
-      class="bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg shadow-md p-6 mb-6 border border-indigo-200"
+      v-show="!isFilterCollapsed"
+      class="bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg shadow-md p-6 mb-6 border border-indigo-200 transition-all duration-300"
     >
       <div class="grid grid-cols-1 lg:grid-cols-6 gap-4 mb-4">
         <!-- What (Keywords) -->
@@ -172,6 +173,24 @@
       </div>
     </div>
 
+    <!-- Collapsed Filter Bar - Shows when filters are collapsed -->
+    <div
+      v-show="isFilterCollapsed"
+      class="bg-gradient-to-r from-indigo-100 to-purple-100 rounded-lg shadow-md p-3 mb-6 border border-indigo-200 cursor-pointer flex items-center justify-between transition-all duration-300"
+      @click="isFilterCollapsed = false"
+    >
+      <div class="flex items-center gap-2">
+        <i class="pi pi-filter text-indigo-600"></i>
+        <span class="text-indigo-700 font-medium">Filters</span>
+        <span
+          v-if="isFiltering"
+          class="text-xs bg-indigo-600 text-white rounded-full px-2 py-0.5"
+          >Active</span
+        >
+      </div>
+      <i class="pi pi-chevron-down text-indigo-600"></i>
+    </div>
+
     <!-- Results Section -->
     <div class="flex flex-col lg:flex-row gap-6">
       <!-- Job Listings Panel -->
@@ -213,7 +232,7 @@
           v-else
           ref="jobListContainer"
           class="h-[500px] lg:h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar pr-2 flex-grow"
-          @scroll="onScroll"
+          @scroll="handleJobListScroll"
         >
           <div>
             <div
@@ -237,7 +256,7 @@
                     :src="job.companyLogoUrl"
                     :alt="`${job.company} logo`"
                     class="w-full h-full object-contain"
-                    @error="$event.target.src = defaultCompanyLogo.value"
+                    @error="onImageError"
                   />
                   <i v-else class="pi pi-building text-gray-400 text-2xl"></i>
                 </div>
@@ -343,7 +362,7 @@
         class="w-full lg:w-1/2 xl:w-3/5 h-[550px] lg:h-[calc(100vh-200px)] overflow-hidden"
       >
         <div
-          class="bg-white rounded-lg shadow-md h-full overflow-y-auto custom-scrollbar"
+          class="bg-white rounded-lg shadow-md h-full overflow-y-auto custom-scrollbar job-detail-container"
         >
           <div class="p-6">
             <JobDetail
@@ -373,6 +392,7 @@ import JobService from '@/services/JobService';
 import ProgressSpinner from 'primevue/progressspinner';
 import JobDetail from '@/components/candidate/JobDetail.vue';
 import axios from 'axios';
+import fileService from '@/services/file.service';
 
 // Default company logo (base64 encoded simple building icon)
 const defaultCompanyLogo = ref(
@@ -387,10 +407,13 @@ const applyLoading = ref(false);
 const loadingMore = ref(false);
 const noMoreJobs = ref(false);
 const jobListContainer = ref(null);
+const jobDetailContainer = ref(null);
 const currentPage = ref(0);
 const jobsPerPage = 5;
 const totalJobsCount = ref(0);
 const isFiltering = ref(false);
+const isFilterCollapsed = ref(false);
+const lastScrollTop = ref(0);
 
 // Filter variables
 const filters = ref({
@@ -485,11 +508,23 @@ const sortedJobs = computed(() => {
 });
 
 // Check if scroll is near the bottom to trigger loading more
-const onScroll = async (event) => {
+const handleJobListScroll = async (event) => {
   const container = event.target;
   const scrollPosition = container.scrollTop + container.clientHeight;
   const scrollThreshold = container.scrollHeight - 100; // Load more when 100px from bottom
 
+  // Handle filter collapse based on scroll direction
+  const currentScrollTop = container.scrollTop;
+  if (currentScrollTop > lastScrollTop.value && currentScrollTop > 50) {
+    // Scrolling down - collapse the filter
+    isFilterCollapsed.value = true;
+  } else if (currentScrollTop < lastScrollTop.value) {
+    // Scrolling up - expand the filter
+    isFilterCollapsed.value = false;
+  }
+  lastScrollTop.value = currentScrollTop;
+
+  // Load more posts when near bottom
   if (
     scrollPosition >= scrollThreshold &&
     !loadingMore.value &&
@@ -605,6 +640,11 @@ const fetchJobs = async () => {
 // Select a job to display details
 const selectJob = async (job) => {
   try {
+    // Make sure to process the company logo URL before displaying
+    if (job.companyLogoUrl) {
+      job.companyLogoUrl = JobService.formatImageUrl(job.companyLogoUrl);
+    }
+
     // Get detailed job information when selecting
     const jobDetail = await JobService.getJobById(job.id);
 
@@ -630,9 +670,22 @@ const selectJob = async (job) => {
     if (jobDetail) {
       // Keep saved status from the job card
       jobDetail.saved = job.saved;
+
+      // Make sure the company logo is properly processed
+      if (jobDetail.companyLogoUrl) {
+        jobDetail.companyLogoUrl = JobService.formatImageUrl(
+          jobDetail.companyLogoUrl
+        );
+      }
+
       selectedJob.value = jobDetail;
     } else {
       selectedJob.value = job;
+    }
+
+    // Save the job ID to session storage for returning to this job later
+    if (job.id) {
+      sessionStorage.setItem('lastViewedJobId', job.id);
     }
   } catch (error) {
     console.error('Error fetching job details:', error);
@@ -719,11 +772,42 @@ const clearFilters = async () => {
   await fetchJobs();
 };
 
+// Handle image loading errors
+const onImageError = (event) => {
+  // If it's a company logo image
+  if (event.target.alt && event.target.alt.includes('logo')) {
+    event.target.src = defaultCompanyLogo.value;
+  }
+};
+
+// Handle scrolling in the job details panel
+const handleDetailScroll = (event) => {
+  const container = event.target;
+  const currentScrollTop = container.scrollTop;
+
+  // Collapse filter when scrolling down in job details
+  if (currentScrollTop > 50) {
+    isFilterCollapsed.value = true;
+  } else if (currentScrollTop < 30) {
+    // Expand filter when scrolling back to top
+    isFilterCollapsed.value = false;
+  }
+};
+
 // Initialize with data
 onMounted(async () => {
   await fetchJobs();
-  // Not pre-selecting any job (commented out previous code)
-  // selectedJob.value = null;
+
+  // Add scroll event listeners
+  if (jobListContainer.value) {
+    jobListContainer.value.addEventListener('scroll', handleJobListScroll);
+  }
+
+  // Get job detail container and add scroll listener
+  const detailContainer = document.querySelector('.job-detail-container');
+  if (detailContainer) {
+    detailContainer.addEventListener('scroll', handleDetailScroll);
+  }
 });
 </script>
 
@@ -868,5 +952,26 @@ onMounted(async () => {
 :deep(.p-calendar .p-inputtext) {
   display: flex;
   align-items: center;
+}
+
+/* Filter collapse/expand animations */
+.filter-collapsed-enter-active,
+.filter-collapsed-leave-active {
+  transition: max-height 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+  overflow: hidden;
+}
+
+.filter-collapsed-enter-from,
+.filter-collapsed-leave-to {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.filter-collapsed-enter-to,
+.filter-collapsed-leave-from {
+  max-height: 1000px;
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>
