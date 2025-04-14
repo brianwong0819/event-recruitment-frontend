@@ -541,6 +541,7 @@ import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 import ProgressSpinner from 'primevue/progressspinner';
 import axios from 'axios';
+import fileService from '@/services/file.service';
 
 const route = useRoute();
 const router = useRouter();
@@ -639,14 +640,13 @@ const getImageUrl = (url) => {
     }
   }
 
-  // For portfolio-media URLs, access directly from assets
+  // For portfolio-media URLs, use fileService
   if (url.includes('portfolio-media')) {
     try {
       // Extract the filename
       const filename = url.split('/').pop();
-      // Import directly from assets folder
-      return new URL(`/src/assets/portfolio-media/${filename}`, import.meta.url)
-        .href;
+      // Use fileService to get the correct backend URL
+      return fileService.getPortfolioMediaUrl(filename);
     } catch (error) {
       console.error('Error loading portfolio image:', error);
       // Return default portfolio image

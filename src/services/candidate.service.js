@@ -1,5 +1,6 @@
 import { apiClient } from './api.service';
 import userService from './user.service';
+import fileService from './file.service';
 
 class CandidateService {
   /**
@@ -126,6 +127,7 @@ class CandidateService {
     const formData = new FormData();
     formData.append('file', file);
 
+    // Upload to the new backend endpoint
     return apiClient.post('/candidate/file/profile-picture', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -140,16 +142,7 @@ class CandidateService {
    */
   getProfilePictureFromAssets(filename) {
     if (!filename || filename === 'undefined') return null;
-    try {
-      // Using URL constructor for more robust importing with correct relative path
-      return new URL(
-        `../../assets/profile-pictures/${filename}`,
-        import.meta.url
-      ).href;
-    } catch (error) {
-      console.error('Failed to load profile picture from assets:', error);
-      return null;
-    }
+    return fileService.getProfilePictureUrl(filename);
   }
 
   /**
@@ -223,7 +216,8 @@ class CandidateService {
           return urlResponse;
         } else if (
           typeof urlResponse.data === 'string' &&
-          urlResponse.data.includes('/assets/resumes/')
+          (urlResponse.data.includes('/api/files/resumes/') ||
+            urlResponse.data.includes('/assets/resumes/'))
         ) {
           window.open(urlResponse.data, '_blank');
           return urlResponse;
@@ -243,13 +237,7 @@ class CandidateService {
    */
   getResumeFromAssets(filename) {
     if (!filename || filename === 'undefined') return null;
-    try {
-      // Using URL constructor for more robust importing with correct relative path
-      return new URL(`../../assets/resumes/${filename}`, import.meta.url).href;
-    } catch (error) {
-      console.error('Failed to load resume from assets:', error);
-      return null;
-    }
+    return fileService.getResumeUrl(filename);
   }
 
   /**
@@ -301,27 +289,21 @@ class CandidateService {
   getCompcardFromAssets(filename) {
     if (!filename || filename === 'undefined') return null;
 
-    try {
-      // Log the original filename for debugging
-      console.log('Resolving image path for:', filename);
+    // Log the original filename for debugging
+    console.log('Resolving image path for:', filename);
 
-      // Extract just the filename regardless of path format
-      const filenameOnly = filename.includes('/')
-        ? filename.split('/').pop()
-        : filename;
+    // Extract just the filename regardless of path format
+    const filenameOnly = filename.includes('/')
+      ? filename.split('/').pop()
+      : filename;
 
-      // Log the extracted filename
-      console.log('Extracted filename:', filenameOnly);
+    // Log the extracted filename
+    console.log('Extracted filename:', filenameOnly);
 
-      // Use the exact path format that works in the Vite dev environment
-      const url = `http://localhost:5173/src/assets/comcards/${filenameOnly}`;
+    const url = fileService.getCompcardUrl(filenameOnly);
 
-      console.log('Final image URL:', url);
-      return url;
-    } catch (error) {
-      console.error('Failed to resolve comp card path:', error);
-      return null;
-    }
+    console.log('Final image URL:', url);
+    return url;
   }
 
   /**
@@ -432,35 +414,33 @@ class CandidateService {
       // Log the original filename for debugging
       console.log('Resolving working image path for:', filename);
 
-      // Extract just the filename regardless of path format
-      const filenameOnly =
-        // Handle different path formats
-        filename.includes('/assets/working-photos/')
-          ? filename.split('/assets/working-photos/').pop()
-          : filename.includes('/')
-          ? filename.split('/').pop()
-          : filename;
+      // Clean up the filename by removing any path prefixes
+      let cleanFilename = filename;
+
+      // Check for various patterns and extract just the filename
+      if (filename.includes('/api/files/working-photos/')) {
+        cleanFilename = filename.split('/api/files/working-photos/').pop();
+      } else if (filename.includes('api/files/working-photos/')) {
+        cleanFilename = filename.split('api/files/working-photos/').pop();
+      } else if (filename.includes('/assets/working-photos/')) {
+        cleanFilename = filename.split('/assets/working-photos/').pop();
+      } else if (filename.includes('/working-photos/')) {
+        cleanFilename = filename.split('/working-photos/').pop();
+      } else if (filename.includes('/')) {
+        cleanFilename = filename.split('/').pop();
+      }
+
+      // Ensure we have a clean filename
+      cleanFilename = cleanFilename.replace(/^\/+/, '');
 
       // Log the extracted filename
-      console.log('Extracted filename for working photo:', filenameOnly);
+      console.log('Extracted filename for working photo:', cleanFilename);
 
-      // List of possible URLs to try
-      const possibleUrls = [
-        // For development environment
-        `http://localhost:5173/src/assets/working-photos/${filenameOnly}`,
-        // Relative to current origin
-        `${window.location.origin}/src/assets/working-photos/${filenameOnly}`,
-        // Relative path
-        `/src/assets/working-photos/${filenameOnly}`,
-        // For production environment
-        `/assets/working-photos/${filenameOnly}`,
-      ];
+      // Use the fileService to get the URL
+      const url = fileService.getWorkingPhotoUrl(cleanFilename);
 
-      // Log all URLs being tried
-      console.log('Possible URLs for working photo:', possibleUrls);
-
-      // Return the first URL in the list - error handling can try others if this fails
-      return possibleUrls[0];
+      console.log('Final working photo URL:', url);
+      return url;
     } catch (error) {
       console.error('Failed to resolve working photo path:', error);
       return null;

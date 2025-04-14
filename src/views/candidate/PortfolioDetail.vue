@@ -431,6 +431,7 @@ import Button from 'primevue/button';
 import ProgressSpinner from 'primevue/progressspinner';
 import Dialog from 'primevue/dialog';
 import axios from 'axios';
+import fileService from '@/services/file.service';
 
 const route = useRoute();
 const router = useRouter();
@@ -503,8 +504,8 @@ const getImageUrl = (url) => {
     try {
       // Extract the filename
       const filename = url.split('/').pop();
-      // Import directly from assets
-      return `/src/assets/portfolio-media/${filename}`;
+      // Use fileService to get the correct backend URL
+      return fileService.getPortfolioMediaUrl(filename);
     } catch (error) {
       console.error('Error loading image:', error);
       return defaultImage.value;

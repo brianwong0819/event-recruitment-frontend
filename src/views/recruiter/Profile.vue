@@ -22,7 +22,7 @@
             <Avatar
               :image="
                 profile.companyLogoUrl
-                  ? recruiterService.getLogoUrl(profile.companyLogoUrl)
+                  ? fileService.getCompanyLogoUrl(profile.companyLogoUrl)
                   : ''
               "
               class="w-24 h-24 md:w-32 md:h-32"
@@ -1333,6 +1333,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
 import recruiterService from '@/services/recruiter.service';
 import userService from '@/services/user.service';
+import fileService from '@/services/file.service';
 import { useProfileStore } from '@/stores/profile';
 import { storeToRefs } from 'pinia';
 import Avatar from 'primevue/avatar';
@@ -2057,6 +2058,10 @@ const handleLogoUpload = async (event) => {
       // Update profile with the logo URL
       profile.value.companyLogoUrl = logoUrl;
       editedProfile.value.companyLogoUrl = logoUrl;
+
+      // Create a proper URL using fileService to ensure it points to backend
+      const displayUrl = fileService.getCompanyLogoUrl(logoUrl);
+      console.log('Company logo uploaded successfully, URL:', displayUrl);
 
       // Also update the user in localStorage
       try {
@@ -2923,25 +2928,65 @@ watch(activeTab, async (newValue) => {
 const mapMediaUrl = (url) => {
   if (!url) return '';
 
-  // Extract just the filename from the URL path
-  const parts = url.split('/');
-  const filename = parts[parts.length - 1];
+  try {
+    // If it's a blob URL (for preview), use it as is
+    if (url.startsWith('blob:')) return url;
 
-  // If the URL starts with /assets/, it's from the API
-  if (url.startsWith('/assets/')) {
-    return url.replace('/assets/', '/src/assets/');
-  }
+    // If it's a full URL already pointing to our backend, use it as is
+    if (url.startsWith('http') && url.includes('localhost:8080')) {
+      return url;
+    }
 
-  // If it's a full URL starting with http or https, use it as is
-  if (url.startsWith('http://') || url.startsWith('https://')) {
+    // For full URLs pointing to the dev server or other domains
+    if (url.startsWith('http') && !url.includes('localhost:8080')) {
+      // Extract the filename
+      const filename = url.split('/').pop();
+
+      // Use specialized portfolio media URL handler
+      return fileService.getPortfolioMediaUrl(filename);
+    }
+
+    // For relative URLs starting with /assets/
+    if (url.includes('/assets/') || url.includes('src/assets/')) {
+      // Extract the filename
+      const filename = url.split('/').pop();
+
+      // Use specialized portfolio media URL handler
+      return fileService.getPortfolioMediaUrl(filename);
+    }
+
+    // If it's just a filename or path that doesn't match above patterns
+    return fileService.getPortfolioMediaUrl(url.split('/').pop());
+  } catch (error) {
+    console.error('Error mapping media URL:', error);
     return url;
   }
-
-  // Otherwise, assume it's a direct filename and map to local assets directory
-  return `/src/assets/portfolio-media/${filename}`;
 };
 
 const handleImageError = (event) => {
+  console.log('Image error event triggered');
+
+  try {
+    // Try to get the logo URL from the company profile
+    if (profile.value?.companyLogoUrl) {
+      // Extract just the filename
+      const filename = profile.value.companyLogoUrl.split('/').pop();
+
+      // Use fileService directly to get the URL from the backend
+      const backendUrl = fileService.getCompanyLogoUrl(filename);
+      console.log('Attempting to load image from backend URL:', backendUrl);
+
+      // Set the image source to the backend URL
+      event.target.src = backendUrl;
+
+      // Don't show toast on first attempt
+      return;
+    }
+  } catch (error) {
+    console.error('Error handling image error:', error);
+  }
+
+  // If we reach here, we've failed to load the image
   toast.add({
     severity: 'warn',
     summary: 'Image Loading Issue',

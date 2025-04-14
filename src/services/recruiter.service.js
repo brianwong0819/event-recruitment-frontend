@@ -1,4 +1,5 @@
 import { apiClient } from './api.service';
+import fileService from './file.service';
 
 /**
  * Service for recruiter-related API operations
@@ -38,20 +39,18 @@ class RecruiterService {
   }
 
   /**
-   * Get profile picture URL from assets directory
-   * @param {String} logoPath - Profile picture filename or path
-   * @returns {String} - Full URL to the profile picture
+   * Get company logo URL from assets directory
+   * @param {String} logoPath - Company logo filename or path
+   * @returns {String} - Full URL to the company logo
    */
   getLogoFromAssets(logoPath) {
     if (!logoPath || logoPath === 'undefined') return null;
 
     try {
-      const filenameOnly = logoPath.includes('/')
-        ? logoPath.split('/').pop()
-        : logoPath;
-
-      return `http://localhost:5173/src/assets/profile-pictures/${filenameOnly}`;
+      // Use the fileService to handle the URL properly
+      return fileService.getCompanyLogoUrl(logoPath);
     } catch (error) {
+      console.error('Error in getLogoFromAssets:', error);
       return null;
     }
   }
@@ -64,20 +63,26 @@ class RecruiterService {
   getLogoUrl(logoPath) {
     if (!logoPath) return '';
 
-    // First try to get it from assets
-    if (logoPath.includes('/') || !logoPath.startsWith('http')) {
-      const assetUrl = this.getLogoFromAssets(logoPath);
-      if (assetUrl) return assetUrl;
-    }
+    // If it's a blob URL for image preview, return as is
+    if (logoPath.startsWith('blob:')) return logoPath;
 
-    // For absolute URLs with http/https
-    if (logoPath.startsWith('http')) {
-      return logoPath;
-    }
+    try {
+      // Use fileService to get the proper URL
+      return fileService.getCompanyLogoUrl(logoPath);
+    } catch (error) {
+      console.error('Error in getLogoUrl:', error);
 
-    // For URLs starting with / (server-relative paths)
-    const baseServerUrl = apiClient.defaults.baseURL.split('/api')[0]; // e.g. http://localhost:8080
-    return `${baseServerUrl}${logoPath.startsWith('/') ? '' : '/'}${logoPath}`;
+      // Fallback for absolute URLs with http/https
+      if (logoPath.startsWith('http')) {
+        return logoPath;
+      }
+
+      // Fallback for URLs starting with / (server-relative paths)
+      const baseServerUrl = apiClient.defaults.baseURL.split('/api')[0]; // e.g. http://localhost:8080
+      return `${baseServerUrl}${
+        logoPath.startsWith('/') ? '' : '/'
+      }${logoPath}`;
+    }
   }
 
   /**

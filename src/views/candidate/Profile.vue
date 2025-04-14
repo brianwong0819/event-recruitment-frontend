@@ -901,9 +901,9 @@
                           class="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-300"
                           @error="
                             console.error('Image load error');
-                            $event.target.src = `http://localhost:5173/src/assets/comcards/${photo.comcardUrl
-                              .split('/')
-                              .pop()}`;
+                            $event.target.src = fileService.getCompcardUrl(
+                              photo.comcardUrl
+                            );
                           "
                           style="object-fit: cover; width: 100%; height: 100%"
                         />
@@ -1076,19 +1076,8 @@
                     >
                       <div class="relative aspect-square overflow-hidden">
                         <img
-                          v-if="
-                            photo.photoUrl ||
-                            photo.url ||
-                            photo.imageUrl ||
-                            photo.backupUrl
-                          "
-                          :src="
-                            photo.photoUrl ||
-                            photo.url ||
-                            photo.imageUrl ||
-                            photo.backupUrl ||
-                            ''
-                          "
+                          v-if="photo.url"
+                          :src="photo.url"
                           :alt="`Working Photo ${index + 1}`"
                           class="w-full h-auto object-cover"
                           @error="handleWorkingPhotoError($event, photo, index)"
@@ -1866,7 +1855,7 @@
           >
             <div class="p-5 flex justify-center">
               <img
-                src="/src/assets/samples/comp-card-example.jpg"
+                :src="compCardExampleUrl"
                 alt="Comp Card Example"
                 class="max-w-full h-auto rounded shadow-sm"
               />
@@ -2155,6 +2144,7 @@ import ConfirmDialog from 'primevue/confirmdialog';
 import { useRoute, useRouter } from 'vue-router';
 import AvailabilityComponent from '@/components/candidate/Availability.vue';
 import LocationSearch from '@/components/shared/LocationSearch.vue';
+import fileService from '@/services/file.service';
 
 // Initialize toast service
 const toast = useToast();
@@ -2992,79 +2982,8 @@ const getImageUrl = (url) => {
     return ''; // Return empty string to avoid broken images
   }
 
-  // Handle URLs that start with http or https
-  if (url.startsWith('http')) {
-    // Cache valid URLs in localStorage for profile pictures
-    if (url.includes('profile-picture') || url.includes('profilePicture')) {
-      localStorage.setItem('cachedProfilePictureUrl', url);
-      console.debug('Cached profile picture URL in localStorage:', url);
-    }
-    return url;
-  }
-
-  // Extract filename from path if it's from profile-pictures
-  if (url.includes('profile-pictures/')) {
-    const filename = url.split('/').pop();
-
-    // Make sure filename is valid
-    if (!filename || filename === 'undefined') {
-      console.debug('Invalid filename detected in profile picture path', url);
-
-      // Check for cached URL if available
-      const cachedProfilePicUrl = localStorage.getItem(
-        'cachedProfilePictureUrl'
-      );
-      if (cachedProfilePicUrl) {
-        return cachedProfilePicUrl;
-      }
-
-      return '';
-    }
-
-    // Try direct import from assets
-    try {
-      // Use relative path to assets directory
-      const resolvedUrl = new URL(
-        `../../assets/profile-pictures/${filename}`,
-        import.meta.url
-      ).href;
-
-      // Cache the resolved URL for profile pictures
-      localStorage.setItem('cachedProfilePictureUrl', resolvedUrl);
-      console.debug('Cached profile picture URL in localStorage:', resolvedUrl);
-
-      return resolvedUrl;
-    } catch (error) {
-      console.debug('Could not import profile picture:', error);
-
-      // If not found via import, try as absolute path
-      if (url.startsWith('/')) {
-        const absoluteUrl = `${window.location.origin}${url}`;
-
-        // Cache the absolute URL for profile pictures
-        localStorage.setItem('cachedProfilePictureUrl', absoluteUrl);
-
-        return absoluteUrl;
-      }
-
-      return '';
-    }
-  }
-
-  // Handle relative paths from backend
-  if (url.startsWith('/')) {
-    const absoluteUrl = `${window.location.origin}${url}`;
-
-    // Cache the URL if it looks like a profile picture
-    if (url.includes('profile-picture') || url.includes('profilePicture')) {
-      localStorage.setItem('cachedProfilePictureUrl', absoluteUrl);
-    }
-
-    return absoluteUrl;
-  }
-
-  // Default case
-  return url;
+  // Use the fileService to get the proper URL based on the new backend structure
+  return fileService.getFileUrl(url);
 };
 
 // Options for dropdowns (needed for formatting methods)
@@ -3624,7 +3543,7 @@ const handleProfilePictureUpload = async (event) => {
       // Then, in the background, resolve the server URL
       setTimeout(() => {
         // Get the resolved URL from the server response
-        const resolvedUrl = getImageUrl(profilePictureUrl);
+        const resolvedUrl = fileService.getFileUrl(profilePictureUrl);
 
         // Update localStorage with the server URL for persistent storage
         if (resolvedUrl) {
@@ -3640,6 +3559,12 @@ const handleProfilePictureUpload = async (event) => {
     }
   } catch (error) {
     console.error('Error uploading profile picture:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Upload failed',
+      detail: 'Failed to upload profile picture. Please try again.',
+      life: 3000,
+    });
   } finally {
     uploadingProfilePicture.value = false;
     // Reset file input
@@ -3879,32 +3804,25 @@ const navigateToPhotos = () => {
 const handlePhotoError = (event, photo, index) => {
   console.error(`Error loading photo at index ${index}:`, photo);
 
-  // Create multiple potential URLs to try
-  const baseUrl = 'http://localhost:5173';
+  if (!photo.comcardUrl) {
+    console.error('No compcardUrl available for photo:', photo);
+    photo.url = null;
+    photo.loadError = true;
+    return;
+  }
+
+  // Use fileService to get the correct URL for the comp card
   const filenameOnly = photo.comcardUrl.split('/').pop();
+  console.log(
+    `Attempting to load with fileService for filename: ${filenameOnly}`
+  );
 
-  // Try these paths in sequence
-  const backupUrls = [
-    `${baseUrl}/src/assets/comcards/${filenameOnly}`,
-    `/src/assets/comcards/${filenameOnly}`,
-    `/assets/comcards/${filenameOnly}`,
-  ];
-
-  console.log('Attempting to load with backup URLs:', backupUrls);
-
-  // If the current URL is one of the backup URLs, try the next one
-  const currentIndex = backupUrls.indexOf(photo.url);
-  if (currentIndex >= 0 && currentIndex < backupUrls.length - 1) {
-    photo.url = backupUrls[currentIndex + 1];
-    console.log(`Trying next backup URL for photo ${index}:`, photo.url);
-  } else if (currentIndex === -1) {
-    // If current URL isn't in the backup list, try the first backup
-    photo.url = backupUrls[0];
-    console.log(`Trying first backup URL for photo ${index}:`, photo.url);
-  } else {
-    // We've tried all URLs, show error state
-    console.error(`All URLs failed for photo ${index}`);
-    // Set fallback image or placeholder
+  try {
+    // Get the URL using fileService
+    photo.url = fileService.getCompcardUrl(filenameOnly);
+    console.log(`Using fileService URL: ${photo.url}`);
+  } catch (error) {
+    console.error(`Failed to get comp card URL: ${error}`);
     photo.url = null;
     photo.loadError = true;
   }
@@ -3942,45 +3860,35 @@ const fetchWorkingPhotos = async () => {
       return;
     }
 
-    // Check and log individual photo objects
-    photos.forEach((photo, index) => {
-      console.log(`Photo ${index} structure:`, JSON.stringify(photo));
-    });
+    // Map the photos to include URLs - only use fileService URLs directly from backend
+    workingPhotos.value = photos.map((photo, index) => {
+      // Log the photo object structure for debugging
+      console.log(`Processing photo ${index}:`, photo);
 
-    // Map the photos to include URLs
-    workingPhotos.value = photos.map((photo) => {
-      // Log the photo object structure to debug
-      console.log(`Processing photo:`, photo);
+      let filename = null;
 
-      // The API response uses 'photoUrl' instead of 'imageUrl'
-      const imagePath =
-        photo.photoUrl || photo.imageUrl || photo.url || photo.path || null;
-      console.log(`Image path found:`, imagePath);
-
-      let url = null;
-      if (imagePath) {
-        url = candidateService.getWorkingPhotoFromAssets(imagePath);
-        console.log(
-          `Resolved URL for working photo ${photo.id || index}: ${
-            url || 'none'
-          }`
-        );
-      } else {
-        console.warn(`Missing image path for working photo:`, photo);
+      // Extract just the filename from any path that might be returned
+      if (photo.photoUrl && photo.photoUrl.includes('/')) {
+        filename = photo.photoUrl.split('/').pop();
+      } else if (photo.photoUrl) {
+        filename = photo.photoUrl;
+      } else if (photo.id) {
+        // Use ID as last resort
+        filename = `${photo.id}.jpg`;
       }
+
+      // Only use fileService to get the URL to ensure it points to 8080
+      const url = filename ? fileService.getWorkingPhotoUrl(filename) : null;
+      console.log(`Final URL for working photo ${index}: ${url}`);
 
       return {
         ...photo,
-        url: url,
-        // Store original path for error handling
-        imageUrl: imagePath,
-        backupUrl: `/src/assets/working-photos/${
-          imagePath
-            ? imagePath.includes('/')
-              ? imagePath.split('/').pop()
-              : imagePath
-            : ''
-        }`,
+        // Override all URL fields to ensure they point to the backend
+        url,
+        // Make sure these don't contain any reference to 5173
+        photoUrl: url,
+        imageUrl: url,
+        backupUrl: null,
       };
     });
 
@@ -4096,47 +4004,69 @@ const uploadWorkingPhoto = async () => {
       // instead of having to re-fetch all photos
       if (photoData.id) {
         console.log('Adding new photo to local state without re-fetching');
+
+        // Get the appropriate image path
+        const imagePath =
+          photoData.photoUrl ||
+          photoData.imageUrl ||
+          photoData.url ||
+          photoData.path;
+
+        // Extract just the filename
+        let filename = null;
+        if (imagePath && imagePath.includes('/')) {
+          filename = imagePath.split('/').pop();
+        } else if (imagePath) {
+          filename = imagePath;
+        } else if (photoData.id) {
+          filename = `${photoData.id}.jpg`;
+        }
+
+        // Use fileService directly to get the proper URL
+        const url = fileService.getWorkingPhotoUrl(filename);
+        console.log('Using fileService URL:', url);
+
         const newPhoto = {
           ...photoData,
           description: workingPhotoDescription.value,
-          url: candidateService.getWorkingPhotoFromAssets(
-            photoData.imageUrl || photoData.url || photoData.path
-          ),
-          backupUrl: `/src/assets/working-photos/${(
-            photoData.imageUrl ||
-            photoData.url ||
-            photoData.path ||
-            ''
-          )
-            .split('/')
-            .pop()}`,
+          url: url,
+          // Make sure these don't contain references to 5173
+          photoUrl: url,
+          imageUrl: url,
+          backupUrl: null,
         };
 
-        console.log('New photo object:', newPhoto);
+        console.log('Created new photo object:', newPhoto);
+
+        // Add to local state
         workingPhotos.value.push(newPhoto);
+
+        toast.add({
+          severity: 'success',
+          summary: 'Photo Uploaded',
+          detail: 'Working photo uploaded successfully.',
+          life: 3000,
+        });
+
+        // Close the dialog
+        showWorkingPhotoUploadDialog.value = false;
       } else {
-        console.log("Photo data doesn't contain ID, will re-fetch all photos");
+        // If we didn't get the photo data directly, we need to re-fetch
+        console.log('Photo data missing ID, refreshing all photos');
+        fetchWorkingPhotos();
       }
+    } else {
+      // If we didn't get the photo data at all, we need to re-fetch
+      console.log('No photo data in response, refreshing all photos');
+      fetchWorkingPhotos();
     }
-
-    toast.add({
-      severity: 'success',
-      summary: 'Photo Uploaded',
-      detail: 'Your working photo has been uploaded successfully.',
-      life: 3000,
-    });
-
-    showWorkingPhotoUploadDialog.value = false;
-    // Always re-fetch to ensure we have the latest data
-    fetchWorkingPhotos();
   } catch (error) {
     console.error('Error uploading working photo:', error);
 
-    // Log detailed error information
+    // Detailed error logging for debugging
     if (error.response) {
       console.error('Error response:', error.response);
-      console.error('Error data:', error.response.data);
-      console.error('Error status:', error.response.status);
+      console.error('Error response data:', error.response.data);
     }
 
     toast.add({
@@ -4333,9 +4263,9 @@ const handleWorkingPhotoError = (event, photo, index) => {
     // Extract the filename from various potential paths
     let filename = null;
 
-    if (photo.photoUrl && photo.photoUrl.includes('/assets/working-photos/')) {
-      // Format: /assets/working-photos/filename.jpg
-      filename = photo.photoUrl.split('/assets/working-photos/').pop();
+    if (photo.photoUrl && photo.photoUrl.includes('/')) {
+      // Extract just the filename regardless of path format
+      filename = photo.photoUrl.split('/').pop();
       console.log('Extracted filename from photoUrl:', filename);
     } else if (photo.imageUrl && photo.imageUrl.includes('/')) {
       // Format could be any path with a filename at the end
@@ -4352,10 +4282,13 @@ const handleWorkingPhotoError = (event, photo, index) => {
     }
 
     if (filename) {
-      // Try all possible URL formats
-      const directPath = `/src/assets/working-photos/${filename}`;
-      console.log('Attempting to load with direct path:', directPath);
-      event.target.src = directPath;
+      // Use the fileService to get the properly formatted URL
+      const properUrl = fileService.getWorkingPhotoUrl(filename);
+      console.log('Attempting to load with fileService URL:', properUrl);
+      event.target.src = properUrl;
+
+      // Update the photo object to use the proper URL
+      photo.url = properUrl;
     }
   } catch (error) {
     console.error('Failed to create fallback URL:', error);
@@ -4423,7 +4356,7 @@ const editProfile = () => {
 const profilePictureSource = computed(() => {
   // First try to get from profile
   if (profile.value?.profilePictureUrl) {
-    const url = getImageUrl(profile.value.profilePictureUrl);
+    const url = fileService.getFileUrl(profile.value.profilePictureUrl);
     if (url && url.trim() !== '') {
       // Successfully resolved a URL from the profile data
       return url;
@@ -4466,6 +4399,11 @@ const handleProfileImageError = (event) => {
   // Prevent infinite error events
   event.target.onerror = null;
 };
+
+// Add this computed property for the comp card example image
+const compCardExampleUrl = computed(() => {
+  return fileService.getSampleImageUrl('comp-card-example.jpg');
+});
 </script>
 
 <style scoped>
