@@ -533,6 +533,7 @@ class JobService {
             job.jobSchedules
           ),
           saved: false,
+          recruiterId: job.recruiterId,
         };
       }
 

@@ -162,12 +162,6 @@ const routes = [
         props: true,
       },
       {
-        path: 'recruiter-info/:recruiterId',
-        name: 'RecruiterInfo',
-        component: RecruiterInfo,
-        props: true,
-      },
-      {
         path: 'portfolio/:recruiterId/portfolios/:portfolioId',
         name: 'PortfolioDetail',
         component: PortfolioDetail,

@@ -535,6 +535,40 @@
                 </div>
               </div>
 
+              <!-- Location with Tips -->
+              <div class="mt-4 flex items-start gap-4">
+                <div
+                  class="flex-1 flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
+                  <div class="flex items-center">
+                    <i class="pi pi-map-marker text-gray-600 mr-2"></i>
+                    <div class="flex flex-col">
+                      <span class="text-gray-700">Location</span>
+                      <span class="text-xs text-gray-500 mt-0.5">{{
+                        profileStats.data.preferredLocation || 'Not set'
+                      }}</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center">
+                    <i
+                      v-if="profileStats.data.preferredLocation"
+                      class="pi pi-check-circle text-green-500 text-xl"
+                    ></i>
+                    <i
+                      v-else
+                      class="pi pi-times-circle text-red-500 text-xl"
+                    ></i>
+                  </div>
+                </div>
+                <div
+                  class="flex-1 text-sm text-gray-600 italic bg-blue-50 p-3 rounded-lg"
+                >
+                  <i class="pi pi-info-circle text-blue-500 mr-1"></i>
+                  Our AI ranking system uses the distance between your profile
+                  location and job location as one of the ranking indicators
+                </div>
+              </div>
+
               <div v-if="!isProfileComplete" class="mt-4 flex justify-center">
                 <Button
                   label="Complete Your Profile"

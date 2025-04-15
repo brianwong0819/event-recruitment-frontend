@@ -440,7 +440,7 @@ const router = useRouter();
 const portfolio = ref(null);
 const loading = ref(true);
 const error = ref(null);
-const viewMode = ref('grid'); // 'grid' or 'masonry'
+const viewMode = ref('masonry'); // Changed from 'grid' to 'masonry' as default
 const galleryVisible = ref(false);
 const currentImageIndex = ref(0);
 

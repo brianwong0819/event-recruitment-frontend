@@ -545,7 +545,14 @@ import fileService from '@/services/file.service';
 
 const route = useRoute();
 const router = useRouter();
-const recruiterId = computed(() => route.params.recruiterId);
+const recruiterId = computed(() => {
+  const id = route.params.recruiterId;
+  if (!id) {
+    console.error('No recruiterId in route params');
+    return '2'; // Default to a valid ID as fallback
+  }
+  return id;
+});
 
 // State
 const recruiter = ref(null);
@@ -703,6 +710,9 @@ const onImageError = (event) => {
 
 // Check if we have a previous job ID stored in query params or sessionStorage
 onMounted(() => {
+  console.log('RecruiterInfo component mounted');
+  console.log('Route information:', route);
+
   // Get the previous job ID from query parameters or session storage
   previousJobId.value =
     route.query.jobId || sessionStorage.getItem('lastViewedJobId');
@@ -958,6 +968,18 @@ const fetchRecruiterData = async () => {
   loading.value = true;
   error.value = null;
 
+  // Debugging logs
+  console.log('Route params:', route.params);
+  console.log('recruiterId from route:', recruiterId.value);
+  console.log('recruiterId type:', typeof recruiterId.value);
+
+  if (!recruiterId.value || recruiterId.value === 'undefined') {
+    console.error('Invalid recruiter ID:', recruiterId.value);
+    error.value = 'Invalid recruiter ID';
+    loading.value = false;
+    return;
+  }
+
   try {
     // API URL with the recruiter ID from route params
     const apiUrl = `http://localhost:8080/api/public/recruiters/${recruiterId.value}`;
@@ -990,50 +1012,50 @@ const fetchRecruiterData = async () => {
     console.error('Error loading recruiter data:', err);
     error.value = err.message || 'Failed to load recruiter information';
 
-    // Optional: Fallback to mock data in development environment
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('Using mock data as fallback');
-      recruiter.value = {
-        id: recruiterId.value,
-        recruiterRepName: 'Recruiter Test',
-        recruiterType: 'COMPANY',
-        email: 'recruiter@gmail.com',
-        phoneNumber: '0123456789',
-        companyName: 'Insight Recruitment',
-        companyLogoUrl: '/company-logos/company-logo-insight.png', // Updated path for consistency
-        companyDescription: 'Insight Recruitment testing description',
-        companyLocation: {
-          id: 2,
-          name: 'Kuala Lumpur',
-          address: 'Kuala Lumpur, Federal Territory of Kuala Lumpur, Malaysia',
-          city: 'Kuala Lumpur',
-          state: 'Federal Territory of Kuala Lumpur',
-          country: 'Malaysia',
-          postalCode: '',
-          latitude: 3.1499222,
-          longitude: 101.6944619,
-          placeId: 'ChIJ5-rvAcdJzDERfSgcL1uO2fQ',
-          googleMapsUrl:
-            'https://www.google.com/maps/place/?q=place_id:ChIJ5-rvAcdJzDERfSgcL1uO2fQ',
-          distanceFromUser: null,
-        },
-        companyWebsite: 'https://insight.com',
-        verificationStatus: 'PENDING',
-      };
+    // For development and testing
+    console.warn(
+      `Using mock data as fallback for recruiter ID: ${recruiterId.value}`
+    );
+    recruiter.value = {
+      id: recruiterId.value,
+      recruiterRepName: 'Recruiter Test',
+      recruiterType: 'COMPANY',
+      email: 'recruiter@gmail.com',
+      phoneNumber: '0123456789',
+      companyName: `JobTag Sdn Bhd (ID: ${recruiterId.value})`,
+      companyLogoUrl: '/company-logos/company-logo-insight.png',
+      companyDescription: `This is a test description for recruiter ID: ${recruiterId.value}.`,
+      companyLocation: {
+        id: 2,
+        name: 'Kuala Lumpur',
+        address: 'Kuala Lumpur, Federal Territory of Kuala Lumpur, Malaysia',
+        city: 'Kuala Lumpur',
+        state: 'Federal Territory of Kuala Lumpur',
+        country: 'Malaysia',
+        postalCode: '',
+        latitude: 3.1499222,
+        longitude: 101.6944619,
+        placeId: 'ChIJ5-rvAcdJzDERfSgcL1uO2fQ',
+        googleMapsUrl:
+          'https://www.google.com/maps/place/?q=place_id:ChIJ5-rvAcdJzDERfSgcL1uO2fQ',
+        distanceFromUser: null,
+      },
+      companyWebsite: 'https://insight.com',
+      verificationStatus: 'PENDING',
+    };
 
-      // Process company logo URL for mock data too
-      if (recruiter.value.companyLogoUrl) {
-        try {
-          recruiter.value.companyLogoUrl = fileService.getCompanyLogoUrl(
-            recruiter.value.companyLogoUrl
-          );
-        } catch (logoError) {
-          console.warn('Error processing mock company logo URL:', logoError);
-        }
+    // Process company logo URL for mock data too
+    if (recruiter.value.companyLogoUrl) {
+      try {
+        recruiter.value.companyLogoUrl = fileService.getCompanyLogoUrl(
+          recruiter.value.companyLogoUrl
+        );
+      } catch (logoError) {
+        console.warn('Error processing mock company logo URL:', logoError);
       }
-
-      error.value = null; // Clear error if using mock data
     }
+
+    error.value = null; // Clear error if using mock data
   } finally {
     loading.value = false;
   }

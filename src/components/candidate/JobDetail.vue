@@ -45,19 +45,25 @@
               />
             </div>
             <div class="flex items-center gap-1 mb-2">
-              <!-- Company name now as a router link -->
-              <router-link
-                :to="{
-                  name: 'RecruiterInfo',
-                  params: { recruiterId: job.recruiterId || '1' },
-                  query: { jobId: job.id },
-                }"
+              <!-- Company name as a router link when recruiterId exists -->
+              <a
+                v-if="
+                  job &&
+                  job.recruiterId != null &&
+                  job.recruiterId !== undefined
+                "
+                href="#"
                 class="text-lg text-indigo-600 font-medium hover:text-indigo-800 hover:underline transition-colors flex items-center gap-1"
-                @click="saveCurrentJobId(job.id)"
+                @click.prevent="navigateToRecruiter(job.recruiterId, job.id)"
               >
                 {{ job.company }}
                 <i class="pi pi-external-link text-xs"></i>
-              </router-link>
+              </a>
+              <!-- Plain text when no recruiterId -->
+              <span v-else class="text-lg text-gray-600">{{
+                job ? job.company : 'Company'
+              }}</span>
+
               <!-- Recruiter Type Tag - Smaller -->
               <Tag
                 v-if="job.recruiterType"
@@ -354,7 +360,7 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps, defineEmits } from 'vue';
+import { ref, computed, defineProps, defineEmits, watch } from 'vue';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import Dialog from 'primevue/dialog';
@@ -377,8 +383,23 @@ const loadingLocation = ref(false);
 
 // Save current job ID to session storage for returning to this job later
 const saveCurrentJobId = (jobId) => {
-  if (jobId) {
-    sessionStorage.setItem('lastViewedJobId', jobId);
+  try {
+    if (jobId) {
+      console.log('Saving job ID:', jobId);
+      console.log('Current job data:', props.job);
+
+      if (props.job && props.job.recruiterId) {
+        console.log('Recruiter ID for navigation:', props.job.recruiterId);
+        console.log('Recruiter ID type:', typeof props.job.recruiterId);
+        console.log('URL will use:', String(props.job.recruiterId));
+      } else {
+        console.warn('No recruiter ID found in job data');
+      }
+
+      sessionStorage.setItem('lastViewedJobId', jobId);
+    }
+  } catch (error) {
+    console.error('Error in saveCurrentJobId:', error);
   }
 };
 
@@ -413,6 +434,25 @@ const props = defineProps({
     default: false,
   },
 });
+
+// Add watcher to monitor job data
+watch(
+  () => props.job,
+  (newJob) => {
+    if (newJob) {
+      console.log('Job data updated:', newJob);
+      console.log(
+        'Recruiter ID:',
+        newJob.recruiterId,
+        'Type:',
+        typeof newJob.recruiterId
+      );
+    } else {
+      console.log('Job is null or undefined');
+    }
+  },
+  { immediate: true, deep: true }
+);
 
 const onImageError = (event) => {
   // If it's a company logo image
@@ -601,6 +641,39 @@ const navigateToApplication = () => {
       name: 'ApplyJob',
       params: { jobId: props.job.id },
     });
+  }
+};
+
+// Navigate to recruiter page
+const navigateToRecruiter = (recruiterId, jobId) => {
+  try {
+    console.log('Raw recruiter ID:', recruiterId);
+    console.log('Job data:', props.job);
+    console.log('Job ID:', jobId);
+
+    if (recruiterId != null && recruiterId !== undefined && jobId) {
+      // Store the job ID
+      sessionStorage.setItem('lastViewedJobId', jobId);
+
+      // Convert to string for safety
+      const recruiterId_str = String(recruiterId);
+      console.log('Using recruiter ID for navigation:', recruiterId_str);
+
+      // Use path-based navigation
+      router.push(
+        `/candidate/recruiter-info/${recruiterId_str}?jobId=${jobId}`
+      );
+    } else {
+      console.warn('Invalid recruiter ID or job ID, not navigating');
+      // Try to access recruiterId directly from the job object as a fallback
+      if (props.job && props.job.recruiterId) {
+        const fallbackId = String(props.job.recruiterId);
+        console.log('Using fallback recruiter ID:', fallbackId);
+        router.push(`/candidate/recruiter-info/${fallbackId}?jobId=${jobId}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error navigating to recruiter page:', error);
   }
 };
 
