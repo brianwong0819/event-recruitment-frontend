@@ -87,4 +87,22 @@ export default {
   deleteJob(jobId) {
     return apiClient.delete(`/jobs/${jobId}`);
   },
+
+  /**
+   * Get job view statistics
+   * @param {number} jobId - The job ID
+   * @returns {Promise} Promise object with the job view statistics
+   */
+  getJobViewStatistics(jobId) {
+    return apiClient.get(`/jobs/${jobId}/view-statistics`);
+  },
+
+  /**
+   * Get job applicant count
+   * @param {number} jobId - The job ID
+   * @returns {Promise} Promise object with the applicant count
+   */
+  getJobApplicantCount(jobId) {
+    return apiClient.get(`/recruiters/jobs/${jobId}/applicants/count`);
+  },
 };

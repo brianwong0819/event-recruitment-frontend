@@ -59,6 +59,8 @@ const JobApplicants = () => import('../views/recruiter/JobApplicants.vue');
 const CreateJobSchedule = () =>
   import('../views/recruiter/CreateJobSchedule.vue');
 const EditJobSchedule = () => import('../views/recruiter/EditJobSchedule.vue');
+const RecruiterCandidateProfile = () =>
+  import('../views/recruiter/CandidateProfile.vue');
 
 // Route configuration
 const routes = [
@@ -131,7 +133,7 @@ const routes = [
       },
       {
         path: 'profile',
-        name: 'CandidateProfile',
+        name: 'CandidateMyProfile',
         component: CandidateProfile,
       },
       {
@@ -220,6 +222,12 @@ const routes = [
         path: 'jobs/:jobId/applicants',
         name: 'JobApplicants',
         component: JobApplicants,
+        props: true,
+      },
+      {
+        path: 'candidates/:candidateId',
+        name: 'RecruiterViewCandidateProfile',
+        component: RecruiterCandidateProfile,
         props: true,
       },
       {

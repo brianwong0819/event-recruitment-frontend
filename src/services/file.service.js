@@ -169,8 +169,19 @@ class FileService {
   getCompcardUrl(filename) {
     if (!filename) return null;
 
+    // Ensure filename is a string before using string methods
+    if (typeof filename !== 'string') {
+      console.warn('Non-string value passed to getCompcardUrl:', filename);
+      return null;
+    }
+
     // If it's a blob URL, return it as is
     if (filename.includes('blob:')) return filename;
+
+    // If it's already a full API path, just return the full URL
+    if (filename.startsWith('/api/files/comcards/')) {
+      return `http://localhost:8080${filename}`;
+    }
 
     // If it's an already formed URL from another domain, extract just the filename
     if (filename.startsWith('http') && !filename.includes('localhost:8080')) {
@@ -194,8 +205,19 @@ class FileService {
   getWorkingPhotoUrl(filename) {
     if (!filename) return null;
 
+    // Ensure filename is a string before using string methods
+    if (typeof filename !== 'string') {
+      console.warn('Non-string value passed to getWorkingPhotoUrl:', filename);
+      return null;
+    }
+
     // If the path contains blob: prefix, it's a blob URL that should be used as is
     if (filename.includes('blob:')) return filename;
+
+    // If it's already a full API path, just return the full URL
+    if (filename.startsWith('/api/files/working-photos/')) {
+      return `http://localhost:8080${filename}`;
+    }
 
     // If it's an already formed URL from another domain, extract just the filename
     if (filename.startsWith('http') && !filename.includes('localhost:8080')) {

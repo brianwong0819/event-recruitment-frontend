@@ -103,7 +103,7 @@
           icon="pi pi-users"
           class="p-button-outlined"
           @click="viewApplicants"
-          :badge="job?.applicantsCount || '0'"
+          :badge="applicantCount.toString()"
           badge-class="p-badge-info"
         />
         <Button
@@ -430,7 +430,7 @@
                       <span>Total Applicants</span>
                     </div>
                     <Badge
-                      :value="job.applicantsCount || 0"
+                      :value="applicantCount"
                       severity="info"
                       size="large"
                     />
@@ -438,6 +438,7 @@
                   <ProgressBar
                     :value="calculateApplicantProgress()"
                     class="h-2"
+                    :show-value="false"
                   />
                 </div>
 
@@ -447,9 +448,17 @@
                       <i class="pi pi-eye mr-2"></i>
                       <span>Job Views</span>
                     </div>
-                    <Badge value="0" severity="success" size="large" />
+                    <Badge
+                      :value="viewStatistics?.totalViewers || 0"
+                      severity="success"
+                      size="large"
+                    />
                   </div>
-                  <ProgressBar :value="0" class="h-2" />
+                  <ProgressBar
+                    :value="calculateViewsProgress()"
+                    class="h-2"
+                    :show-value="false"
+                  />
                 </div>
 
                 <div class="pt-3 border-t border-gray-200">
@@ -661,6 +670,9 @@ const loadingSchedule = ref(true);
 const statusDialogVisible = ref(false);
 const selectedNewStatus = ref('');
 const changingStatus = ref(false);
+const viewStatistics = ref(null);
+const loadingViewStats = ref(true);
+const applicantCount = ref(0);
 
 // Computed property for available status options based on current job status
 const availableStatusOptions = computed(() => {
@@ -753,11 +765,15 @@ const getStatusDescription = (status) => {
 
 // Calculate applicant progress
 const calculateApplicantProgress = () => {
-  if (!job.value || !job.value.applicantsCount) return 0;
-  // This is a simplified calculation, adjust based on your requirements
-  const totalPositions = 10; // Placeholder - ideally get this from the job data
-  const progress = (job.value.applicantsCount / totalPositions) * 100;
-  return Math.min(progress, 100); // Cap at 100%
+  if (!job.value || !applicantCount.value) return 0;
+  // Each applicant contributes 1%
+  return Math.min(applicantCount.value, 100);
+};
+
+// Calculate job views progress (1 view = 1%)
+const calculateViewsProgress = () => {
+  if (!job.value || !viewStatistics.value) return 0;
+  return Math.min(viewStatistics.value.totalViewers || 0, 100);
 };
 
 // Format job title type
@@ -1063,10 +1079,51 @@ const fetchJobSchedule = async () => {
   }
 };
 
+// Fetch view statistics
+const fetchViewStatistics = async () => {
+  try {
+    const jobId = route.params.jobId;
+    const response = await jobService.getJobViewStatistics(jobId);
+    if (response.data && response.data.statusCode === 200) {
+      viewStatistics.value = response.data.data;
+    }
+  } catch (error) {
+    console.error('Error fetching view statistics:', error);
+  } finally {
+    loadingViewStats.value = false;
+  }
+};
+
+// Fetch applicant count
+const fetchApplicantCount = async () => {
+  try {
+    const jobId = route.params.jobId;
+    const response = await jobService.getJobApplicantCount(jobId);
+    if (response.data && response.data.statusCode === 200) {
+      applicantCount.value = response.data.data;
+    }
+  } catch (error) {
+    console.error('Error fetching applicant count:', error);
+  }
+};
+
+// Format view date
+const formatViewDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  try {
+    return format(new Date(dateString), 'dd MMM yyyy, HH:mm');
+  } catch (error) {
+    console.error('Error formatting view date:', error);
+    return dateString;
+  }
+};
+
 // Initialize component
 onMounted(() => {
   fetchJobData();
   fetchJobSchedule();
+  fetchViewStatistics();
+  fetchApplicantCount();
 });
 
 // Status change handlers
@@ -1279,8 +1336,11 @@ const changeJobStatus = async () => {
   padding: 1.25rem 1.5rem;
 }
 
+/* Customize the dropdown itself */
 :deep(.status-dialog .p-dropdown) {
   border-radius: 8px;
+  border: 1px solid #ced4da !important;
+  height: 42px !important;
 }
 
 /* Style the dropdown panel */
@@ -1289,6 +1349,25 @@ const changeJobStatus = async () => {
   border-radius: 8px !important;
   overflow: hidden;
   border: none !important;
+}
+
+/* Remove inner border from dropdown */
+:deep(.p-dropdown-label) {
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.95rem !important;
+}
+
+:deep(.p-dropdown-trigger) {
+  border: none !important;
+  box-shadow: none !important;
+  width: 2.5rem !important;
+}
+
+:deep(.p-dropdown .p-component) {
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* Remove borders from dropdown items */
@@ -1335,12 +1414,6 @@ const changeJobStatus = async () => {
   border: none !important;
   outline: none !important;
   background: transparent !important;
-}
-
-/* Customize the dropdown itself */
-:deep(.status-dialog .p-dropdown) {
-  border-radius: 8px;
-  border: 1px solid #ced4da !important;
 }
 
 /* Remove the divider between input and trigger */

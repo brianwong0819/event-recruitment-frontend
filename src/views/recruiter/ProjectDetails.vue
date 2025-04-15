@@ -344,7 +344,7 @@
                   >
                     <i class="pi pi-users text-blue-500 mr-2"></i>
                     <span class="text-blue-700 font-medium text-center">{{
-                      job.applicantsCount || 0
+                      jobApplicantCounts.get(job.id) || 0
                     }}</span>
                   </div>
                 </div>
@@ -384,7 +384,7 @@
                     v-tooltip="'View Applicants'"
                   />
                   <span class="custom-badge">{{
-                    job.applicantsCount || 0
+                    jobApplicantCounts.get(job.id) || 0
                   }}</span>
                 </div>
               </div>
@@ -420,6 +420,7 @@ const project = ref(null);
 const loading = ref(true);
 const projectStats = ref(null);
 const jobSchedules = ref([]);
+const jobApplicantCounts = ref(new Map());
 
 // Check if project is from trash (read-only mode)
 const isDeletedProject = computed(() => {
@@ -1061,6 +1062,10 @@ const fetchProjectJobs = async () => {
       // Update the project's jobs array
       if (project.value) {
         project.value.jobs = jobs;
+        // Fetch applicant counts for each job
+        for (const job of jobs) {
+          await fetchJobApplicantCount(job.id);
+        }
       }
     }
   } catch (error) {
@@ -1085,6 +1090,27 @@ const calculateProgress = computed(() => {
   const progress = (filled / projectStats.value.totalPositionsNeeded) * 100;
   return Math.round(progress);
 });
+
+// Add new function to fetch applicant count for a job
+const fetchJobApplicantCount = async (jobId) => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.get(
+      `http://localhost:8080/api/recruiters/jobs/${jobId}/applicants/count`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    if (response.data && response.data.statusCode === 200) {
+      jobApplicantCounts.value.set(jobId, response.data.data);
+    }
+  } catch (error) {
+    console.error(`Error fetching applicant count for job ${jobId}:`, error);
+  }
+};
 
 onMounted(() => {
   fetchProjectData();

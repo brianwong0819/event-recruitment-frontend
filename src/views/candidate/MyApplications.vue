@@ -349,7 +349,10 @@
                         :to="{
                           name: 'RecruiterInfo',
                           params: { recruiterId: application.recruiterId },
-                          query: { source: 'applications' },
+                          query: {
+                            source: 'applications',
+                            activeTab: 'portfolio',
+                          },
                         }"
                         class="text-gray-700 hover:text-indigo-600 hover:underline transition-colors flex items-center gap-1"
                       >
@@ -520,7 +523,7 @@
                   :to="{
                     name: 'RecruiterInfo',
                     params: { recruiterId: selectedApplication.recruiterId },
-                    query: { source: 'applications' },
+                    query: { source: 'applications', activeTab: 'portfolio' },
                   }"
                   class="text-white text-opacity-90 hover:text-white hover:underline transition-colors flex items-center gap-1"
                 >
@@ -1419,7 +1422,11 @@ const contactRecruiter = (application) => {
   router.push({
     name: 'RecruiterInfo',
     params: { recruiterId: application.recruiterId },
-    query: { source: 'applications', action: 'contact' },
+    query: {
+      source: 'applications',
+      action: 'contact',
+      activeTab: 'portfolio',
+    },
   });
 };
 
