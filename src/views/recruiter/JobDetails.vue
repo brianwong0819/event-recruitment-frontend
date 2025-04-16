@@ -112,6 +112,12 @@
           class="p-button-outlined"
           @click="openStatusDialog"
         />
+        <Button
+          label="Manage Training"
+          icon="pi pi-book"
+          class="p-button-outlined"
+          @click="manageTraining"
+        />
       </div>
 
       <div class="grid grid-cols-12 gap-6">
@@ -984,6 +990,14 @@ const viewProject = () => {
       params: { projectId: route.query.projectId },
     });
   }
+};
+
+const manageTraining = () => {
+  router.push({
+    name: 'ManageJobTraining',
+    params: { jobId: job.value.id },
+    query: { projectId: route.query.projectId },
+  });
 };
 
 // Fetch job data and related information

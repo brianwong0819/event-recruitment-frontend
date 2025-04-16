@@ -157,6 +157,21 @@
               </div>
               <div class="flex items-start">
                 <div
+                  class="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center mr-3"
+                >
+                  <i class="pi pi-comments text-teal-600 text-sm"></i>
+                </div>
+                <div>
+                  <div class="text-sm text-gray-500">Language</div>
+                  <div class="text-gray-700">
+                    {{
+                      formatLanguages(candidate.languages) || 'Not specified'
+                    }}
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-start">
+                <div
                   class="w-7 h-7 rounded-full bg-rose-100 flex items-center justify-center mr-3"
                 >
                   <i class="pi pi-user text-rose-600 text-sm"></i>
@@ -526,6 +541,32 @@ const formatRace = (race) => {
   };
 
   return raceMap[race] || race;
+};
+
+// Format languages
+const formatLanguages = (languages) => {
+  if (!languages || languages.length === 0) return 'Not specified';
+
+  // Define language mapping
+  const languageMap = {
+    ENGLISH: 'English',
+    MANDARIN: 'Mandarin',
+    MALAY: 'Malay',
+    TAMIL: 'Tamil',
+    OTHER: 'Other',
+  };
+
+  // If languages is a string, check if it's a valid enum key
+  if (typeof languages === 'string') {
+    return languageMap[languages] || languages;
+  }
+
+  // If languages is an array, map each value and join with commas
+  if (Array.isArray(languages)) {
+    return languages.map((lang) => languageMap[lang] || lang).join(', ');
+  }
+
+  return 'Not specified';
 };
 
 // File handlers

@@ -61,6 +61,8 @@ const CreateJobSchedule = () =>
 const EditJobSchedule = () => import('../views/recruiter/EditJobSchedule.vue');
 const RecruiterCandidateProfile = () =>
   import('../views/recruiter/CandidateProfile.vue');
+const ManageJobTraining = () =>
+  import('../views/recruiter/ManageJobTraining.vue');
 
 // Route configuration
 const routes = [
@@ -240,6 +242,12 @@ const routes = [
         path: 'jobs/:jobId/schedule/:scheduleId/edit',
         name: 'EditJobSchedule',
         component: EditJobSchedule,
+        props: true,
+      },
+      {
+        path: 'jobs/:jobId/training',
+        name: 'ManageJobTraining',
+        component: ManageJobTraining,
         props: true,
       },
     ],

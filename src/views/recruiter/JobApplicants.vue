@@ -266,8 +266,9 @@
                 </li>
                 <li>
                   <span class="font-medium">Location distance</span> is based on
-                  geographical distance in kilometers and may not account for
-                  transportation options
+                  geographical distance in kilometers calculated using
+                  longitude/latitude coordinates and may not account for actual
+                  travel options (train, bus, etc.)
                 </li>
                 <li>
                   <span class="font-medium">AI can make mistakes</span> - your
@@ -437,13 +438,26 @@
               bodyClass="text-left"
             >
               <template #body="{ data }">
-                <Tag
-                  :value="formatApplicationStatus(data.applicationStatus)"
-                  :severity="
-                    getApplicationStatusSeverity(data.applicationStatus)
-                  "
-                  class="text-xs"
-                />
+                <div class="relative">
+                  <Tag
+                    :value="formatApplicationStatus(data.applicationStatus)"
+                    :severity="
+                      getApplicationStatusSeverity(data.applicationStatus)
+                    "
+                    class="text-xs"
+                  />
+                  <div
+                    v-if="
+                      updatingStatus &&
+                      selectedApplication &&
+                      selectedApplication.applicationGroupId ===
+                        data.applicationGroupId
+                    "
+                    class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70"
+                  >
+                    <i class="pi pi-spin pi-spinner text-indigo-600"></i>
+                  </div>
+                </div>
               </template>
             </Column>
 
@@ -708,6 +722,17 @@
             </div>
           </div>
 
+          <!-- Location distance info message -->
+          <div
+            class="mt-3 mb-3 text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-start"
+          >
+            <i class="pi pi-info-circle mr-2 text-gray-500 mt-0.5"></i>
+            <p>
+              Distance calculated based on longitude/latitude coordinates.
+              Actual travel time may vary (e.g., public transport options).
+            </p>
+          </div>
+
           <!-- Availability Score -->
           <div
             class="bg-white border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-sm transition-all"
@@ -956,14 +981,17 @@
           <button
             @click="closeConfirmDialog"
             class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            :disabled="updatingStatus"
           >
             No
           </button>
           <button
             @click="confirmAccept"
             class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            :disabled="updatingStatus"
           >
-            Yes
+            <i v-if="updatingStatus" class="pi pi-spin pi-spinner mr-2"></i>
+            {{ updatingStatus ? 'Updating...' : 'Yes' }}
           </button>
         </div>
       </div>
@@ -1028,6 +1056,7 @@ const statusOptions = [
   { label: 'Hired', value: 'HIRED' },
   { label: 'Rejected', value: 'REJECTED' },
   { label: 'Withdrawn', value: 'WITHDRAWN' },
+  { label: 'Cancelled', value: 'CANCELLED' },
 ];
 
 // Sort options for dropdown
@@ -1053,6 +1082,7 @@ const applicantStats = computed(() => {
     HIRED: 0,
     REJECTED: 0,
     WITHDRAWN: 0,
+    CANCELLED: 0,
   };
 
   applicants.value.forEach((applicant) => {
@@ -1078,7 +1108,9 @@ const getPendingCount = () => {
 
 const getRejectedCount = () => {
   return (
-    (applicantStats.value.REJECTED || 0) + (applicantStats.value.WITHDRAWN || 0)
+    (applicantStats.value.REJECTED || 0) +
+    (applicantStats.value.WITHDRAWN || 0) +
+    (applicantStats.value.CANCELLED || 0)
   );
 };
 
@@ -1117,6 +1149,7 @@ const formatApplicationStatus = (status) => {
     HIRED: 'Hired',
     REJECTED: 'Rejected',
     WITHDRAWN: 'Withdrawn',
+    CANCELLED: 'Cancelled',
   };
   return statusMap[status] || status;
 };
@@ -1130,6 +1163,7 @@ const getApplicationStatusSeverity = (status) => {
     HIRED: 'success',
     REJECTED: 'danger',
     WITHDRAWN: 'secondary',
+    CANCELLED: 'danger',
   };
   return severities[status] || 'info';
 };
@@ -1419,6 +1453,9 @@ const handleProfileImageError = (event, data) => {
 const menu = ref(null);
 const menuItems = ref([]);
 
+// Add a loading state for status updates
+const updatingStatus = ref(false);
+
 const toggleMenu = (event, applicant) => {
   // Close any open dialogs first to avoid focus conflicts
   applicationDetailsVisible.value = false;
@@ -1468,17 +1505,16 @@ const toggleMenu = (event, applicant) => {
   } else if (currentStatus === 'HIRED') {
     statusItems = [
       {
-        label: 'Mark as Pending',
-        icon: 'pi pi-clock',
+        label: 'Mark as Cancelled',
+        icon: 'pi pi-ban',
         command: () => {
           menu.value.hide(); // Hide menu before showing confirmation
           setTimeout(() => {
             showConfirmDialog({
-              message:
-                'Are you sure you want to mark this applicant as pending?',
+              message: 'Are you sure you want to cancel this hired applicant?',
               header: 'Update Application Status',
               icon: 'pi pi-exclamation-triangle',
-              accept: () => updateApplicationStatus(applicant, 'PENDING'),
+              accept: () => updateApplicationStatus(applicant, 'CANCELLED'),
             });
           }, 100);
         },
@@ -1502,6 +1538,25 @@ const toggleMenu = (event, applicant) => {
         },
       },
     ];
+  } else if (currentStatus === 'CANCELLED') {
+    statusItems = [
+      {
+        label: 'Mark as Pending',
+        icon: 'pi pi-clock',
+        command: () => {
+          menu.value.hide(); // Hide menu before showing confirmation
+          setTimeout(() => {
+            showConfirmDialog({
+              message:
+                'Are you sure you want to mark this cancelled applicant as pending?',
+              header: 'Update Application Status',
+              icon: 'pi pi-exclamation-triangle',
+              accept: () => updateApplicationStatus(applicant, 'PENDING'),
+            });
+          }, 100);
+        },
+      },
+    ];
   }
 
   menuItems.value = [
@@ -1516,6 +1571,7 @@ const toggleMenu = (event, applicant) => {
 };
 
 const updateApplicationStatus = async (applicant, newStatus) => {
+  updatingStatus.value = true;
   try {
     const token = getAuthToken();
 
@@ -1530,6 +1586,9 @@ const updateApplicationStatus = async (applicant, newStatus) => {
       'API URL:',
       `http://localhost:8080/api/jobs/applications/group/${applicant.applicationGroupId}/status`
     );
+
+    // Store the applicant being updated
+    selectedApplication.value = applicant;
 
     // Use the correct API endpoint with applicationGroupId
     const response = await axios.put(
@@ -1551,6 +1610,7 @@ const updateApplicationStatus = async (applicant, newStatus) => {
         menu.value.hide();
       }
       applicationDetailsVisible.value = false;
+      confirmDialogVisible.value = false;
 
       // Show success message and refresh data
       toast.add({
@@ -1575,6 +1635,9 @@ const updateApplicationStatus = async (applicant, newStatus) => {
       detail: error.message || 'Failed to update application status',
       life: 3000,
     });
+  } finally {
+    updatingStatus.value = false;
+    selectedApplication.value = null;
   }
 };
 
@@ -1646,11 +1709,17 @@ const closeConfirmDialog = () => {
   confirmDialogVisible.value = false;
 };
 
-const confirmAccept = () => {
+const confirmAccept = async () => {
   if (confirmDialog.value.accept) {
-    confirmDialog.value.accept();
+    // Don't close the dialog yet - will close after action completes
+    await confirmDialog.value.accept();
+
+    // Dialog will be closed by the action completion if successful
+    // If we get here and we're not updating, close it
+    if (!updatingStatus.value) {
+      confirmDialogVisible.value = false;
+    }
   }
-  confirmDialogVisible.value = false;
 };
 </script>
 
