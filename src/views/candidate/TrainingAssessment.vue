@@ -478,26 +478,77 @@ const startAssessment = async (assessment) => {
   assessmentDialogVisible.value = true;
 
   try {
-    // Simulate AI generating questions with a delay
-    await new Promise((resolve) => setTimeout(resolve, 3500));
+    // Call the API to generate real questions
+    const token = authService.getToken();
 
-    // Generate mock questions - always generate new ones for retries
-    const mockQuestions = generateMockQuestions();
+    console.log('Generating assessment questions from API');
 
-    // Update the assessment with the questions
-    const index = assessments.value.findIndex((a) => a.id === assessment.id);
-    if (index !== -1) {
-      assessments.value[index].questions = mockQuestions;
-      assessments.value[index].status = 'in_progress';
+    // Prepare the request body with the required information
+    const material = trainingMaterials.value[0];
+    const requestBody = {
+      trainingMaterialUrl: material.downloadUrl,
+      jobTitle: jobDetails.value.jobTitleType || '',
+      jobDescription: jobDetails.value.jobDescription || '',
+    };
 
-      // Update active assessment
-      activeAssessment.value = {
-        ...assessments.value[index],
-        isGenerating: false,
-        currentQuestion: 0,
-        userAnswers: new Array(mockQuestions.length).fill(null),
-        timeRemaining: assessments.value[index].timeLimit * 60, // in seconds
-      };
+    console.log('Quiz generation request:', requestBody);
+
+    // Use the quiz generation API with POST method
+    const response = await axios.post(
+      `http://localhost:8080/api/training/quiz/generate`,
+      requestBody,
+      {
+        headers: {
+          Authorization: token,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    console.log('Quiz API response:', response.data);
+
+    if (response.data.statusCode === 200) {
+      // Map the API questions to our format
+      const apiQuestions = response.data.data.questions;
+
+      const formattedQuestions = apiQuestions.map((q) => {
+        // Convert options from {A: "text", B: "text"} to ["text", "text"] array
+        const optionsArray = Object.values(q.options);
+
+        // Get the index of the correct answer (0-based)
+        const correctAnswerKey = q.correct_answer;
+        const correctAnswerIndex = Object.keys(q.options).indexOf(
+          correctAnswerKey
+        );
+
+        return {
+          id: q.id.toString(),
+          type: 'multiple-choice',
+          question: q.question,
+          options: optionsArray,
+          correctAnswer: correctAnswerIndex,
+          explanation: q.explanation,
+          reference: q.reference || null,
+        };
+      });
+
+      // Update the assessment with the questions
+      const index = assessments.value.findIndex((a) => a.id === assessment.id);
+      if (index !== -1) {
+        assessments.value[index].questions = formattedQuestions;
+        assessments.value[index].status = 'in_progress';
+
+        // Update active assessment
+        activeAssessment.value = {
+          ...assessments.value[index],
+          isGenerating: false,
+          currentQuestion: 0,
+          userAnswers: new Array(formattedQuestions.length).fill(null),
+          timeRemaining: assessments.value[index].timeLimit * 60, // in seconds
+        };
+      }
+    } else {
+      throw new Error('Failed to generate assessment questions');
     }
   } catch (err) {
     console.error('Error generating questions:', err);
@@ -524,7 +575,7 @@ const closeAssessment = () => {
 };
 
 // Function to handle assessment completion
-const completeAssessment = (result) => {
+const completeAssessment = async (result) => {
   console.log('Assessment completed with result:', result);
 
   // Set completed flag on activeAssessment
@@ -539,29 +590,83 @@ const completeAssessment = (result) => {
     assessments.value[index].status = result.passed ? 'completed' : 'failed';
     assessments.value[index].score = result.score;
 
-    // If passed, update the training summary
+    // If passed, call API to mark training as complete and update the training summary
     if (result.passed) {
-      trainingSummary.value.completed = true;
-      trainingSummary.value.score = result.score;
-      trainingSummary.value.lastCompletedDate = new Date().toLocaleDateString(
-        'en-US',
-        {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        }
-      );
-    }
+      try {
+        const token = authService.getToken();
+        const jobId = route.params.jobId;
 
-    // Show toast notification
-    toast.add({
-      severity: result.passed ? 'success' : 'error',
-      summary: result.passed ? 'Assessment Passed' : 'Assessment Failed',
-      detail: result.passed
-        ? `Congratulations! You scored ${result.score}% and passed the assessment.`
-        : `You scored ${result.score}%. You need ${assessments.value[index].passingScore}% to pass.`,
-      life: 5000,
-    });
+        // Call the API to mark training as complete
+        console.log('Marking training as complete for job:', jobId);
+
+        const response = await axios.post(
+          `http://localhost:8080/api/candidates/jobs/${jobId}/training/complete`,
+          {},
+          {
+            headers: {
+              Authorization: token,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        console.log('Training completion API response:', response.data);
+
+        if (response.data.statusCode === 200) {
+          console.log('Training marked as completed successfully');
+
+          // Update the training summary
+          trainingSummary.value.completed = true;
+          trainingSummary.value.score = result.score;
+          trainingSummary.value.lastCompletedDate =
+            new Date().toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            });
+
+          // Show success message
+          toast.add({
+            severity: 'success',
+            summary: 'Training Completed',
+            detail:
+              'Your training and assessment have been successfully completed!',
+            life: 5000,
+          });
+        }
+      } catch (err) {
+        console.error('Error marking training as complete:', err);
+
+        // Still update local UI state even if API call fails
+        trainingSummary.value.completed = true;
+        trainingSummary.value.score = result.score;
+        trainingSummary.value.lastCompletedDate = new Date().toLocaleDateString(
+          'en-US',
+          {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }
+        );
+
+        // Show warning
+        toast.add({
+          severity: 'warn',
+          summary: 'Partial Completion',
+          detail:
+            'You passed the assessment, but we encountered an issue updating your training status. Please contact support if this persists.',
+          life: 5000,
+        });
+      }
+    } else {
+      // Assessment failed - show appropriate notification
+      toast.add({
+        severity: 'error',
+        summary: 'Assessment Failed',
+        detail: `You scored ${result.score}%. You need ${assessments.value[index].passingScore}% to pass.`,
+        life: 5000,
+      });
+    }
 
     // Close the dialog after the user clicks "Return to Training"
     assessmentDialogVisible.value = false;
@@ -583,81 +688,6 @@ const viewAssessmentResults = (assessment) => {
     detail: `You scored ${assessment.score}% on this assessment.`,
     life: 3000,
   });
-};
-
-// Function to generate mock questions for the assessment
-const generateMockQuestions = () => {
-  return [
-    {
-      id: 'q1',
-      type: 'multiple-choice',
-      question: 'Which payment method has the quickest processing time?',
-      options: ['Credit Card', 'Mobile Payment', 'Cash', 'Bank Transfer'],
-      correctAnswer: 1, // Mobile Payment
-      explanation:
-        'Mobile payments typically have the quickest processing time as they are processed instantly through digital systems.',
-    },
-    {
-      id: 'q2',
-      type: 'multiple-choice',
-      question:
-        'What should you do if a customer has concerns about payment security?',
-      options: [
-        'Tell them not to worry about it',
-        'Ignore their concerns and continue with the transaction',
-        'Address their concerns and explain the security measures in place',
-        'Ask them to use a different payment method',
-      ],
-      correctAnswer: 2,
-      explanation:
-        'You should always address customer concerns about security and explain the measures in place to protect their information.',
-    },
-    {
-      id: 'q3',
-      type: 'multiple-choice',
-      question:
-        'Which of the following is NOT a benefit of fast payment options?',
-      options: [
-        'Reduced waiting time',
-        'Improved customer satisfaction',
-        'Lower transaction fees for the merchant',
-        'Quicker processing of orders',
-      ],
-      correctAnswer: 2,
-      explanation:
-        'Fast payment options typically do not lower transaction fees for merchants. In fact, they may sometimes have higher fees.',
-    },
-    {
-      id: 'q4',
-      type: 'multiple-choice',
-      question:
-        'What is the best approach when promoting payment options to customers?',
-      options: [
-        'Focus only on the benefits to the store',
-        'Highlight the convenience and benefits for the customer',
-        "Don't mention payment options unless asked",
-        'Insist that customers use specific payment methods',
-      ],
-      correctAnswer: 1,
-      explanation:
-        'When promoting payment options, focus on the convenience and benefits for customers, such as faster checkout or rewards.',
-    },
-    {
-      id: 'q5',
-      type: 'multiple-choice',
-      question:
-        'Which statement about handling customer payment information is correct?',
-      options: [
-        "It's okay to write down card details for later processing",
-        'Customer payment information should be kept strictly confidential',
-        'You can share payment details with managers when needed',
-        "It's fine to take photos of payment cards for record-keeping",
-      ],
-      correctAnswer: 1,
-      explanation:
-        'Customer payment information must be kept strictly confidential and should never be written down, photographed, or shared.',
-    },
-  ];
 };
 
 // Function to mark training material as completed
@@ -742,10 +772,13 @@ const fetchTrainingData = async () => {
     if (response.data.statusCode === 200) {
       const data = response.data.data;
 
-      // Set minimal job details directly without making another API call
+      // Set job details directly from the response
+      const jobData = data.job || {};
       jobDetails.value = {
         id: jobId,
-        title: 'Job Training',
+        title: jobData.title || 'Job Training',
+        jobTitleType: jobData.jobTitleType || '',
+        jobDescription: jobData.jobDescription || '',
         company: '',
         location: '',
         dates: '',
@@ -858,29 +891,80 @@ const retryAssessment = async (assessment) => {
   assessmentDialogVisible.value = true;
 
   try {
-    // Simulate AI generating questions with a delay
-    await new Promise((resolve) => setTimeout(resolve, 3500));
+    // Call the API to generate real questions
+    const token = authService.getToken();
 
-    // Always generate new questions for retries
-    const mockQuestions = generateMockQuestions();
+    console.log('Generating new assessment questions for retry');
 
-    // Update the assessment with the questions
-    const index = assessments.value.findIndex((a) => a.id === assessment.id);
-    if (index !== -1) {
-      assessments.value[index].questions = mockQuestions;
-      assessments.value[index].status = 'in_progress';
+    // Prepare the request body with the required information
+    const material = trainingMaterials.value[0];
+    const requestBody = {
+      trainingMaterialUrl: material.downloadUrl,
+      jobTitle: jobDetails.value.jobTitleType || '',
+      jobDescription: jobDetails.value.jobDescription || '',
+    };
 
-      // Update active assessment
-      activeAssessment.value = {
-        ...assessments.value[index],
-        isGenerating: false,
-        currentQuestion: 0,
-        userAnswers: new Array(mockQuestions.length).fill(null),
-        timeRemaining: assessments.value[index].timeLimit * 60, // in seconds
-      };
+    console.log('Quiz generation request for retry:', requestBody);
+
+    // Use the quiz generation API with POST method
+    const response = await axios.post(
+      `http://localhost:8080/api/training/quiz/generate`,
+      requestBody,
+      {
+        headers: {
+          Authorization: token,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    console.log('Quiz API response for retry:', response.data);
+
+    if (response.data.statusCode === 200) {
+      // Map the API questions to our format
+      const apiQuestions = response.data.data.questions;
+
+      const formattedQuestions = apiQuestions.map((q) => {
+        // Convert options from {A: "text", B: "text"} to ["text", "text"] array
+        const optionsArray = Object.values(q.options);
+
+        // Get the index of the correct answer (0-based)
+        const correctAnswerKey = q.correct_answer;
+        const correctAnswerIndex = Object.keys(q.options).indexOf(
+          correctAnswerKey
+        );
+
+        return {
+          id: q.id.toString(),
+          type: 'multiple-choice',
+          question: q.question,
+          options: optionsArray,
+          correctAnswer: correctAnswerIndex,
+          explanation: q.explanation,
+          reference: q.reference || null,
+        };
+      });
+
+      // Update the assessment with the questions
+      const index = assessments.value.findIndex((a) => a.id === assessment.id);
+      if (index !== -1) {
+        assessments.value[index].questions = formattedQuestions;
+        assessments.value[index].status = 'in_progress';
+
+        // Update active assessment
+        activeAssessment.value = {
+          ...assessments.value[index],
+          isGenerating: false,
+          currentQuestion: 0,
+          userAnswers: new Array(formattedQuestions.length).fill(null),
+          timeRemaining: assessments.value[index].timeLimit * 60, // in seconds
+        };
+      }
+    } else {
+      throw new Error('Failed to generate assessment questions for retry');
     }
   } catch (err) {
-    console.error('Error generating questions:', err);
+    console.error('Error generating questions for retry:', err);
     assessmentDialogVisible.value = false;
 
     toast.add({

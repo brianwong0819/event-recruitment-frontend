@@ -21,7 +21,12 @@
         Our AI is creating personalized questions based on the training
         materials. This will only take a moment...
       </p>
-      <ProgressBar mode="indeterminate" style="height: 6px" class="mb-4" />
+      <ProgressBar
+        mode="indeterminate"
+        style="height: 6px"
+        class="mb-4"
+        :show-value="false"
+      />
       <p class="text-sm text-gray-500 mb-0">
         Please do not close this window during generation
       </p>
@@ -129,6 +134,7 @@
               ((currentQuestionIndex + 1) / assessment.questions.length) * 100
             "
             style="width: 120px; height: 10px"
+            :show-value="false"
           />
         </div>
 
@@ -258,6 +264,12 @@
                   "
                 >
                   {{ currentQuestion.explanation }}
+                </p>
+                <p
+                  v-if="currentQuestion.reference"
+                  class="text-xs mt-2 text-gray-600 italic"
+                >
+                  <strong>Reference:</strong> {{ currentQuestion.reference }}
                 </p>
               </div>
             </div>
