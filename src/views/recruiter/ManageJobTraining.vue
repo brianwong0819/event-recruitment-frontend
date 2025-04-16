@@ -598,8 +598,11 @@ const filteredCandidates = computed(() => {
   // Apply status filter with custom logic
   if (filters.value.status) {
     if (filters.value.status === 'IN_PROGRESS') {
-      // "Viewed" means lastViewedAt has data
-      result = result.filter((candidate) => candidate.lastViewed);
+      // "Viewed" means lastViewedAt has data but not completed
+      result = result.filter(
+        (candidate) =>
+          candidate.lastViewed && candidate.trainingStatus !== 'COMPLETED'
+      );
     } else if (filters.value.status === 'NOT_STARTED') {
       // "Not Started" means no lastViewedAt
       result = result.filter((candidate) => !candidate.lastViewed);
@@ -1044,10 +1047,14 @@ const fetchHiredCandidates = async () => {
         email: record.candidateEmail,
         phone: record.candidatePhone,
         profilePictureUrl: record.profilePictureUrl,
-        trainingStatus: record.trainingStatus || 'NOT_STARTED',
+        trainingStatus: record.isCompleted
+          ? 'COMPLETED'
+          : record.lastViewedAt
+          ? 'IN_PROGRESS'
+          : 'NOT_STARTED',
         progress: record.trainingProgress || 0,
         lastViewed: record.lastViewedAt,
-        completionDate: record.completedAt,
+        completionDate: record.completionDate,
         assessmentScore: record.assessmentScore,
       }));
     }

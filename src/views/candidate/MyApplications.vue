@@ -733,7 +733,11 @@
                   You've been hired for this position
                 </h3>
                 <div class="mt-2 text-sm text-red-700">
-                  <ul class="list-disc pl-5 space-y-1">
+                  <p>
+                    <strong>Important:</strong> Withdrawing from a HIRED
+                    position will result in a reputation deduction.
+                  </p>
+                  <ul class="list-disc pl-5 space-y-1 mt-2">
                     <li>This action cannot be undone</li>
                     <li>
                       Repeatedly withdrawing applications may affect your
@@ -747,14 +751,23 @@
 
           <!-- Footer Actions -->
           <div
-            class="flex justify-between items-center mt-8 pt-4 border-t border-gray-200 sticky bottom-0 bg-white z-10"
+            class="flex items-center justify-between mt-8 pt-4 border-t border-gray-200 sticky bottom-0 bg-white z-10"
           >
-            <Button
-              label="View Recruiter"
-              icon="pi pi-user"
-              class="p-button-outlined p-button-rounded"
-              @click="contactRecruiter(selectedApplication)"
-            />
+            <div class="flex items-center gap-2">
+              <Button
+                label="View Recruiter"
+                icon="pi pi-user"
+                class="p-button-outlined p-button-rounded"
+                @click="contactRecruiter(selectedApplication)"
+              />
+              <Button
+                v-if="selectedApplication.status === 'HIRED'"
+                label="Training & Assessment"
+                icon="pi pi-book"
+                class="p-button-success p-button-rounded"
+                @click="goToTrainingPage(selectedApplication)"
+              />
+            </div>
             <Button
               v-if="
                 selectedApplication.status === 'PENDING' ||
@@ -1471,6 +1484,36 @@ const contactRecruiter = (application) => {
       activeTab: 'portfolio',
     },
   });
+};
+
+const goToTrainingPage = (application) => {
+  // Close the application detail dialog
+  applicationDetailDialog.value = false;
+
+  // Navigate to the Training and Assessment page
+  console.log('Navigating to training page with job ID:', application.jobId);
+  try {
+    router.push({
+      name: 'TrainingAssessment',
+      params: { jobId: application.jobId || '13' }, // Ensure there's a fallback
+      query: {
+        applicationId: application.id || '73',
+        groupId:
+          application.applicationGroupId ||
+          '915ae9ab-8d44-4b5c-96e1-b582326088ea',
+      },
+    });
+  } catch (error) {
+    console.error('Navigation error:', error);
+    // Fallback navigation if the previous one fails
+    router.push(
+      `/candidate/training-assessment/${
+        application.jobId || '13'
+      }?applicationId=${application.id || '73'}&groupId=${
+        application.applicationGroupId || '915ae9ab-8d44-4b5c-96e1-b582326088ea'
+      }`
+    );
+  }
 };
 
 const goToJobSearch = () => {

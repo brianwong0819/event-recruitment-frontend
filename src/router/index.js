@@ -45,6 +45,8 @@ const RecruiterInfo = () => import('../views/candidate/RecruiterInfo.vue');
 const PortfolioDetail = () => import('../views/candidate/PortfolioDetail.vue');
 const ApplyJob = () => import('../views/candidate/ApplyJob.vue');
 const MyApplications = () => import('../views/candidate/MyApplications.vue');
+const TrainingAssessment = () =>
+  import('../views/candidate/TrainingAssessment.vue');
 
 // Recruiter views
 const RecruiterLayout = () => import('../layouts/RecruiterLayout.vue');
@@ -169,6 +171,12 @@ const routes = [
         path: 'portfolio/:recruiterId/portfolios/:portfolioId',
         name: 'PortfolioDetail',
         component: PortfolioDetail,
+        props: true,
+      },
+      {
+        path: 'training-assessment/:jobId',
+        name: 'TrainingAssessment',
+        component: TrainingAssessment,
         props: true,
       },
     ],
