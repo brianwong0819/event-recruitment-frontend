@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 bg-gray-50 min-h-screen">
+  <div class="p-6 bg-gray-50 min-h-screen relative">
     <div class="mb-6">
       <div class="flex items-center">
         <Button
@@ -46,6 +46,41 @@
     </div>
 
     <div v-else>
+      <!-- Cancellation Overlay - Display when job is cancelled -->
+      <div
+        v-if="job.status === 'CANCELLED'"
+        class="fixed inset-0 bg-gray-800 bg-opacity-70 z-50 flex flex-col items-center justify-center backdrop-blur-sm"
+      >
+        <div class="bg-white p-8 rounded-lg shadow-2xl max-w-lg text-center">
+          <div class="bg-red-100 rounded-full p-5 inline-flex mx-auto mb-5">
+            <i class="pi pi-exclamation-triangle text-red-500 text-5xl"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-3">
+            Job Is Cancelled
+          </h2>
+          <div
+            class="mb-6 bg-red-50 p-4 rounded-lg border-l-4 border-red-500 text-left"
+          >
+            <p class="text-gray-700 mb-3">
+              This job has been cancelled and all applicants have been
+              automatically notified. No further actions can be taken on this
+              job or its applicants.
+            </p>
+            <p class="text-gray-700">
+              <i class="pi pi-info-circle text-red-500 mr-2"></i>
+              Frequently cancelling jobs may lower your recruiter reputation in
+              the system.
+            </p>
+          </div>
+          <Button
+            label="Return to Previous Page"
+            icon="pi pi-arrow-left"
+            @click="goBack"
+            class="p-button-primary px-5 py-2"
+          />
+        </div>
+      </div>
+
       <!-- Job Status Card -->
       <div class="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
         <div class="bg-indigo-600 py-3 px-4 flex items-center justify-between">

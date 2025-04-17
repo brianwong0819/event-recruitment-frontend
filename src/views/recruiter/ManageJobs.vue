@@ -422,8 +422,14 @@
       </DataTable>
     </Dialog>
 
-    <!-- Delete Confirmation Dialog -->
-    <ConfirmDialog></ConfirmDialog>
+    <!-- Custom Delete Confirmation Dialog -->
+    <ConfirmTrashDialog
+      v-model:visible="showDeleteDialog"
+      :title="'Move to Trash'"
+      :message="deleteDialogMessage"
+      @confirm="onConfirmDelete"
+      @cancel="onCancelDelete"
+    />
   </div>
 </template>
 
@@ -450,6 +456,7 @@ import Dropdown from 'primevue/dropdown';
 import Menu from 'primevue/menu';
 import ConfirmDialog from 'primevue/confirmdialog';
 import Toast from 'primevue/toast';
+import ConfirmTrashDialog from '@/components/shared/ConfirmTrashDialog.vue';
 
 const router = useRouter();
 const confirm = useConfirm();
@@ -464,6 +471,9 @@ const showTrashBin = ref(false);
 const submitted = ref(false);
 const projectMenuRefs = ref({});
 const loading = ref(false);
+const showDeleteDialog = ref(false);
+const deleteDialogMessage = ref('');
+const projectToDelete = ref(null);
 
 // Add a flag to prevent multiple confirmation dialogs
 let isConfirmingDelete = false;
@@ -615,18 +625,21 @@ const confirmDeleteProject = (project) => {
   if (isConfirmingDelete) return;
 
   isConfirmingDelete = true;
+  projectToDelete.value = project;
+  deleteDialogMessage.value = `Are you sure you want to move the project "${project.name}" to trash? This action cannot be undone.`;
+  showDeleteDialog.value = true;
+};
 
-  confirm.require({
-    message: `Are you sure you want to move the project "${project.name}" to trash? This action cannot be undone.`,
-    header: 'Move to Trash',
-    icon: 'pi pi-exclamation-triangle',
-    acceptClass: 'p-button-danger',
-    accept: () => deleteProject(project),
-    reject: () => {
-      // Reset flag when rejected
-      isConfirmingDelete = false;
-    },
-  });
+const onConfirmDelete = () => {
+  if (projectToDelete.value) {
+    deleteProject(projectToDelete.value);
+  }
+};
+
+const onCancelDelete = () => {
+  // Reset flag when rejected
+  isConfirmingDelete = false;
+  projectToDelete.value = null;
 };
 
 const deleteProject = async (project) => {

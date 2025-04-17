@@ -34,6 +34,16 @@
           </h1>
           <p class="text-gray-600">{{ project?.description }}</p>
         </div>
+        <!-- Add trash button -->
+        <div class="ml-auto" v-if="!isDeletedProject">
+          <Button
+            icon="pi pi-trash"
+            class="p-button-danger p-button-outlined"
+            @click="confirmTrashProject"
+            tooltip="Move to Trash"
+            tooltipPosition="bottom"
+          />
+        </div>
       </div>
     </div>
 
@@ -176,7 +186,8 @@
                 </h3>
                 <div class="text-xs text-gray-600 mt-1">
                   {{ projectStats?.totalPositionsFilled || 0 }} of
-                  {{ projectStats?.totalPositionsNeeded || 0 }} Working dates filled
+                  {{ projectStats?.totalPositionsNeeded || 0 }} Working dates
+                  filled
                 </div>
               </div>
               <div class="text-right">
@@ -393,6 +404,15 @@
         </div>
       </div>
     </div>
+
+    <!-- Custom trash confirmation dialog -->
+    <ConfirmTrashDialog
+      v-model:visible="showTrashDialog"
+      :title="'Move to Trash'"
+      :message="trashDialogMessage"
+      @confirm="onConfirmTrash"
+      @cancel="onCancelTrash"
+    />
   </div>
 </template>
 
@@ -410,6 +430,7 @@ import Column from 'primevue/column';
 import Tag from 'primevue/tag';
 import Badge from 'primevue/badge';
 import ProgressSpinner from 'primevue/progressspinner';
+import ConfirmTrashDialog from '@/components/shared/ConfirmTrashDialog.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -421,6 +442,8 @@ const loading = ref(true);
 const projectStats = ref(null);
 const jobSchedules = ref([]);
 const jobApplicantCounts = ref(new Map());
+const showTrashDialog = ref(false);
+const trashDialogMessage = ref('');
 
 // Check if project is from trash (read-only mode)
 const isDeletedProject = computed(() => {
@@ -1110,6 +1133,69 @@ const fetchJobApplicantCount = async (jobId) => {
   } catch (error) {
     console.error(`Error fetching applicant count for job ${jobId}:`, error);
   }
+};
+
+// Add the following functions near the bottom of the script
+const onConfirmTrash = () => {
+  // Handle the confirmed trash action
+  // You'll need to implement the actual deletion/trash logic here
+  const projectId = route.params.projectId;
+  const projectName = project.value?.name || '';
+
+  trashProject(projectId, projectName);
+};
+
+const onCancelTrash = () => {
+  // Handle cancellation - just close the dialog
+  showTrashDialog.value = false;
+};
+
+const trashProject = async (projectId, projectName) => {
+  try {
+    const token = localStorage.getItem('accessToken');
+
+    const response = await axios.delete(
+      `http://localhost:8080/api/projects/${projectId}`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    if (response.data.statusCode === 200) {
+      toast.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: `Project "${projectName}" has been moved to trash`,
+        life: 3000,
+      });
+
+      // Navigate back to the projects page
+      router.push({ name: 'ManageJobs' });
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: response.data.message || 'Failed to move project to trash',
+        life: 3000,
+      });
+    }
+  } catch (error) {
+    console.error('Error moving project to trash:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'An error occurred while moving project to trash',
+      life: 3000,
+    });
+  }
+};
+
+// Add the confirmTrashProject function:
+const confirmTrashProject = () => {
+  trashDialogMessage.value = `Are you sure you want to move the project "${project.value?.name}" to trash? This action cannot be undone.`;
+  showTrashDialog.value = true;
 };
 
 onMounted(() => {

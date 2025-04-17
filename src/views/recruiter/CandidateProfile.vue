@@ -235,6 +235,64 @@
 
       <!-- Right Column: Experience, Skills, and Photos -->
       <div class="col-span-12 lg:col-span-8 space-y-6">
+        <!-- Availability Card -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+          <div class="px-6 py-4">
+            <div class="flex items-center mb-4">
+              <i class="pi pi-calendar text-indigo-600 mr-2"></i>
+              <h3 class="text-lg font-semibold text-gray-800">Availability</h3>
+            </div>
+
+            <div class="space-y-4">
+              <div class="flex items-center">
+                <div
+                  class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3"
+                >
+                  <i class="pi pi-clock text-blue-600 text-sm"></i>
+                </div>
+                <div>
+                  <div class="text-sm text-gray-500">Availability Status</div>
+                  <div class="text-gray-700">
+                    {{ formatAvailability(candidate.availability) }}
+                  </div>
+                </div>
+              </div>
+
+              <div
+                v-if="
+                  candidate.availability === 'CUSTOM_DATES' &&
+                  candidate.availabilityDates &&
+                  candidate.availabilityDates.length > 0
+                "
+                class="mt-4"
+              >
+                <div class="text-sm text-gray-500 mb-2">Available Dates</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div
+                    v-for="(date, index) in candidate.availabilityDates"
+                    :key="index"
+                    class="bg-indigo-50 p-2 rounded text-sm"
+                  >
+                    {{ formatDate(date) }}
+                  </div>
+                </div>
+              </div>
+
+              <div
+                v-else-if="
+                  candidate.availability === 'CUSTOM_DATES' &&
+                  (!candidate.availabilityDates ||
+                    candidate.availabilityDates.length === 0)
+                "
+                class="text-amber-600 text-sm"
+              >
+                <i class="pi pi-exclamation-circle mr-1"></i>
+                Custom dates selected but no specific dates provided
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Work Experience Card -->
         <div class="bg-white rounded-xl shadow-md overflow-hidden">
           <div class="px-6 py-4">
@@ -567,6 +625,21 @@ const formatLanguages = (languages) => {
   }
 
   return 'Not specified';
+};
+
+// Format availability
+const formatAvailability = (availability) => {
+  if (!availability) return 'Not specified';
+
+  const availabilityMap = {
+    ANYTIME: 'Available Anytime',
+    WEEKDAYS_ONLY: 'Weekdays Only',
+    WEEKENDS_ONLY: 'Weekends Only',
+    CUSTOM_DATES: 'Custom Dates',
+    NOT_AVAILABLE: 'Not Available',
+  };
+
+  return availabilityMap[availability] || availability;
 };
 
 // File handlers

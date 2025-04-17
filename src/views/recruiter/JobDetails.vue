@@ -634,6 +634,65 @@
         />
       </template>
     </Dialog>
+
+    <!-- New confirmation dialog for cancellation -->
+    <Dialog
+      v-model:visible="cancelConfirmationVisible"
+      header="Warning: Job Cancellation"
+      :style="{ width: '500px' }"
+      :modal="true"
+      :closable="true"
+      class="status-dialog cancellation-dialog"
+    >
+      <div class="p-fluid">
+        <div class="text-center mb-4">
+          <i class="pi pi-exclamation-triangle text-5xl text-red-500 mb-3"></i>
+        </div>
+
+        <div class="mb-4 bg-red-50 p-4 rounded-lg border-left-4 border-red-500">
+          <div class="flex align-items-center mb-2">
+            <i class="pi pi-exclamation-circle text-red-600 mr-2"></i>
+            <h3 class="text-lg font-semibold text-red-700 m-0">
+              Important: This action has serious consequences
+            </h3>
+          </div>
+          <ul class="list-disc pl-5 mt-2 mb-0 text-gray-700">
+            <li class="mb-2">
+              <strong>All applicants</strong> for this job will be automatically
+              cancelled
+            </li>
+            <li class="mb-2">
+              Frequently cancelling jobs will
+              <strong>lower your recruiter reputation</strong>
+            </li>
+            <li>This action <strong>cannot be undone</strong></li>
+          </ul>
+        </div>
+
+        <div class="mb-2">
+          <p class="font-medium text-gray-800">
+            Are you absolutely sure you want to cancel this job?
+          </p>
+        </div>
+      </div>
+
+      <template #footer>
+        <Button
+          label="No, Keep Job Active"
+          icon="pi pi-times"
+          class="p-button-text"
+          @click="cancelCancellation"
+          :disabled="changingStatus"
+        />
+        <Button
+          label="Yes, Cancel Job"
+          icon="pi pi-check"
+          class="p-button-danger"
+          @click="confirmCancellation"
+          :loading="changingStatus"
+        />
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -679,6 +738,10 @@ const changingStatus = ref(false);
 const viewStatistics = ref(null);
 const loadingViewStats = ref(true);
 const applicantCount = ref(0);
+
+// New confirmation dialog for cancellation
+const cancelConfirmationVisible = ref(false);
+const showCancellationWarning = ref(false);
 
 // Computed property for available status options based on current job status
 const availableStatusOptions = computed(() => {
@@ -1158,8 +1221,30 @@ const closeStatusDialog = () => {
 
 const changeJobStatus = async () => {
   try {
-    changingStatus.value = true;
+    // If selecting cancelled status, show confirmation dialog first
+    if (selectedNewStatus.value === 'CANCELLED') {
+      cancelConfirmationVisible.value = true;
+      showCancellationWarning.value = true;
+      return;
+    }
 
+    // Otherwise proceed with status change
+    await processStatusChange();
+  } catch (error) {
+    console.error('Error changing job status:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: error.response?.data?.message || 'An unexpected error occurred',
+      life: 3000,
+    });
+  }
+};
+
+// Process the actual status change after confirmation if needed
+const processStatusChange = async () => {
+  changingStatus.value = true;
+  try {
     const response = await axios.put(
       `http://localhost:8080/api/jobs/${job.value.id}/status`,
       { newStatus: selectedNewStatus.value },
@@ -1182,6 +1267,7 @@ const changeJobStatus = async () => {
         life: 3000,
       });
       statusDialogVisible.value = false;
+      cancelConfirmationVisible.value = false;
     } else {
       toast.add({
         severity: 'error',
@@ -1191,7 +1277,7 @@ const changeJobStatus = async () => {
       });
     }
   } catch (error) {
-    console.error('Error changing job status:', error);
+    console.error('Error in processStatusChange:', error);
     toast.add({
       severity: 'error',
       summary: 'Error',
@@ -1201,6 +1287,16 @@ const changeJobStatus = async () => {
   } finally {
     changingStatus.value = false;
   }
+};
+
+// Cancel confirmation handlers
+const confirmCancellation = () => {
+  processStatusChange();
+};
+
+const cancelCancellation = () => {
+  cancelConfirmationVisible.value = false;
+  showCancellationWarning.value = false;
 };
 </script>
 
@@ -1487,5 +1583,50 @@ const changeJobStatus = async () => {
   :deep(.p-button) {
     margin-bottom: 0.5rem;
   }
+}
+
+/* Cancellation Dialog Styling */
+:deep(.cancellation-dialog .p-dialog-header) {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-bottom: 1px solid #fecaca;
+}
+
+:deep(.cancellation-dialog .border-left-4) {
+  border-left: 4px solid;
+}
+
+:deep(.cancellation-dialog .border-red-500) {
+  border-left-color: #ef4444;
+}
+
+:deep(.cancellation-dialog .p-dialog-footer) {
+  border-top: 1px solid #fecaca;
+}
+
+:deep(.cancellation-dialog .p-button-danger) {
+  background: #dc2626;
+  border-color: #b91c1c;
+}
+
+:deep(.cancellation-dialog .p-button-danger:hover) {
+  background: #b91c1c;
+  border-color: #991b1b;
+}
+
+:deep(.cancellation-dialog .text-red-500) {
+  color: #ef4444;
+}
+
+:deep(.cancellation-dialog .text-red-600) {
+  color: #dc2626;
+}
+
+:deep(.cancellation-dialog .text-red-700) {
+  color: #b91c1c;
+}
+
+:deep(.cancellation-dialog .bg-red-50) {
+  background-color: #fef2f2;
 }
 </style>
