@@ -121,7 +121,7 @@
               </div>
               <div>
                 <h3 class="text-sm font-medium text-blue-700">
-                  Total Positions
+                  Total Working Dates
                 </h3>
                 <p class="text-lg font-semibold text-blue-900">
                   {{ projectStats?.totalPositionsNeeded || 0 }}
@@ -138,7 +138,7 @@
               </div>
               <div>
                 <h3 class="text-sm font-medium text-green-700">
-                  Positions Filled
+                  Working Dates Filled
                 </h3>
                 <p class="text-lg font-semibold text-green-900">
                   {{ projectStats?.totalPositionsFilled || 0 }}
@@ -155,7 +155,7 @@
               </div>
               <div>
                 <h3 class="text-sm font-medium text-orange-700">
-                  Positions Remaining
+                  Working Dates Remaining
                 </h3>
                 <p class="text-lg font-semibold text-orange-900">
                   {{ getRemainingPositions() }}
@@ -176,7 +176,7 @@
                 </h3>
                 <div class="text-xs text-gray-600 mt-1">
                   {{ projectStats?.totalPositionsFilled || 0 }} of
-                  {{ projectStats?.totalPositionsNeeded || 0 }} positions filled
+                  {{ projectStats?.totalPositionsNeeded || 0 }} Working dates filled
                 </div>
               </div>
               <div class="text-right">
@@ -197,7 +197,7 @@
               </div>
               <div class="flex justify-between mt-2">
                 <div class="text-xs">
-                  <span class="text-gray-500">Total Positions:</span>
+                  <span class="text-gray-500">Total Dates:</span>
                   <span class="font-semibold text-gray-700 ml-1">{{
                     projectStats?.totalPositionsNeeded || 0
                   }}</span>

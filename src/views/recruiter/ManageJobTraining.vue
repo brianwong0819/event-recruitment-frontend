@@ -120,8 +120,12 @@
                     No material uploaded
                   </h4>
                   <p class="text-gray-500 text-sm mb-4">
-                    Upload a PDF training document that will be available to all
-                    hired candidates
+                    Upload a PDF training document that will be used to generate
+                    assessment quizzes for your candidates.
+                    <span class="font-medium text-primary-600"
+                      >Include detailed information about event procedures,
+                      promotions, and requirements.</span
+                    >
                   </p>
                   <div class="flex flex-col gap-3">
                     <div class="w-full">
@@ -234,6 +238,48 @@
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </template>
+        </Card>
+
+        <!-- AI Quiz Generation Tip -->
+        <Card class="shadow-sm mb-6">
+          <template #header>
+            <div class="bg-blue-50 p-4 border-b border-blue-100">
+              <h2 class="text-lg font-semibold text-blue-800 flex items-center">
+                <i class="pi pi-info-circle text-blue-500 mr-2"></i>
+                AI-Powered Assessment
+              </h2>
+            </div>
+          </template>
+          <template #content>
+            <div class="p-4">
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="font-medium text-blue-700 mb-2">How It Works</h3>
+                <p class="text-sm text-blue-600 mb-3">
+                  The system uses AI to automatically generate quiz questions
+                  based on the training material you upload.
+                </p>
+                <ul class="text-sm text-blue-600 space-y-2 list-disc pl-5 mb-3">
+                  <li>
+                    <strong>Comprehensive content</strong> - Include detailed
+                    information about event procedures, promotions, and
+                    requirements in your training material
+                  </li>
+                  <li>
+                    <strong>Clear explanations</strong> - The more specific your
+                    instructions, the better the quiz questions
+                  </li>
+                  <li>
+                    <strong>Key information</strong> - Emphasize critical
+                    knowledge that promoters need for the event
+                  </li>
+                </ul>
+                <p class="text-sm text-blue-600 font-medium">
+                  These assessment quizzes help candidates reinforce their
+                  understanding and ensure they're prepared for your event.
+                </p>
               </div>
             </div>
           </template>

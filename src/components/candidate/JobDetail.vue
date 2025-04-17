@@ -4,20 +4,6 @@
     <div v-if="job">
       <!-- Job Header -->
       <div class="mb-6">
-        <!-- Save Button -->
-        <div class="flex justify-end mb-1">
-          <Button
-            icon="pi pi-bookmark"
-            :class="
-              job.saved
-                ? 'p-button-warning'
-                : 'p-button-outlined p-button-secondary'
-            "
-            class="p-button-rounded"
-            @click="$emit('toggleSave', job)"
-          />
-        </div>
-
         <!-- Job Layout with Logo on Left -->
         <div class="flex gap-4 mb-4">
           <!-- Company Logo - Left side -->
@@ -677,7 +663,7 @@ const navigateToRecruiter = (recruiterId, jobId) => {
   }
 };
 
-defineEmits(['apply', 'toggleSave']);
+defineEmits(['apply']);
 </script>
 
 <style scoped>

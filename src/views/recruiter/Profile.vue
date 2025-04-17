@@ -1,7 +1,6 @@
 <template>
   <div class="p-8">
     <Toast position="top-right" />
-    <ConfirmDialog />
 
     <!-- Loading state -->
     <div v-if="loading" class="flex justify-center py-20 w-full">
@@ -11,8 +10,121 @@
       </div>
     </div>
 
+    <!-- Custom Delete Portfolio Confirmation Dialog -->
+    <div
+      v-if="showDeletePortfolioDialog"
+      class="fixed inset-0 z-[9999] overflow-auto bg-black bg-opacity-50 flex items-center justify-center"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden"
+      >
+        <!-- Dialog Header -->
+        <div
+          class="p-5 flex items-center justify-between border-b border-gray-200"
+        >
+          <h3 class="text-lg font-medium text-gray-900">Delete Collection</h3>
+          <button
+            @click="cancelDeletePortfolio"
+            class="text-gray-400 hover:text-gray-500 focus:outline-none"
+          >
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+
+        <!-- Dialog Content -->
+        <div class="p-6">
+          <div class="flex items-start">
+            <div class="flex-shrink-0">
+              <i
+                class="pi pi-exclamation-triangle text-2xl text-amber-500 mr-4"
+              ></i>
+            </div>
+            <div class="text-gray-700">
+              Are you sure you want to delete "{{
+                portfolioToDelete?.eventName
+              }}"? This action cannot be undone.
+            </div>
+          </div>
+        </div>
+
+        <!-- Dialog Footer -->
+        <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+          <button
+            @click="cancelDeletePortfolio"
+            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 font-medium"
+          >
+            No
+          </button>
+          <button
+            @click="confirmDeletePortfolioAction"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white font-medium transition-colors"
+            :disabled="portfolioLoading"
+          >
+            <i v-if="portfolioLoading" class="pi pi-spin pi-spinner mr-2"></i>
+            Yes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Delete Media Confirmation Dialog -->
+    <div
+      v-if="showDeleteMediaDialog"
+      class="fixed inset-0 z-[9999] overflow-auto bg-black bg-opacity-50 flex items-center justify-center"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden"
+      >
+        <!-- Dialog Header -->
+        <div
+          class="p-5 flex items-center justify-between border-b border-gray-200"
+        >
+          <h3 class="text-lg font-medium text-gray-900">Delete Media</h3>
+          <button
+            @click="cancelDeleteMedia"
+            class="text-gray-400 hover:text-gray-500 focus:outline-none"
+          >
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+
+        <!-- Dialog Content -->
+        <div class="p-6">
+          <div class="flex items-start">
+            <div class="flex-shrink-0">
+              <i
+                class="pi pi-exclamation-triangle text-2xl text-amber-500 mr-4"
+              ></i>
+            </div>
+            <div class="text-gray-700">
+              Are you sure you want to delete this media? This action cannot be
+              undone.
+            </div>
+          </div>
+        </div>
+
+        <!-- Dialog Footer -->
+        <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+          <button
+            @click="cancelDeleteMedia"
+            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 font-medium"
+          >
+            No
+          </button>
+          <button
+            @click="confirmDeleteMediaAction"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white font-medium transition-colors"
+            :disabled="mediaLoading"
+          >
+            <i v-if="mediaLoading" class="pi pi-spin pi-spinner mr-2"></i>
+            Yes
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Main content -->
-    <div v-else class="max-w-6xl mx-auto">
+    <div v-if="!loading" class="max-w-6xl mx-auto">
       <!-- Profile header with logo and basic stats -->
       <div class="mb-6 bg-white rounded-lg shadow-md p-6">
         <div
@@ -431,50 +543,6 @@
                     @click="showChangePasswordDialog = true"
                   />
                 </div>
-              </div>
-
-              <div class="mb-6">
-                <h3 class="text-lg font-semibold mb-4 pb-2 border-b">
-                  Communication Preferences
-                </h3>
-                <div class="flex flex-col gap-3">
-                  <div class="field-checkbox">
-                    <Checkbox
-                      id="emailNotifications"
-                      v-model="communicationPrefs.email"
-                      :binary="true"
-                    />
-                    <label for="emailNotifications" class="ml-2"
-                      >Receive Email Notifications</label
-                    >
-                  </div>
-                  <div class="field-checkbox">
-                    <Checkbox
-                      id="smsNotifications"
-                      v-model="communicationPrefs.sms"
-                      :binary="true"
-                    />
-                    <label for="smsNotifications" class="ml-2"
-                      >Receive SMS Notifications</label
-                    >
-                  </div>
-                  <div class="field-checkbox">
-                    <Checkbox
-                      id="marketingEmails"
-                      v-model="communicationPrefs.marketing"
-                      :binary="true"
-                    />
-                    <label for="marketingEmails" class="ml-2"
-                      >Receive Marketing Communications</label
-                    >
-                  </div>
-                </div>
-                <Button
-                  label="Save Preferences"
-                  icon="pi pi-check"
-                  class="mt-4"
-                  @click="savePreferences"
-                />
               </div>
             </div>
 
@@ -1326,7 +1394,6 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useDialog } from 'primevue/usedialog';
-import { useConfirm } from 'primevue/useconfirm';
 import { format } from 'date-fns';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
@@ -1343,17 +1410,18 @@ import Textarea from 'primevue/textarea';
 import Dropdown from 'primevue/dropdown';
 import Tag from 'primevue/tag';
 import Toast from 'primevue/toast';
-import ConfirmDialog from 'primevue/confirmdialog';
 import Checkbox from 'primevue/checkbox';
 import Dialog from 'primevue/dialog';
 import Password from 'primevue/password';
 import Rating from 'primevue/rating';
 import Tooltip from 'primevue/tooltip';
 import LocationSearch from '@/components/shared/LocationSearch.vue';
+import Calendar from 'primevue/calendar';
+import FileUpload from 'primevue/fileupload';
+import ProgressBar from 'primevue/progressbar';
 
 // Initialize services
 const toast = useToast();
-const confirm = useConfirm();
 const profileStore = useProfileStore();
 const auth = useAuthStore();
 
@@ -1382,6 +1450,12 @@ const activeTab = ref('basic');
 const showChangePasswordDialog = ref(false);
 const showValidationErrors = ref(false);
 
+// Custom confirmation dialog state
+const showDeletePortfolioDialog = ref(false);
+const showDeleteMediaDialog = ref(false);
+const portfolioToDelete = ref(null);
+const mediaToDelete = ref(null);
+
 // Computed property for form validation
 const hasEditFormErrors = computed(() => {
   return (
@@ -1389,12 +1463,6 @@ const hasEditFormErrors = computed(() => {
     !editedProfile.value.email ||
     !editedProfile.value.phoneNumber
   );
-});
-
-const communicationPrefs = ref({
-  email: true,
-  sms: false,
-  marketing: true,
 });
 
 // Password change form
@@ -2165,36 +2233,18 @@ const changePassword = async () => {
 
   changingPassword.value = true;
   passwordSubmissionError.value = '';
+  // Clear any previous error messages
+  passwordFormErrors.value = {};
 
   try {
-    let response;
+    // Tell API client not to auto-refresh token for this specific request
+    const response = await auth.changePassword(
+      passwordForm.value.currentPassword,
+      passwordForm.value.newPassword,
+      passwordForm.value.confirmPassword
+    );
 
-    // First try: Use auth store if available
-    if (typeof auth?.changePassword === 'function') {
-      console.log('Using authStore.changePassword method');
-      response = await auth.changePassword(
-        passwordForm.value.currentPassword,
-        passwordForm.value.newPassword,
-        passwordForm.value.confirmPassword
-      );
-    }
-    // Fallback: Use direct API call
-    else {
-      console.log('Fallback: Using direct API call for password change');
-      // Example of a direct API call if needed
-      response = await axios.post(
-        'http://localhost:8080/api/auth/change-password',
-        {
-          currentPassword: passwordForm.value.currentPassword,
-          newPassword: passwordForm.value.newPassword,
-          confirmPassword: passwordForm.value.confirmPassword,
-        },
-        {
-          headers: { Authorization: getToken() },
-        }
-      );
-    }
-
+    // Success case - only proceed with logout if we get a successful response
     if (response && response.status >= 200 && response.status < 300) {
       // Reset form and close dialog
       passwordForm.value = {
@@ -2260,16 +2310,14 @@ const changePassword = async () => {
             document.body.removeChild(overlay);
           }
 
-          // Perform the actual logout
-          if (typeof auth?.logout === 'function') {
-            auth.logout();
-          } else {
-            // Manual logout if auth store is not available
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
-          }
+          // Avoid using auth.logout() which triggers the confirmation dialog again
+          // Manually clear storage and redirect
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          localStorage.removeItem('userType');
+          // Add additional localStorage cleanups that might be needed
+          window.location.href = '/login';
         }, 300); // Match this with CSS transition duration
       };
 
@@ -2292,30 +2340,40 @@ const changePassword = async () => {
 
       // Add a CSS transition for smooth fade-out
       overlay.style.transition = 'opacity 300ms ease-out';
-    } else {
-      throw new Error('Failed to change password. Please try again.');
     }
   } catch (error) {
     console.error('Password change error:', error);
 
-    // Get error message
-    let errorMessage = 'Failed to change password. Please try again.';
+    // Handle the specific "Current password is incorrect" error
+    if (
+      error.response?.status === 401 ||
+      error.response?.data?.message === 'Current password is incorrect' ||
+      error.isPasswordError
+    ) {
+      // Set the error directly on the form field
+      passwordFormErrors.value.currentPassword =
+        'Current password is incorrect';
+    } else if (
+      error.response?.data?.message &&
+      (error.response.data.message.includes('same as') ||
+        error.response.data.message.includes('must be different'))
+    ) {
+      // Handle new password same as old password error
+      passwordFormErrors.value.newPassword =
+        'New password must be different from your current password';
+    } else {
+      // Handle other errors
+      passwordSubmissionError.value =
+        error.response?.data?.message ||
+        'Failed to change password. Please try again.';
 
-    // Check for specific error cases
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error.message) {
-      errorMessage = error.message;
+      toast.add({
+        severity: 'error',
+        summary: 'Password Change Failed',
+        detail: passwordSubmissionError.value,
+        life: 5000,
+      });
     }
-
-    passwordSubmissionError.value = errorMessage;
-
-    toast.add({
-      severity: 'error',
-      summary: 'Password Change Failed',
-      detail: errorMessage,
-      life: 5000,
-    });
   } finally {
     changingPassword.value = false;
   }
@@ -2580,54 +2638,72 @@ const saveCollection = async () => {
 
 const confirmDeletePortfolio = (portfolio) => {
   // Prevent multiple confirmations while loading or if already deleting
-  if (portfolioLoading.value) return;
+  if (portfolioLoading.value || portfolio.isDeleting) return;
 
-  confirm.require({
-    message: `Are you sure you want to delete "${portfolio.eventName}"? This action cannot be undone.`,
-    header: 'Delete Collection',
-    icon: 'pi pi-exclamation-triangle',
-    acceptClass: 'p-button-danger',
-    accept: async () => {
-      try {
-        portfolioLoading.value = true;
+  // Set the portfolio as being processed to prevent multiple clicks
+  portfolios.value = portfolios.value.map((p) => ({
+    ...p,
+    isDeleting: p.id === portfolio.id ? true : p.isDeleting,
+  }));
 
-        // Disable all portfolio buttons during deletion
-        portfolios.value = portfolios.value.map((p) => ({
-          ...p,
-          isDeleting: p.id === portfolio.id,
-        }));
+  // Show the custom dialog
+  portfolioToDelete.value = portfolio;
+  showDeletePortfolioDialog.value = true;
+};
 
-        await axios.delete(
-          `http://localhost:8080/api/recruiters/portfolio/${portfolio.id}`,
-          {
-            headers: { Authorization: getToken() },
-          }
-        );
+// Add new methods for the custom dialog
+const cancelDeletePortfolio = () => {
+  // Reset isDeleting flag when rejected
+  if (portfolioToDelete.value) {
+    portfolios.value = portfolios.value.map((p) => ({
+      ...p,
+      isDeleting: p.id === portfolioToDelete.value.id ? false : p.isDeleting,
+    }));
+  }
+  showDeletePortfolioDialog.value = false;
+  portfolioToDelete.value = null;
+};
 
-        toast.add({
-          severity: 'success',
-          summary: 'Deleted',
-          detail: 'Collection deleted successfully',
-          life: 3000,
-        });
+const confirmDeletePortfolioAction = async () => {
+  if (!portfolioToDelete.value) return;
 
-        await fetchPortfolios();
-      } catch (error) {
-        console.error('Failed to delete portfolio:', error);
-        toast.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to delete collection. Please try again.',
-          life: 3000,
-        });
-      } finally {
-        portfolioLoading.value = false;
+  try {
+    portfolioLoading.value = true;
+
+    await axios.delete(
+      `http://localhost:8080/api/recruiters/portfolio/${portfolioToDelete.value.id}`,
+      {
+        headers: { Authorization: getToken() },
       }
-    },
-    reject: () => {
-      // Do nothing on reject
-    },
-  });
+    );
+
+    toast.add({
+      severity: 'success',
+      summary: 'Deleted',
+      detail: 'Collection deleted successfully',
+      life: 3000,
+    });
+
+    await fetchPortfolios();
+  } catch (error) {
+    console.error('Failed to delete portfolio:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to delete collection. Please try again.',
+      life: 3000,
+    });
+
+    // Reset isDeleting flag on error
+    portfolios.value = portfolios.value.map((p) => ({
+      ...p,
+      isDeleting: p.id === portfolioToDelete.value.id ? false : p.isDeleting,
+    }));
+  } finally {
+    portfolioLoading.value = false;
+    showDeletePortfolioDialog.value = false;
+    portfolioToDelete.value = null;
+  }
 };
 
 // Media Management Methods
@@ -2789,49 +2865,53 @@ const uploadMedia = async (event) => {
 const confirmDeleteMedia = (media) => {
   if (mediaLoading.value) return; // Prevent multiple confirmations while loading
 
-  confirm.require({
-    message:
-      'Are you sure you want to delete this media? This action cannot be undone.',
-    header: 'Delete Media',
-    icon: 'pi pi-exclamation-triangle',
-    acceptClass: 'p-button-danger',
-    accept: async () => {
-      try {
-        mediaLoading.value = true;
-        await axios.delete(
-          `http://localhost:8080/api/recruiters/portfolio/${selectedPortfolio.value.id}/media/${media.id}`,
-          {
-            headers: { Authorization: getToken() },
-          }
-        );
+  // Show the custom dialog
+  mediaToDelete.value = media;
+  showDeleteMediaDialog.value = true;
+};
 
-        toast.add({
-          severity: 'success',
-          summary: 'Deleted',
-          detail: 'Media deleted successfully',
-          life: 3000,
-        });
+// Add new methods for the custom dialog
+const cancelDeleteMedia = () => {
+  showDeleteMediaDialog.value = false;
+  mediaToDelete.value = null;
+};
 
-        // Refresh media list
-        await fetchPortfolioMedia(selectedPortfolio.value.id);
-        // Refresh portfolios to update media count
-        await fetchPortfolios();
-      } catch (error) {
-        console.error('Failed to delete media:', error);
-        toast.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to delete media. Please try again.',
-          life: 3000,
-        });
-      } finally {
-        mediaLoading.value = false;
+const confirmDeleteMediaAction = async () => {
+  if (!mediaToDelete.value || !selectedPortfolio.value) return;
+
+  try {
+    mediaLoading.value = true;
+    await axios.delete(
+      `http://localhost:8080/api/recruiters/portfolio/${selectedPortfolio.value.id}/media/${mediaToDelete.value.id}`,
+      {
+        headers: { Authorization: getToken() },
       }
-    },
-    reject: () => {
-      // Do nothing on reject
-    },
-  });
+    );
+
+    toast.add({
+      severity: 'success',
+      summary: 'Deleted',
+      detail: 'Media deleted successfully',
+      life: 3000,
+    });
+
+    // Refresh media list
+    await fetchPortfolioMedia(selectedPortfolio.value.id);
+    // Refresh portfolios to update media count
+    await fetchPortfolios();
+  } catch (error) {
+    console.error('Failed to delete media:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to delete media. Please try again.',
+      life: 3000,
+    });
+  } finally {
+    mediaLoading.value = false;
+    showDeleteMediaDialog.value = false;
+    mediaToDelete.value = null;
+  }
 };
 
 const closeMediaDialog = () => {

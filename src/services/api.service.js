@@ -45,10 +45,13 @@ apiClient.interceptors.request.use(
 
     // If token exists, add Authorization header - exactly as shown in Postman
     if (token) {
-      // Don't add "Bearer " prefix - per client requirements
-      config.headers.Authorization = token;
+      // Ensure token has the 'Bearer ' prefix
+      const tokenValue = token.startsWith('Bearer ')
+        ? token
+        : `Bearer ${token}`;
+      config.headers.Authorization = tokenValue;
 
-      console.log('Using token:', token.substring(0, 20) + '...');
+      console.log('Using token:', tokenValue.substring(0, 30) + '...');
     } else {
       console.warn('No access token found in localStorage');
     }
@@ -242,6 +245,18 @@ apiClient.interceptors.response.use(
 
     // Handle other errors
     if (status === 401 || status === 403) {
+      // Check if this is a password validation error (not a token issue)
+      if (
+        error.isPasswordError ||
+        (status === 401 &&
+          originalRequest.url &&
+          originalRequest.url.includes('/change-password'))
+      ) {
+        // Don't redirect to login for password validation errors
+        console.log('Password validation error, not redirecting to login');
+        return Promise.reject(error);
+      }
+
       if (isAuthRequest) {
         // For auth requests with 401/403, just reject without redirection
         return Promise.reject(error);

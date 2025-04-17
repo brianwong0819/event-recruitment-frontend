@@ -29,12 +29,6 @@
             Manage Jobs
           </router-link>
           <router-link
-            to="/recruiter/candidates"
-            class="text-gray-700 hover:text-primary-600 font-medium"
-          >
-            Candidates
-          </router-link>
-          <router-link
             to="/recruiter/profile"
             class="text-gray-700 hover:text-primary-600 font-medium"
           >
@@ -83,13 +77,6 @@
           @click="mobileMenuOpen = false"
         >
           Manage Jobs
-        </router-link>
-        <router-link
-          to="/recruiter/candidates"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-          @click="mobileMenuOpen = false"
-        >
-          Candidates
         </router-link>
         <router-link
           to="/recruiter/profile"

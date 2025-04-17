@@ -254,7 +254,9 @@ class CandidateService {
    * @returns {Promise} - Response with updated profile
    */
   async updateEmail(email) {
-    return apiClient.post('/account/email', { email });
+    return apiClient.put(
+      `/profile/update-email?newEmail=${encodeURIComponent(email)}`
+    );
   }
 
   /**
@@ -332,7 +334,7 @@ class CandidateService {
         {
           currentPassword,
           newPassword,
-          confirmPassword,
+          // confirmPassword removed from request body
         },
         {
           // This will prevent automatic token refresh on 401 errors for this specific request
@@ -348,7 +350,9 @@ class CandidateService {
       // If the error is "Current password is incorrect", handle it specifically
       if (
         error.response?.status === 401 ||
-        error.response?.data?.message === 'Current password is incorrect'
+        error.response?.data?.message === 'Current password is incorrect' ||
+        (error.response?.data?.message &&
+          error.response?.data?.message.includes('password'))
       ) {
         // Throw a custom error that won't trigger the auth refresh mechanism
         throw {

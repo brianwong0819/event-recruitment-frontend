@@ -266,6 +266,26 @@
         <div class="w-full max-w-4xl">
           <!-- Basic Information Section -->
           <div v-show="activeSection === 'basic-info'" class="animate-fadeIn">
+            <!-- AI evaluation notification -->
+            <div
+              class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 shadow-sm"
+            >
+              <div class="flex items-start">
+                <i
+                  class="pi pi-info-circle text-blue-500 mt-0.5 mr-3 text-lg"
+                ></i>
+                <div>
+                  <h4 class="text-blue-700 font-medium mb-1">
+                    Profile Optimization Tip
+                  </h4>
+                  <p class="text-sm text-blue-600">
+                    Your profile information will be analyzed by AI when you
+                    apply for positions. Complete and detailed information
+                    increases your chances of being selected for interviews.
+                  </p>
+                </div>
+              </div>
+            </div>
             <div
               class="rounded-xl shadow-md border mb-6 md:mb-8 overflow-hidden bg-white transition-all duration-300 hover:shadow-lg"
             >
@@ -690,6 +710,26 @@
 
           <!-- Resume Section -->
           <div v-show="activeSection === 'resume'" class="animate-fadeIn">
+            <!-- AI evaluation notification -->
+            <div
+              class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 shadow-sm"
+            >
+              <div class="flex items-start">
+                <i
+                  class="pi pi-info-circle text-blue-500 mt-0.5 mr-3 text-lg"
+                ></i>
+                <div>
+                  <h4 class="text-blue-700 font-medium mb-1">
+                    Resume Optimization Tip
+                  </h4>
+                  <p class="text-sm text-blue-600">
+                    Your resume will be analyzed by AI when applying for jobs. A
+                    well-formatted, clear resume with relevant skills and
+                    experience significantly improves your chances of selection.
+                  </p>
+                </div>
+              </div>
+            </div>
             <div
               class="rounded-xl shadow-md border mb-5 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg"
             >
@@ -1153,6 +1193,27 @@
             v-show="activeSection === 'work-experience'"
             class="animate-fadeIn"
           >
+            <!-- AI evaluation notification -->
+            <div
+              class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 shadow-sm"
+            >
+              <div class="flex items-start">
+                <i
+                  class="pi pi-info-circle text-blue-500 mt-0.5 mr-3 text-lg"
+                ></i>
+                <div>
+                  <h4 class="text-blue-700 font-medium mb-1">
+                    Work Experience Optimization Tip
+                  </h4>
+                  <p class="text-sm text-blue-600">
+                    Your work history will be analyzed by AI during job
+                    application assessment. Detailed descriptions of relevant
+                    experience and responsibilities significantly improve your
+                    match score for similar positions.
+                  </p>
+                </div>
+              </div>
+            </div>
             <div
               class="rounded-xl shadow-md border mb-4 md:mb-5 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg"
             >
@@ -1356,7 +1417,7 @@
                       </div>
 
                       <div
-                        class="p-4 flex items-center justify-between border-b bg-white hover:bg-gray-50 transition-colors"
+                        class="p-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
                       >
                         <div class="flex items-center">
                           <div
@@ -1381,63 +1442,6 @@
                           class="p-button-text p-button-sm"
                           @click="showEmailUpdateDialog = true"
                         />
-                      </div>
-
-                      <div
-                        class="p-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
-                      >
-                        <div class="flex items-center">
-                          <div
-                            class="bg-primary-100 w-10 h-10 rounded-full flex items-center justify-center mr-3 shadow-sm"
-                          >
-                            <i class="pi pi-bell text-primary-600 text-lg"></i>
-                          </div>
-                          <div>
-                            <h4 class="font-medium text-gray-800 text-sm">
-                              Notifications
-                            </h4>
-                            <p class="text-xs text-gray-500">
-                              Control how you receive notifications
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          label="Manage"
-                          icon="pi pi-cog"
-                          class="p-button-text p-button-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div class="mt-8">
-                      <h3
-                        class="text-base font-medium text-red-600 mb-3 flex items-center"
-                      >
-                        <i
-                          class="pi pi-exclamation-triangle text-red-500 mr-2"
-                        ></i>
-                        Danger Zone
-                      </h3>
-                      <div
-                        class="border border-red-200 rounded-xl p-5 bg-red-50 transition-all duration-300 hover:shadow-md"
-                      >
-                        <h4
-                          class="font-medium text-red-700 text-sm flex items-center"
-                        >
-                          <i class="pi pi-trash text-red-500 mr-2"></i>
-                          Delete Account
-                        </h4>
-                        <p class="text-sm text-red-600 mb-3 mt-1 pl-6">
-                          Permanently delete your account and all associated
-                          data. This action cannot be undone.
-                        </p>
-                        <div class="pl-6">
-                          <Button
-                            icon="pi pi-trash"
-                            label="Delete Account"
-                            class="p-button-danger p-button-sm"
-                          />
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -2677,29 +2681,18 @@ const changePassword = async () => {
 
   changingPassword.value = true;
   passwordSubmissionError.value = '';
+  // Clear any previous error messages
+  passwordFormErrors.value = {};
 
   try {
-    let response;
+    // Tell API client not to auto-refresh token for this specific request
+    const response = await candidateService.changePassword(
+      passwordForm.value.currentPassword,
+      passwordForm.value.newPassword,
+      passwordForm.value.confirmPassword
+    );
 
-    // First try: Use auth store if available
-    if (typeof authStore?.changePassword === 'function') {
-      console.log('Using authStore.changePassword method');
-      response = await authStore.changePassword(
-        passwordForm.value.currentPassword,
-        passwordForm.value.newPassword,
-        passwordForm.value.confirmPassword
-      );
-    }
-    // Fallback: Use candidate service directly
-    else {
-      console.log('Fallback: Using candidateService.changePassword directly');
-      response = await candidateService.changePassword(
-        passwordForm.value.currentPassword,
-        passwordForm.value.newPassword,
-        passwordForm.value.confirmPassword
-      );
-    }
-
+    // Success case - only proceed with logout if we get a successful response
     if (response && response.status >= 200 && response.status < 300) {
       // Reset form and close dialog
       passwordForm.value = {
@@ -2797,35 +2790,33 @@ const changePassword = async () => {
 
       // Add a CSS transition for smooth fade-out
       overlay.style.transition = 'opacity 300ms ease-out';
-    } else {
-      throw new Error('Failed to change password. Please try again.');
     }
   } catch (error) {
     console.error('Password change error:', error);
 
-    // Get error message
-    let errorMessage = 'Failed to change password. Please try again.';
-
-    // Check for specific error cases
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-
-      // Check for common error messages about same password
-      if (
-        errorMessage.toLowerCase().includes('same as') ||
-        errorMessage.toLowerCase().includes('must be different') ||
-        errorMessage.toLowerCase().includes('cannot be identical') ||
-        errorMessage.toLowerCase().includes('password already used')
-      ) {
-        errorMessage =
-          'New password must be different from your current password';
-        passwordFormErrors.value.newPassword = errorMessage;
-      }
-    } else if (error.message) {
-      errorMessage = error.message;
+    // Handle the specific "Current password is incorrect" error
+    if (
+      error.response?.status === 401 ||
+      error.response?.data?.message === 'Current password is incorrect' ||
+      error.isPasswordError
+    ) {
+      // Set the error directly on the form field
+      passwordFormErrors.value.currentPassword =
+        'Current password is incorrect';
+    } else if (
+      error.response?.data?.message &&
+      (error.response.data.message.includes('same as') ||
+        error.response.data.message.includes('must be different'))
+    ) {
+      // Handle new password same as old password error
+      passwordFormErrors.value.newPassword =
+        'New password must be different from your current password';
+    } else {
+      // Handle other errors
+      passwordSubmissionError.value =
+        error.response?.data?.message ||
+        'Failed to change password. Please try again.';
     }
-
-    passwordSubmissionError.value = errorMessage;
   } finally {
     changingPassword.value = false;
   }
