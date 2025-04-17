@@ -7,30 +7,41 @@
     <ConfirmDialog />
 
     <!-- Header -->
-    <header class="bg-white shadow">
-      <div class="flex justify-between items-center px-4 py-3">
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+      <div
+        class="container mx-auto flex justify-between items-center px-4 py-3"
+      >
         <!-- Logo -->
-        <router-link to="/" class="flex items-center">
-          <img src="@/assets/logo.png" alt="CrewLink Logo" class="h-8" />
+        <router-link to="/recruiter/jobs" class="flex items-center">
+          <img src="@/assets/logo.png" alt="CrewLink Logo" class="h-10" />
         </router-link>
 
         <!-- Navigation -->
-        <nav class="hidden md:flex space-x-6">
-          <router-link
-            to="/recruiter/dashboard"
-            class="text-gray-700 hover:text-primary-600 font-medium"
-          >
-            Dashboard
-          </router-link>
+        <nav class="hidden md:flex space-x-8">
           <router-link
             to="/recruiter/jobs"
-            class="text-gray-700 hover:text-primary-600 font-medium"
+            class="nav-link relative py-2 transition-colors duration-200 font-medium"
+            :class="{
+              'active-nav-link': $route.path.includes('/recruiter/jobs'),
+            }"
           >
             Manage Jobs
           </router-link>
           <router-link
+            to="/recruiter/talent-pool"
+            class="nav-link relative py-2 transition-colors duration-200 font-medium"
+            :class="{
+              'active-nav-link': $route.path.includes('/recruiter/talent-pool'),
+            }"
+          >
+            Talent Pool
+          </router-link>
+          <router-link
             to="/recruiter/profile"
-            class="text-gray-700 hover:text-primary-600 font-medium"
+            class="nav-link relative py-2 transition-colors duration-200 font-medium"
+            :class="{
+              'active-nav-link': $route.path.includes('/recruiter/profile'),
+            }"
           >
             Company Profile
           </router-link>
@@ -40,7 +51,7 @@
         <div class="relative">
           <Button
             icon="pi pi-user"
-            class="p-button-text p-button-rounded"
+            class="p-button-text p-button-rounded hover:bg-gray-100"
             aria-haspopup="true"
             aria-controls="user-menu"
             @click="toggleUserMenu"
@@ -57,30 +68,48 @@
         <!-- Mobile menu button -->
         <Button
           icon="pi pi-bars"
-          class="p-button-text p-button-rounded md:hidden"
+          class="p-button-text p-button-rounded md:hidden hover:bg-gray-100"
           @click="toggleMobileMenu"
         />
       </div>
 
       <!-- Mobile navigation -->
-      <div v-if="mobileMenuOpen" class="md:hidden px-2 pt-2 pb-3 space-y-1">
-        <router-link
-          to="/recruiter/dashboard"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
-          @click="mobileMenuOpen = false"
-        >
-          Dashboard
-        </router-link>
+      <div
+        v-if="mobileMenuOpen"
+        class="md:hidden px-2 pt-2 pb-3 space-y-1 border-t border-gray-200"
+      >
         <router-link
           to="/recruiter/jobs"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+          class="block px-4 py-2 rounded-md text-base font-medium transition-colors duration-200"
+          :class="
+            $route.path.includes('/recruiter/jobs')
+              ? 'text-primary-600 bg-primary-50'
+              : 'text-gray-700 hover:bg-gray-50'
+          "
           @click="mobileMenuOpen = false"
         >
           Manage Jobs
         </router-link>
         <router-link
+          to="/recruiter/talent-pool"
+          class="block px-4 py-2 rounded-md text-base font-medium transition-colors duration-200"
+          :class="
+            $route.path.includes('/recruiter/talent-pool')
+              ? 'text-primary-600 bg-primary-50'
+              : 'text-gray-700 hover:bg-gray-50'
+          "
+          @click="mobileMenuOpen = false"
+        >
+          Talent Pool
+        </router-link>
+        <router-link
           to="/recruiter/profile"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+          class="block px-4 py-2 rounded-md text-base font-medium transition-colors duration-200"
+          :class="
+            $route.path.includes('/recruiter/profile')
+              ? 'text-primary-600 bg-primary-50'
+              : 'text-gray-700 hover:bg-gray-50'
+          "
           @click="mobileMenuOpen = false"
         >
           Company Profile
@@ -130,11 +159,6 @@ const userMenuItems = [
     label: 'My Account',
     icon: 'pi pi-user',
     command: () => router.push('/recruiter/profile'),
-  },
-  {
-    label: 'Settings',
-    icon: 'pi pi-cog',
-    command: () => router.push('/recruiter/settings'),
   },
   {
     separator: true,
@@ -202,3 +226,30 @@ const toggleMobileMenu = () => {
   mobileMenuOpen.value = !mobileMenuOpen.value;
 };
 </script>
+
+<style scoped>
+.nav-link {
+  color: #4b5563;
+  position: relative;
+}
+
+.nav-link:hover {
+  color: #1f2937;
+}
+
+.active-nav-link {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.active-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #2563eb;
+  border-radius: 2px;
+}
+</style>

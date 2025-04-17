@@ -65,6 +65,7 @@ const RecruiterCandidateProfile = () =>
   import('../views/recruiter/CandidateProfile.vue');
 const ManageJobTraining = () =>
   import('../views/recruiter/ManageJobTraining.vue');
+const TalentPool = () => import('../views/recruiter/TalentPool.vue');
 
 // Route configuration
 const routes = [
@@ -191,9 +192,13 @@ const routes = [
     },
     children: [
       {
+        path: '',
+        redirect: { name: 'ManageJobs' },
+      },
+      {
         path: 'dashboard',
         name: 'RecruiterDashboard',
-        component: RecruiterDashboard,
+        redirect: { name: 'ManageJobs' },
       },
       {
         path: 'profile',
@@ -204,6 +209,11 @@ const routes = [
         path: 'jobs',
         name: 'ManageJobs',
         component: ManageJobs,
+      },
+      {
+        path: 'talent-pool',
+        name: 'TalentPool',
+        component: TalentPool,
       },
       {
         path: 'jobs/create',

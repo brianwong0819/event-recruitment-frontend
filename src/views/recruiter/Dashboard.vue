@@ -1,53 +1,118 @@
 <template>
   <div class="p-6">
-    <div class="mb-8">
-      <h1 class="text-2xl font-bold text-gray-900 mb-2">
+    <!-- Welcome Section with Gradient Background -->
+    <div
+      class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-8 shadow-sm"
+    >
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">
         Welcome, {{ userGreeting }}
       </h1>
       <p class="text-gray-600">Manage your recruitment and events from here</p>
     </div>
 
+    <!-- Quick Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <!-- Active Job Listings Card -->
-      <div class="bg-white rounded-lg shadow p-6">
+      <div
+        class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100"
+      >
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold">Active Job Listings</h2>
           <div
-            class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center"
+            class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center"
           >
-            <i class="pi pi-briefcase text-blue-600"></i>
+            <i class="pi pi-briefcase text-blue-600 text-xl"></i>
           </div>
         </div>
-        <div class="text-3xl font-bold mb-2">5</div>
+        <div class="text-4xl font-bold mb-2">5</div>
         <p class="text-gray-600 text-sm">Currently published jobs</p>
+        <div class="mt-4">
+          <router-link
+            to="/recruiter/jobs"
+            class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
+          >
+            Manage jobs <i class="pi pi-arrow-right ml-2"></i>
+          </router-link>
+        </div>
       </div>
 
       <!-- Candidates Card -->
-      <div class="bg-white rounded-lg shadow p-6">
+      <div
+        class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100"
+      >
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold">Candidates</h2>
           <div
-            class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center"
+            class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center"
           >
-            <i class="pi pi-users text-green-600"></i>
+            <i class="pi pi-users text-green-600 text-xl"></i>
           </div>
         </div>
-        <div class="text-3xl font-bold mb-2">28</div>
+        <div class="text-4xl font-bold mb-2">28</div>
         <p class="text-gray-600 text-sm">New applications this week</p>
+        <div class="mt-4">
+          <router-link
+            to="/recruiter/talent-pool"
+            class="text-green-600 hover:text-green-800 text-sm font-medium flex items-center"
+          >
+            View candidates <i class="pi pi-arrow-right ml-2"></i>
+          </router-link>
+        </div>
       </div>
 
       <!-- Upcoming Events Card -->
-      <div class="bg-white rounded-lg shadow p-6">
+      <div
+        class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100"
+      >
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold">Upcoming Events</h2>
           <div
-            class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center"
+            class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center"
           >
-            <i class="pi pi-calendar text-purple-600"></i>
+            <i class="pi pi-calendar text-purple-600 text-xl"></i>
           </div>
         </div>
-        <div class="text-3xl font-bold mb-2">2</div>
+        <div class="text-4xl font-bold mb-2">2</div>
         <p class="text-gray-600 text-sm">Events in the next 30 days</p>
+        <div class="mt-4">
+          <router-link
+            to="/recruiter/events"
+            class="text-purple-600 hover:text-purple-800 text-sm font-medium flex items-center"
+          >
+            Manage events <i class="pi pi-arrow-right ml-2"></i>
+          </router-link>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions Section -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Button
+          icon="pi pi-plus"
+          label="Post New Job"
+          class="p-button-primary p-button-raised shadow-sm"
+          @click="navigateTo('/recruiter/jobs/new')"
+        />
+        <Button
+          icon="pi pi-search"
+          label="Find Candidates"
+          class="p-button-outlined p-button-raised shadow-sm"
+          @click="navigateTo('/recruiter/talent-pool')"
+        />
+        <Button
+          icon="pi pi-calendar-plus"
+          label="Schedule Event"
+          class="p-button-outlined p-button-raised shadow-sm"
+          @click="navigateTo('/recruiter/events/new')"
+        />
+        <Button
+          icon="pi pi-chart-line"
+          label="View Analytics"
+          class="p-button-outlined p-button-raised shadow-sm"
+          @click="navigateTo('/recruiter/analytics')"
+        />
       </div>
     </div>
 
@@ -55,10 +120,17 @@
     <div class="mb-8">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-xl font-semibold">Recent Applications</h2>
-        <Button label="View All" class="p-button-text" />
+        <Button
+          label="View All"
+          icon="pi pi-list"
+          class="p-button-text"
+          @click="navigateTo('/recruiter/applications')"
+        />
       </div>
 
-      <div class="bg-white rounded-lg shadow overflow-hidden">
+      <div
+        class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100"
+      >
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -140,7 +212,7 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span
-                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                    class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
                     :class="{
                       'bg-yellow-100 text-yellow-800':
                         application.status === 'pending',
@@ -158,11 +230,20 @@
                 <td
                   class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
                 >
-                  <Button
-                    icon="pi pi-eye"
-                    class="p-button-text p-button-sm"
-                    tooltip="View Profile"
-                  />
+                  <div class="flex justify-end space-x-2">
+                    <Button
+                      icon="pi pi-eye"
+                      class="p-button-text p-button-sm"
+                      tooltip="View Profile"
+                      @click="viewProfile(application.id)"
+                    />
+                    <Button
+                      icon="pi pi-envelope"
+                      class="p-button-text p-button-sm"
+                      tooltip="Contact Candidate"
+                      @click="contactCandidate(application.id)"
+                    />
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -175,12 +256,19 @@
     <div class="mb-8">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-xl font-semibold">Your Active Job Listings</h2>
-        <Button label="Post New Job" icon="pi pi-plus" />
+        <Button
+          label="Post New Job"
+          icon="pi pi-plus"
+          class="p-button-sm"
+          @click="navigateTo('/recruiter/jobs/new')"
+        />
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Job Card 1 -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div
+          class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100"
+        >
           <div class="p-5">
             <div class="flex items-start justify-between mb-3">
               <div>
@@ -191,10 +279,15 @@
               </div>
               <div class="flex">
                 <Badge value="8 Applicants" severity="success" class="mr-2" />
-                <Button
-                  icon="pi pi-ellipsis-v"
-                  class="p-button-text p-button-rounded p-button-sm"
-                />
+                <Menu :model="jobMenuItems" :popup="true" ref="menu1">
+                  <template #trigger="{ toggle }">
+                    <Button
+                      icon="pi pi-ellipsis-v"
+                      class="p-button-text p-button-rounded p-button-sm"
+                      @click="toggle"
+                    />
+                  </template>
+                </Menu>
               </div>
             </div>
             <div class="flex items-center text-sm text-gray-600 mb-4">
@@ -205,19 +298,30 @@
             </div>
             <div class="flex justify-between items-center">
               <div>
-                <Tag value="Sales" class="mr-2" />
-                <Tag value="Promotion" />
+                <Tag
+                  value="Sales"
+                  class="mr-2 bg-blue-100 text-blue-800 border-none"
+                />
+                <Tag
+                  value="Promotion"
+                  class="bg-purple-100 text-purple-800 border-none"
+                />
               </div>
               <Button
                 label="View Details"
+                icon="pi pi-arrow-right"
+                iconPos="right"
                 class="p-button-outlined p-button-sm"
+                @click="viewJobDetails('event-promoter')"
               />
             </div>
           </div>
         </div>
 
         <!-- Job Card 2 -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div
+          class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100"
+        >
           <div class="p-5">
             <div class="flex items-start justify-between mb-3">
               <div>
@@ -228,10 +332,15 @@
               </div>
               <div class="flex">
                 <Badge value="12 Applicants" severity="success" class="mr-2" />
-                <Button
-                  icon="pi pi-ellipsis-v"
-                  class="p-button-text p-button-rounded p-button-sm"
-                />
+                <Menu :model="jobMenuItems" :popup="true" ref="menu2">
+                  <template #trigger="{ toggle }">
+                    <Button
+                      icon="pi pi-ellipsis-v"
+                      class="p-button-text p-button-rounded p-button-sm"
+                      @click="toggle"
+                    />
+                  </template>
+                </Menu>
               </div>
             </div>
             <div class="flex items-center text-sm text-gray-600 mb-4">
@@ -242,12 +351,21 @@
             </div>
             <div class="flex justify-between items-center">
               <div>
-                <Tag value="Customer Service" class="mr-2" />
-                <Tag value="Registration" />
+                <Tag
+                  value="Customer Service"
+                  class="mr-2 bg-green-100 text-green-800 border-none"
+                />
+                <Tag
+                  value="Registration"
+                  class="bg-orange-100 text-orange-800 border-none"
+                />
               </div>
               <Button
                 label="View Details"
+                icon="pi pi-arrow-right"
+                iconPos="right"
                 class="p-button-outlined p-button-sm"
+                @click="viewJobDetails('event-assistant')"
               />
             </div>
           </div>
@@ -255,57 +373,91 @@
       </div>
     </div>
 
-    <!-- Quick Actions Section -->
-    <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Post Job Action -->
-        <div
-          class="border rounded-lg p-4 flex flex-col items-center text-center"
-        >
-          <div
-            class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-3"
-          >
-            <i class="pi pi-plus text-blue-600"></i>
-          </div>
-          <h3 class="font-medium text-lg mb-2">Post a New Job</h3>
-          <p class="text-gray-600 text-sm mb-4">
-            Create a new job listing to find the perfect candidates
-          </p>
-          <Button label="Post Job" class="p-button-outlined" />
+    <!-- Upcoming Events and Recent Activity Section -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <!-- Upcoming Events -->
+      <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold">Upcoming Events</h2>
+          <Button
+            icon="pi pi-calendar"
+            class="p-button-text p-button-sm"
+            @click="navigateTo('/recruiter/events')"
+          />
         </div>
-
-        <!-- Screen Candidates Action -->
-        <div
-          class="border rounded-lg p-4 flex flex-col items-center text-center"
-        >
-          <div
-            class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3"
-          >
-            <i class="pi pi-check text-green-600"></i>
+        <div class="space-y-4">
+          <div class="flex items-start border-l-4 border-purple-500 pl-4 py-2">
+            <div class="mr-4 bg-purple-100 text-center rounded p-2 w-16">
+              <div class="text-sm font-semibold text-purple-800">APR</div>
+              <div class="text-xl font-bold text-purple-800">15</div>
+            </div>
+            <div>
+              <h3 class="font-semibold">Tech Career Fair</h3>
+              <p class="text-sm text-gray-600">
+                Kuala Lumpur Convention Center • 9AM-5PM
+              </p>
+            </div>
           </div>
-          <h3 class="font-medium text-lg mb-2">Screen Candidates</h3>
-          <p class="text-gray-600 text-sm mb-4">
-            Review applications and schedule interviews
-          </p>
-          <Button label="View Applications" class="p-button-outlined" />
+          <div class="flex items-start border-l-4 border-blue-500 pl-4 py-2">
+            <div class="mr-4 bg-blue-100 text-center rounded p-2 w-16">
+              <div class="text-sm font-semibold text-blue-800">APR</div>
+              <div class="text-xl font-bold text-blue-800">20</div>
+            </div>
+            <div>
+              <h3 class="font-semibold">Product Launch</h3>
+              <p class="text-sm text-gray-600">Pavilion KL • 10AM-3PM</p>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <!-- Manage Events Action -->
-        <div
-          class="border rounded-lg p-4 flex flex-col items-center text-center"
-        >
-          <div
-            class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-3"
-          >
-            <i class="pi pi-calendar text-purple-600"></i>
+      <!-- Recent Activity -->
+      <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <h2 class="text-xl font-semibold mb-4">Recent Activity</h2>
+        <div class="space-y-4">
+          <div class="flex items-center pb-3 border-b border-gray-100">
+            <div
+              class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3"
+            >
+              <i class="pi pi-id-card text-blue-600"></i>
+            </div>
+            <div>
+              <p class="text-sm">
+                New application received for
+                <span class="font-semibold">Event Promoter</span>
+              </p>
+              <p class="text-xs text-gray-500 mt-1">Today, 10:23 AM</p>
+            </div>
           </div>
-          <h3 class="font-medium text-lg mb-2">Manage Events</h3>
-          <p class="text-gray-600 text-sm mb-4">
-            View and update your upcoming events
-          </p>
-          <Button label="View Events" class="p-button-outlined" />
+          <div class="flex items-center pb-3 border-b border-gray-100">
+            <div
+              class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3"
+            >
+              <i class="pi pi-check-circle text-green-600"></i>
+            </div>
+            <div>
+              <p class="text-sm">
+                Candidate
+                <span class="font-semibold">Aisha Rahman</span> accepted job
+                offer
+              </p>
+              <p class="text-xs text-gray-500 mt-1">Yesterday, 3:45 PM</p>
+            </div>
+          </div>
+          <div class="flex items-center pb-3 border-b border-gray-100">
+            <div
+              class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-3"
+            >
+              <i class="pi pi-calendar-plus text-yellow-600"></i>
+            </div>
+            <div>
+              <p class="text-sm">
+                Interview scheduled with
+                <span class="font-semibold">Michael Wong</span>
+              </p>
+              <p class="text-xs text-gray-500 mt-1">Apr 3, 2025, 2:00 PM</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -313,26 +465,51 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useAuthStore } from '@/stores/auth';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import Menu from 'primevue/menu';
+import Button from 'primevue/button';
 import Badge from 'primevue/badge';
 import Tag from 'primevue/tag';
-import Button from 'primevue/button';
 
-const authStore = useAuthStore();
+const router = useRouter();
+const menu1 = ref(null);
+const menu2 = ref(null);
+const userGreeting = 'User';
 
-// User greeting
-const userGreeting = computed(() => {
-  return authStore.displayName || 'Recruiter';
-});
+// Job menu items
+const jobMenuItems = [
+  {
+    label: 'Edit Job',
+    icon: 'pi pi-pencil',
+    command: () => {},
+  },
+  {
+    label: 'View Applicants',
+    icon: 'pi pi-users',
+    command: () => {},
+  },
+  {
+    label: 'Clone Job',
+    icon: 'pi pi-copy',
+    command: () => {},
+  },
+  {
+    separator: true,
+  },
+  {
+    label: 'Unpublish',
+    icon: 'pi pi-eye-slash',
+    command: () => {},
+  },
+];
 
-// Recent applications (would normally be fetched from API)
-const recentApplications = ref([
+// Sample recent applications data (this would typically come from an API)
+const recentApplications = [
   {
     id: 1,
     candidateName: 'Sarah Johnson',
     candidateEmail: 'sarah.j@example.com',
-    candidateImage: null,
     position: 'Event Promoter',
     location: 'Kuala Lumpur',
     appliedDate: 'Apr 5, 2025',
@@ -343,7 +520,6 @@ const recentApplications = ref([
     id: 2,
     candidateName: 'Michael Wong',
     candidateEmail: 'michael.w@example.com',
-    candidateImage: null,
     position: 'Event Assistant',
     location: 'Petaling Jaya',
     appliedDate: 'Apr 3, 2025',
@@ -354,41 +530,32 @@ const recentApplications = ref([
     id: 3,
     candidateName: 'Aisha Rahman',
     candidateEmail: 'aisha.r@example.com',
-    candidateImage: null,
     position: 'Event Promoter',
     location: 'Kuala Lumpur',
     appliedDate: 'Apr 2, 2025',
     status: 'approved',
     statusText: 'Approved',
   },
-]);
+];
 
-// Active jobs (would normally be fetched from API)
-const activeJobs = ref([
-  {
-    id: 1,
-    title: 'Event Promoter',
-    location: 'Kuala Lumpur',
-    dates: '15-16 Apr 2025',
-    salary: 'RM 80/day',
-    postedDate: 'Apr 3, 2025',
-    applicants: 8,
-    tags: ['Sales', 'Promotion'],
-  },
-  {
-    id: 2,
-    title: 'Event Assistant',
-    location: 'Petaling Jaya',
-    dates: '20-22 Apr 2025',
-    salary: 'RM 100/day',
-    postedDate: 'Mar 30, 2025',
-    applicants: 12,
-    tags: ['Customer Service', 'Registration'],
-  },
-]);
+// Navigation function
+const navigateTo = (path) => {
+  router.push(path);
+};
 
-onMounted(() => {
-  // Here you would normally fetch dashboard data from API
-  console.log('Recruiter Dashboard mounted');
-});
+// View profile function
+const viewProfile = (candidateId) => {
+  router.push(`/recruiter/candidates/${candidateId}`);
+};
+
+// Contact candidate function
+const contactCandidate = (candidateId) => {
+  // This would open a modal or navigate to a messaging interface
+  console.log(`Contact candidate with ID: ${candidateId}`);
+};
+
+// View job details function
+const viewJobDetails = (jobSlug) => {
+  router.push(`/recruiter/jobs/${jobSlug}`);
+};
 </script>

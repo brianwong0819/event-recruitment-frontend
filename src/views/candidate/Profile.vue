@@ -217,7 +217,7 @@
                       : 'text-gray-500'
                   "
                 ></i>
-                Availability
+                Job Preferences
               </button>
             </li>
             <li>
@@ -1321,10 +1321,17 @@
 
           <!-- Availability Section -->
           <div v-show="activeSection === 'availability'" class="animate-fadeIn">
+            <!-- Talent Pool Visibility Component (in a separate card) -->
+            <div
+              class="rounded-xl shadow-md border mb-8 overflow-hidden bg-white"
+            >
+              <TalentPoolVisibilityComponent />
+            </div>
+
+            <!-- Availability Component (in a separate card) -->
             <div
               class="rounded-xl shadow-md border mb-6 md:mb-8 overflow-hidden bg-white"
             >
-              <!-- Use the new Availability component -->
               <AvailabilityComponent />
             </div>
           </div>
@@ -2149,6 +2156,7 @@ import { useRoute, useRouter } from 'vue-router';
 import AvailabilityComponent from '@/components/candidate/Availability.vue';
 import LocationSearch from '@/components/shared/LocationSearch.vue';
 import fileService from '@/services/file.service';
+import TalentPoolVisibilityComponent from '@/components/candidate/TalentPoolVisibility.vue';
 
 // Initialize toast service
 const toast = useToast();

@@ -176,7 +176,7 @@
           </div>
 
           <!-- Edit button -->
-          <div class="mt-3 md:mt-4 flex justify-end">
+          <div class="mt-4 md:mt-5 flex justify-end">
             <Button
               icon="pi pi-pencil"
               label="Edit Availability"
