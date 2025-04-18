@@ -27,6 +27,7 @@ const AuthService = {
 const Home = () => import('../views/Home.vue');
 const Login = () => import('../views/auth/Login.vue');
 const RecruiterLogin = () => import('../views/auth/RecruiterLogin.vue');
+const AdminLogin = () => import('../views/auth/AdminLogin.vue');
 const Register = () => import('../views/auth/Register.vue');
 const CandidateRegister = () => import('../views/auth/CandidateRegister.vue');
 const RecruiterRegister = () => import('../views/auth/RecruiterRegister.vue');
@@ -66,6 +67,10 @@ const RecruiterCandidateProfile = () =>
 const ManageJobTraining = () =>
   import('../views/recruiter/ManageJobTraining.vue');
 const TalentPool = () => import('../views/recruiter/TalentPool.vue');
+
+// Admin views
+const AdminLayout = () => import('../layouts/AdminLayout.vue');
+const AdminDashboard = () => import('../views/admin/Dashboard.vue');
 
 // Route configuration
 const routes = [
@@ -118,6 +123,14 @@ const routes = [
     path: '/recruiter-login',
     name: 'RecruiterLogin',
     component: RecruiterLogin,
+    meta: {
+      requiresGuest: true,
+    },
+  },
+  {
+    path: '/admin/login',
+    name: 'AdminLogin',
+    component: AdminLogin,
     meta: {
       requiresGuest: true,
     },
@@ -270,6 +283,32 @@ const routes = [
       },
     ],
   },
+  // Admin routes
+  {
+    path: '/admin',
+    component: AdminLayout,
+    meta: {
+      requiresAuth: true,
+      role: ['ADMIN'],
+    },
+    children: [
+      {
+        path: '',
+        redirect: { name: 'AdminDashboard' },
+      },
+      {
+        path: 'dashboard',
+        name: 'AdminDashboard',
+        component: AdminDashboard,
+      },
+      {
+        path: 'recruiter-info/:recruiterId',
+        name: 'AdminRecruiterInfo',
+        component: RecruiterInfo,
+        props: true,
+      },
+    ],
+  },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
@@ -313,6 +352,11 @@ router.beforeEach((to, from, next) => {
           'Router guard - redirecting authenticated recruiter to dashboard'
         );
         next('/recruiter/dashboard');
+      } else if (currentUser?.role === 'ADMIN') {
+        console.log(
+          'Router guard - redirecting authenticated admin to dashboard'
+        );
+        next('/admin/dashboard');
       } else {
         console.log(
           'Router guard - redirecting authenticated user without role to home'
@@ -361,6 +405,8 @@ router.beforeEach((to, from, next) => {
             next('/candidate/dashboard');
           } else if (currentUser.role === 'RECRUITER') {
             next('/recruiter/dashboard');
+          } else if (currentUser.role === 'ADMIN') {
+            next('/admin/dashboard');
           } else {
             next('/');
           }

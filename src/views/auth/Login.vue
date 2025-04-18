@@ -6,7 +6,7 @@
     <header class="pt-4 pb-2">
       <div class="container px-4">
         <router-link to="/" class="inline-block">
-          <img src="@/assets/logo.png" alt="CrewLink Logo" class="h-10" />
+          <img src="@/assets/logo.png" alt="CrewConnect Logo" class="h-10" />
         </router-link>
       </div>
     </header>
@@ -26,7 +26,7 @@
             to="/recruiter-login"
             class="text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200 flex items-center"
           >
-            Are you an employer? <i class="pi pi-arrow-right ml-1 text-xs"></i>
+            Are you a recruiter? <i class="pi pi-arrow-right ml-1 text-xs"></i>
           </router-link>
         </div>
 
@@ -84,7 +84,7 @@
                 Welcome Back
               </h1>
               <p class="text-base text-gray-600">
-                Sign in to continue to CrewLink
+                Sign in to continue to CrewConnect
               </p>
             </div>
 
@@ -191,7 +191,7 @@
     <!-- Footer -->
     <footer class="py-4 text-center">
       <p class="text-xs text-gray-500">
-        &copy; {{ currentYear }} CrewLink. All rights reserved.
+        &copy; {{ currentYear }} CrewConnect. All rights reserved.
       </p>
     </footer>
   </div>

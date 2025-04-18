@@ -1,12 +1,12 @@
 <template>
   <div
-    class="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
+    class="flex flex-col min-h-screen bg-gradient-to-br from-gray-100 to-blue-50"
   >
     <!-- Header with Logo -->
     <header class="pt-4 pb-2">
       <div class="container px-4">
         <router-link to="/" class="inline-block">
-          <img src="@/assets/logo.png" alt="CrewConnect Logo" class="h-10" />
+          <img src="@/assets/logo.png" alt="CrewLink Logo" class="h-10" />
         </router-link>
       </div>
     </header>
@@ -15,19 +15,12 @@
     <main class="flex-grow flex items-center justify-center px-4 py-4">
       <div class="w-full max-w-md">
         <!-- Navigation links above the card -->
-        <div class="flex justify-between items-center mb-2 px-2">
+        <div class="flex justify-start items-center mb-2 px-2">
           <router-link
             to="/"
             class="text-xs font-medium text-gray-600 hover:text-primary-600 transition-colors duration-200 flex items-center"
           >
             <i class="pi pi-arrow-left mr-1 text-xs"></i> Back to home
-          </router-link>
-          <router-link
-            to="/login"
-            class="text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200 flex items-center"
-          >
-            Looking for work? Sign in here
-            <i class="pi pi-arrow-right ml-1 text-xs"></i>
           </router-link>
         </div>
 
@@ -35,24 +28,9 @@
           class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100"
         >
           <!-- Decorative top bar -->
-          <div
-            class="h-2 bg-gradient-to-r from-primary-500 to-primary-300"
-          ></div>
+          <div class="h-2 bg-gradient-to-r from-gray-700 to-gray-500"></div>
 
           <div class="p-5">
-            <!-- Registration success message -->
-            <div
-              v-if="registrationSuccess"
-              class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg"
-            >
-              <div class="flex items-center">
-                <i class="pi pi-check-circle text-green-500 mr-2 text-sm"></i>
-                <p class="text-green-700 text-sm">
-                  Registration successful! Please sign in with your credentials.
-                </p>
-              </div>
-            </div>
-
             <!-- Error alert -->
             <div
               v-if="error"
@@ -68,11 +46,9 @@
 
             <!-- Login form header -->
             <div class="text-center mb-4">
-              <h1 class="text-2xl font-bold text-gray-800 mb-1">
-                Recruiter Login
-              </h1>
+              <h1 class="text-2xl font-bold text-gray-800 mb-1">Admin Login</h1>
               <p class="text-base text-gray-600">
-                Sign in to manage your recruitment
+                Sign in to access the admin panel
               </p>
             </div>
 
@@ -84,7 +60,7 @@
                   for="username"
                   class="block text-sm font-medium text-gray-700"
                 >
-                  Email or Username
+                  Admin Username
                 </label>
                 <div class="flex items-center">
                   <div class="mr-2">
@@ -95,7 +71,7 @@
                     v-model="username"
                     type="text"
                     autocomplete="username"
-                    placeholder="Enter your email or username"
+                    placeholder="Enter your admin username"
                     class="w-full p-inputtext"
                     :class="{ 'p-invalid': v$.username.$error }"
                     @blur="v$.username.$touch()"
@@ -112,20 +88,12 @@
 
               <!-- Password field -->
               <div class="space-y-1">
-                <div class="flex items-center justify-between">
-                  <label
-                    for="password"
-                    class="block text-sm font-medium text-gray-700"
-                  >
-                    Password
-                  </label>
-                  <router-link
-                    to="/forgot-password"
-                    class="text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200"
-                  >
-                    Forgot password?
-                  </router-link>
-                </div>
+                <label
+                  for="password"
+                  class="block text-sm font-medium text-gray-700"
+                >
+                  Password
+                </label>
                 <div class="flex items-center">
                   <div class="mr-2">
                     <i class="pi pi-lock text-gray-400 text-base"></i>
@@ -156,21 +124,9 @@
                 :label="isLoading ? 'Signing in...' : 'Sign In'"
                 :loading="isLoading"
                 class="w-full p-button-primary p-2 mt-4 shadow-md hover:shadow-lg transition-shadow duration-200 text-base"
+                severity="secondary"
               />
             </form>
-
-            <!-- Register link -->
-            <div class="text-center mt-6">
-              <p class="text-sm text-gray-600">
-                Don't have an account?
-                <router-link
-                  to="/register?type=recruiter"
-                  class="font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200"
-                >
-                  Create one now
-                </router-link>
-              </p>
-            </div>
           </div>
         </div>
       </div>
@@ -186,14 +142,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
 import { required, helpers } from '@vuelidate/validators';
 import { useAuthStore } from '@/stores/auth';
 
 // Component setup
-const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -204,15 +159,10 @@ const isLoading = ref(false);
 const error = ref('');
 const currentYear = new Date().getFullYear();
 
-// Check for registration success
-const registrationSuccess = computed(() => {
-  return route.query.registered === 'true';
-});
-
 // Form validation rules
 const rules = {
   username: {
-    required: helpers.withMessage('Username or email is required', required),
+    required: helpers.withMessage('Username is required', required),
   },
   password: {
     required: helpers.withMessage('Password is required', required),
@@ -221,7 +171,7 @@ const rules = {
 
 const v$ = useVuelidate(rules, { username, password });
 
-// Handle form submission - Recruiter login
+// Handle form submission - Admin login
 const handleSubmit = async () => {
   error.value = '';
 
@@ -232,33 +182,23 @@ const handleSubmit = async () => {
   isLoading.value = true;
 
   try {
-    // Login as recruiter
-    await authStore.recruiterLogin(username.value, password.value);
+    // Login as admin
+    // This will need to be implemented in the auth store
+    await authStore.adminLogin(username.value, password.value);
     // Redirect will be handled by the store
   } catch (err) {
+    console.error('Admin login error:', err);
+    // Display error message to user
     error.value =
       err.response?.data?.message ||
       'Login failed. Please check your credentials.';
+
+    // Reset password field on failed login
+    password.value = '';
   } finally {
     isLoading.value = false;
   }
 };
-
-// Reset form on mount if coming from another page
-onMounted(() => {
-  // Initialize auth store from localStorage
-  authStore.init();
-
-  // If user is already authenticated, redirect to appropriate dashboard
-  if (authStore.authenticated) {
-    router.push(authStore.getDefaultHomePage());
-  }
-
-  // Clear form
-  username.value = '';
-  password.value = '';
-  v$.value.$reset();
-});
 </script>
 
 <style scoped>

@@ -125,11 +125,12 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white py-4 border-t">
+    <footer class="mt-auto py-4 bg-white border-t border-gray-100">
       <div class="container mx-auto px-4">
-        <div class="text-center text-sm text-gray-500">
-          &copy; {{ new Date().getFullYear() }} CrewLink. All rights reserved.
-        </div>
+        <p class="text-xs text-gray-500 text-center">
+          &copy; {{ new Date().getFullYear() }} CrewConnect. All rights
+          reserved.
+        </p>
       </div>
     </footer>
   </div>

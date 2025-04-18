@@ -3,6 +3,7 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
 import router from './router';
+import { useAuthStore } from './stores/auth';
 
 // PrimeVue
 import PrimeVue from 'primevue/config';
@@ -69,11 +70,16 @@ if (process.env.NODE_ENV === 'development') {
 const app = createApp(App);
 
 // Use plugins
-app.use(createPinia());
+const pinia = createPinia();
+app.use(pinia);
 app.use(router);
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);
 app.use(ConfirmationService);
+
+// Initialize auth store
+const authStore = useAuthStore(pinia);
+authStore.init();
 
 // Register PrimeVue components
 app.component('Button', Button);

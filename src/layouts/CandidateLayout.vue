@@ -148,26 +148,11 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t py-4">
+    <footer class="bg-white py-4 border-t">
       <div class="container mx-auto px-4">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-          <div class="mb-4 md:mb-0">
-            <p class="text-sm text-gray-500">
-              &copy; {{ currentYear }} CrewLink. All rights reserved.
-            </p>
-          </div>
-          <div class="flex space-x-4">
-            <a href="#" class="text-sm text-gray-500 hover:text-primary-600">
-              Privacy Policy
-            </a>
-            <a href="#" class="text-sm text-gray-500 hover:text-primary-600">
-              Terms of Service
-            </a>
-            <a href="#" class="text-sm text-gray-500 hover:text-primary-600">
-              Help Center
-            </a>
-          </div>
-        </div>
+        <p class="text-xs text-gray-500 text-center">
+          &copy; {{ currentYear }} CrewConnect. All rights reserved.
+        </p>
       </div>
     </footer>
   </div>

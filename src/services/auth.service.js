@@ -2,6 +2,54 @@ import { apiClient } from './api.service';
 
 class AuthService {
   /**
+   * Login as an admin
+   * @param {string} username - Admin username
+   * @param {string} password - Admin password
+   * @returns {Promise} - Response with user data and tokens
+   */
+  async adminLogin(username, password) {
+    console.log('AuthService: adminLogin called');
+    try {
+      const response = await apiClient.post('/auth/admin/login', {
+        username,
+        password,
+      });
+
+      console.log('AuthService: Admin Login API response:', response.data);
+
+      if (response.data && response.data.statusCode === 200) {
+        const responseData = response.data.data;
+
+        if (responseData) {
+          const tokenData = {
+            accessToken: responseData.token,
+            refreshToken: responseData.refreshToken,
+          };
+
+          this.setTokens(tokenData);
+
+          const userData = {
+            username: responseData.username,
+            role: responseData.role,
+            ...responseData,
+          };
+
+          if (!response.data.user) {
+            response.data.user = userData;
+          }
+
+          this.setUser(response.data, 'admin');
+        }
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('Error in adminLogin:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Login as a candidate
    * @param {string} username - Username or email
    * @param {string} password - User password
@@ -10,7 +58,7 @@ class AuthService {
   async candidateLogin(username, password) {
     console.log('AuthService: candidateLogin called');
     try {
-      const response = await apiClient.post('/auth/candidate/login', {
+      const response = await apiClient.post('/api/auth/candidate/login', {
         username,
         password,
       });
@@ -145,7 +193,7 @@ class AuthService {
   async recruiterLogin(username, password) {
     console.log('AuthService: recruiterLogin called');
     try {
-      const response = await apiClient.post('/auth/recruiter/login', {
+      const response = await apiClient.post('/api/auth/recruiter/login', {
         username,
         password,
       });
@@ -286,7 +334,7 @@ class AuthService {
   async registerCandidate(candidateData) {
     try {
       const response = await apiClient.post(
-        '/candidate/register',
+        '/api/candidate/register',
         candidateData
       );
       console.log('Registration successful:', response);
@@ -305,7 +353,7 @@ class AuthService {
   async registerRecruiter(recruiterData) {
     try {
       const response = await apiClient.post(
-        '/recruiter/register',
+        '/api/recruiter/register',
         recruiterData
       );
       return response;

@@ -211,7 +211,7 @@
               <p class="text-sm text-gray-600">
                 Already have an account?
                 <router-link
-                  to="/login"
+                  :to="userType === 'candidate' ? '/login' : '/recruiter-login'"
                   class="font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200 ml-1"
                 >
                   Sign in
@@ -234,14 +234,24 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import RegistrationToggle from '@/components/auth/RegistrationToggle.vue';
+
+const route = useRoute();
 
 // Default to candidate registration
 const userType = ref('candidate');
 
 // Get current year for footer
 const currentYear = new Date().getFullYear();
+
+// Check for type parameter on mount
+onMounted(() => {
+  if (route.query.type === 'recruiter') {
+    userType.value = 'recruiter';
+  }
+});
 </script>
 
 <style scoped>

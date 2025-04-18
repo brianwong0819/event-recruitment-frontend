@@ -1361,6 +1361,23 @@ onMounted(() => {
   padding-left: 0 !important;
 }
 
+/* Fix dropdown placeholder alignment */
+:deep(.p-dropdown .p-dropdown-label.p-placeholder) {
+  padding: 0.75rem 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  color: #9ca3af;
+}
+
+/* Fix selected dropdown value alignment */
+:deep(.p-dropdown .p-dropdown-label:not(.p-placeholder)) {
+  padding: 0.75rem 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  color: #334155;
+  font-weight: 500;
+}
+
 /* Fix password field placeholder alignment */
 :deep(.password-input-no-padding) {
   padding: 0.75rem 0 0.75rem 1rem !important;

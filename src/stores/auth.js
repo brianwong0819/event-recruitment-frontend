@@ -42,6 +42,14 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
+     * Check if user is an admin
+     * @returns {boolean} - True if user is an admin
+     */
+    isAdmin: (state) => {
+      return state.user?.role === 'ADMIN';
+    },
+
+    /**
      * Get user's display name
      * @returns {string} - User's name or username
      */
@@ -55,12 +63,103 @@ export const useAuthStore = defineStore('auth', {
      * Initialize auth store from localStorage
      */
     init() {
-      const user = localStorage.getItem('user');
-      const token = localStorage.getItem('accessToken');
+      console.log('Initializing auth store from localStorage');
+      try {
+        const userStr = localStorage.getItem('user');
+        const token = localStorage.getItem('accessToken');
 
-      if (user && token) {
-        this.user = JSON.parse(user);
+        console.log('User exists in localStorage:', !!userStr);
+        console.log('Token exists in localStorage:', !!token);
+
+        if (userStr && token) {
+          // Parse the user data
+          const userData = JSON.parse(userStr);
+          console.log('Found user data:', userData);
+
+          // Set the user and authenticated state
+          this.user = userData;
+          this.authenticated = true;
+          console.log('Auth initialized with user role:', this.user?.role);
+        } else {
+          console.log('No valid auth data in localStorage');
+          this.user = null;
+          this.authenticated = false;
+        }
+      } catch (error) {
+        console.error('Error initializing auth store:', error);
+        this.user = null;
+        this.authenticated = false;
+      }
+    },
+
+    /**
+     * Login as an admin
+     * @param {string} username - Admin username
+     * @param {string} password - Admin password
+     */
+    async adminLogin(username, password) {
+      this.isLoading = true;
+      this.error = null;
+
+      try {
+        console.log('Starting admin login...');
+        const response = await AuthService.adminLogin(username, password);
+        console.log('Admin login response:', response);
+
+        // Check if we actually got a valid response
+        if (!response || response.statusCode !== 200) {
+          console.error('Invalid login response:', response);
+          this.authenticated = false;
+          this.error = response?.message || 'Invalid login response';
+          throw new Error('Invalid login response');
+        }
+
+        // Get the data from the response
+        const responseData = response.data;
+
+        if (!responseData) {
+          console.error('No data in response');
+          this.authenticated = false;
+          this.error = 'No data in response';
+          throw new Error('No data in response');
+        }
+
+        // Create a user object from the response data
+        const userData = {
+          username: responseData.username,
+          role: responseData.role,
+          ...responseData,
+        };
+
+        // Check that tokens were properly stored
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+          console.error('No access token set after login');
+          this.authenticated = false;
+          this.error = 'Authentication failed';
+          throw new Error('Authentication failed - no token');
+        }
+
+        // Set the user in the store
+        this.user = userData;
         this.authenticated = true;
+        console.log('Admin authenticated:', this.user);
+
+        // Navigate to admin dashboard
+        const returnUrl = this.returnUrl || '/admin/dashboard';
+        console.log('Redirecting to:', returnUrl);
+        router.push(returnUrl);
+        this.returnUrl = null;
+
+        return response;
+      } catch (error) {
+        console.error('Admin login error:', error);
+        this.error = error.response?.data?.message || 'Login failed';
+        this.authenticated = false;
+        this.user = null;
+        throw error;
+      } finally {
+        this.isLoading = false;
       }
     },
 
@@ -331,6 +430,8 @@ export const useAuthStore = defineStore('auth', {
         return '/candidate/dashboard';
       } else if (this.user?.role === 'RECRUITER') {
         return '/recruiter/dashboard';
+      } else if (this.user?.role === 'ADMIN') {
+        return '/admin/dashboard';
       } else {
         return '/';
       }
