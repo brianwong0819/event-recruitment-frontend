@@ -8,7 +8,10 @@
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <router-link to="/admin/dashboard" class="flex items-center">
-                <img src="@/assets/logo.png" alt="CrewLink Logo" class="h-8" />
+                <div class="text-2xl font-extrabold tracking-tight">
+                  <span class="text-primary-700">Crew</span
+                  ><span class="text-gray-800">Connect</span>
+                </div>
               </router-link>
             </div>
           </div>

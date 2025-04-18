@@ -1,53 +1,64 @@
 <template>
   <div
-    class="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
+    class="flex flex-col min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50"
   >
     <!-- Header with Logo -->
-    <header class="pt-4 pb-2">
-      <div class="container px-4">
-        <router-link to="/" class="inline-block">
-          <img src="@/assets/logo.png" alt="CrewConnect Logo" class="h-10" />
+    <header class="pt-6 pb-3">
+      <div class="container px-6">
+        <router-link
+          to="/"
+          class="inline-block transition-transform hover:scale-105 duration-300"
+        >
+          <div class="text-3xl font-extrabold tracking-tight">
+            <span class="text-primary-700">Crew</span
+            ><span class="text-gray-800">Connect</span>
+          </div>
         </router-link>
       </div>
     </header>
 
     <!-- Main content -->
-    <main class="flex-grow flex items-center justify-center px-4 py-4">
+    <main class="flex-grow flex items-center justify-center px-4 py-8">
       <div class="w-full max-w-md">
         <!-- Navigation links above the card -->
-        <div class="flex justify-between items-center mb-2 px-2">
+        <div class="flex justify-between items-center mb-3 px-2">
           <router-link
             to="/"
-            class="text-xs font-medium text-gray-600 hover:text-primary-600 transition-colors duration-200 flex items-center"
+            class="text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors duration-200 flex items-center group"
           >
-            <i class="pi pi-arrow-left mr-1 text-xs"></i> Back to home
+            <i
+              class="pi pi-arrow-left mr-2 text-xs group-hover:-translate-x-1 transition-transform duration-200"
+            ></i>
+            Back to home
           </router-link>
           <router-link
             to="/login"
-            class="text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200 flex items-center"
+            class="text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200 flex items-center group"
           >
             Looking for work? Sign in here
-            <i class="pi pi-arrow-right ml-1 text-xs"></i>
+            <i
+              class="pi pi-arrow-right ml-2 text-xs group-hover:translate-x-1 transition-transform duration-200"
+            ></i>
           </router-link>
         </div>
 
         <div
-          class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100"
+          class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 transform transition-all duration-300 hover:shadow-2xl"
         >
           <!-- Decorative top bar -->
           <div
-            class="h-2 bg-gradient-to-r from-primary-500 to-primary-300"
+            class="h-2 bg-gradient-to-r from-primary-600 via-primary-500 to-primary-400"
           ></div>
 
-          <div class="p-5">
+          <div class="p-8">
             <!-- Registration success message -->
             <div
               v-if="registrationSuccess"
-              class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg"
+              class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl"
             >
               <div class="flex items-center">
-                <i class="pi pi-check-circle text-green-500 mr-2 text-sm"></i>
-                <p class="text-green-700 text-sm">
+                <i class="pi pi-check-circle text-green-500 mr-3 text-lg"></i>
+                <p class="text-green-700 text-sm font-medium">
                   Registration successful! Please sign in with your credentials.
                 </p>
               </div>
@@ -56,19 +67,21 @@
             <!-- Error alert -->
             <div
               v-if="error"
-              class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg"
+              class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl"
             >
               <div class="flex items-center">
                 <i
-                  class="pi pi-exclamation-circle text-red-500 mr-2 text-sm"
+                  class="pi pi-exclamation-circle text-red-500 mr-3 text-lg"
                 ></i>
-                <p class="text-red-700 text-sm">{{ error }}</p>
+                <p class="text-red-700 text-sm font-medium">{{ error }}</p>
               </div>
             </div>
 
             <!-- Login form header -->
-            <div class="text-center mb-4">
-              <h1 class="text-2xl font-bold text-gray-800 mb-1">
+            <div class="text-center mb-8">
+              <h1
+                class="text-3xl font-bold text-gray-800 mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-800"
+              >
                 Recruiter Login
               </h1>
               <p class="text-base text-gray-600">
@@ -77,26 +90,28 @@
             </div>
 
             <!-- Login form -->
-            <form @submit.prevent="handleSubmit" class="space-y-4">
+            <form @submit.prevent="handleSubmit" class="space-y-6">
               <!-- Username field -->
-              <div class="space-y-1">
+              <div class="space-y-2">
                 <label
                   for="username"
                   class="block text-sm font-medium text-gray-700"
                 >
                   Email or Username
                 </label>
-                <div class="flex items-center">
-                  <div class="mr-2">
+                <div class="relative">
+                  <span
+                    class="absolute inset-y-0 left-0 flex items-center pl-3 z-10"
+                  >
                     <i class="pi pi-user text-gray-400 text-base"></i>
-                  </div>
+                  </span>
                   <InputText
                     id="username"
                     v-model="username"
                     type="text"
                     autocomplete="username"
                     placeholder="Enter your email or username"
-                    class="w-full p-inputtext"
+                    class="w-full pl-10 py-3 border-gray-300 rounded-xl hover:border-primary-400 focus:border-primary-500 focus:ring focus:ring-primary-200 transition-all duration-200 input-with-icon"
                     :class="{ 'p-invalid': v$.username.$error }"
                     @blur="v$.username.$touch()"
                   />
@@ -111,7 +126,7 @@
               </div>
 
               <!-- Password field -->
-              <div class="space-y-1">
+              <div class="space-y-2">
                 <div class="flex items-center justify-between">
                   <label
                     for="password"
@@ -119,24 +134,21 @@
                   >
                     Password
                   </label>
-                  <router-link
-                    to="/forgot-password"
-                    class="text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200"
-                  >
-                    Forgot password?
-                  </router-link>
                 </div>
-                <div class="flex items-center">
-                  <div class="mr-2">
+                <div class="relative">
+                  <span
+                    class="absolute inset-y-0 left-0 flex items-center pl-3 z-10"
+                  >
                     <i class="pi pi-lock text-gray-400 text-base"></i>
-                  </div>
+                  </span>
                   <Password
                     id="password"
                     v-model="password"
                     :feedback="false"
                     toggleMask
                     placeholder="Enter your password"
-                    class="w-full"
+                    class="w-full password-with-icon"
+                    inputClass="w-full pl-10 py-3 border-gray-300 rounded-xl hover:border-primary-400 focus:border-primary-500 focus:ring focus:ring-primary-200 transition-all duration-200"
                     :class="{ 'p-invalid': v$.password.$error }"
                     @blur="v$.password.$touch()"
                   />
@@ -155,19 +167,23 @@
                 type="submit"
                 :label="isLoading ? 'Signing in...' : 'Sign In'"
                 :loading="isLoading"
-                class="w-full p-button-primary p-2 mt-4 shadow-md hover:shadow-lg transition-shadow duration-200 text-base"
+                loadingIcon="pi pi-spin pi-spinner"
+                class="w-full p-button-primary p-3 mt-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-base font-medium hover:opacity-95 transform hover:-translate-y-1"
               />
             </form>
 
             <!-- Register link -->
-            <div class="text-center mt-6">
+            <div class="text-center mt-8">
               <p class="text-sm text-gray-600">
                 Don't have an account?
                 <router-link
                   to="/register?type=recruiter"
-                  class="font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200"
+                  class="font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200 ml-1 inline-flex items-center group"
                 >
                   Create one now
+                  <i
+                    class="pi pi-arrow-right ml-1 text-xs invisible group-hover:visible group-hover:translate-x-1 transition-all duration-200"
+                  ></i>
                 </router-link>
               </p>
             </div>
@@ -177,8 +193,8 @@
     </main>
 
     <!-- Footer -->
-    <footer class="py-4 text-center">
-      <p class="text-xs text-gray-500">
+    <footer class="py-6 text-center">
+      <p class="text-sm text-gray-500">
         &copy; {{ currentYear }} CrewConnect. All rights reserved.
       </p>
     </footer>
@@ -265,22 +281,46 @@ onMounted(() => {
 /* Custom styles for the login page */
 :deep(.p-password input) {
   width: 100%;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 :deep(.p-button) {
-  height: 42px;
+  height: 48px;
   font-size: 1rem;
 }
 
 :deep(.p-inputtext) {
-  padding: 0.6rem 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
-:deep(.p-password-panel) {
-  margin-top: 6px;
+/* Fix for all input icons */
+:deep(.input-with-icon) {
+  padding-left: 2.5rem !important;
+}
+
+:deep(.password-with-icon .p-password-input) {
+  padding-left: 2.5rem !important;
+}
+
+:deep(.password-with-icon .p-password-panel) {
+  margin-top: 8px;
   font-size: 0.9rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+:deep(.password-with-icon .p-icon.p-password-icon) {
+  z-index: 20;
+  color: var(--primary-color);
+  margin-left: 8px;
+}
+
+:deep(.password-with-icon) {
+  width: 100%;
+}
+
+:deep(.p-password-meter) {
+  margin-top: 8px;
 }
 </style>

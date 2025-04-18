@@ -12,8 +12,11 @@
         class="container mx-auto flex justify-between items-center px-4 py-3"
       >
         <!-- Logo -->
-        <router-link to="/" class="flex items-center">
-          <img src="@/assets/logo.png" alt="CrewLink Logo" class="h-10" />
+        <router-link to="/candidate/dashboard" class="flex items-center">
+          <div class="text-2xl font-extrabold tracking-tight">
+            <span class="text-primary-700">Crew</span
+            ><span class="text-gray-800">Connect</span>
+          </div>
         </router-link>
 
         <!-- Navigation -->

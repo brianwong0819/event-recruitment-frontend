@@ -6,11 +6,10 @@
     <header class="pt-4 pb-2">
       <div class="container px-4">
         <router-link to="/" class="inline-block">
-          <img
-            src="@/assets/logo.png"
-            alt="Event Recruitment Logo"
-            class="h-10"
-          />
+          <div class="text-2xl font-extrabold tracking-tight">
+            <span class="text-primary-700">Crew</span
+            ><span class="text-gray-800">Connect</span>
+          </div>
         </router-link>
       </div>
     </header>
@@ -87,8 +86,8 @@
                 <label for="recruiterType" class="form-label">
                   Recruiter Type
                 </label>
-                <div class="flex items-center">
-                  <i class="pi pi-briefcase mr-2 text-gray-500 text-sm"></i>
+                <div class="flex items-center relative input-wrapper">
+                  <i class="pi pi-briefcase input-icon"></i>
                   <Dropdown
                     id="recruiterType"
                     v-model="form.recruiterType"
@@ -108,8 +107,8 @@
               <!-- Company Name field - only show for Company or Agency -->
               <div class="form-group" v-if="showCompanyNameField">
                 <label for="companyName" class="form-label">Company Name</label>
-                <div class="flex items-center">
-                  <i class="pi pi-building mr-2 text-gray-500 text-sm"></i>
+                <div class="flex items-center relative input-wrapper">
+                  <i class="pi pi-building input-icon"></i>
                   <InputText
                     id="companyName"
                     v-model="form.companyName"
@@ -131,8 +130,8 @@
                     showCompanyNameField ? 'Representative Name' : 'Full Name'
                   }}
                 </label>
-                <div class="flex items-center">
-                  <i class="pi pi-user mr-2 text-gray-500 text-sm"></i>
+                <div class="flex items-center relative input-wrapper">
+                  <i class="pi pi-user input-icon"></i>
                   <InputText
                     id="recruiterRepName"
                     v-model="form.recruiterRepName"
@@ -160,8 +159,8 @@
               <!-- Email field -->
               <div class="form-group">
                 <label for="email" class="form-label">Email Address</label>
-                <div class="flex items-center">
-                  <i class="pi pi-envelope mr-2 text-gray-500 text-sm"></i>
+                <div class="flex items-center relative input-wrapper">
+                  <i class="pi pi-envelope input-icon"></i>
                   <InputText
                     id="email"
                     v-model="form.email"
@@ -179,8 +178,8 @@
               <!-- Phone Number field -->
               <div class="form-group">
                 <label for="phoneNumber" class="form-label">Phone Number</label>
-                <div class="flex items-center">
-                  <i class="pi pi-phone mr-2 text-gray-500 text-sm"></i>
+                <div class="flex items-center relative input-wrapper">
+                  <i class="pi pi-phone input-icon"></i>
                   <InputText
                     id="phoneNumber"
                     v-model="form.phoneNumber"
@@ -806,6 +805,19 @@ const handleLocationSelected = (location) => {
   @apply mb-3;
 }
 
+/* Input wrapper to contain icon and input */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Add this new class for icon positioning */
+.input-icon {
+  @apply absolute left-3 z-10 text-gray-500 text-sm;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 /* Custom steps container spacing */
 .custom-steps-container::before {
   top: 16px;
@@ -823,12 +835,85 @@ const handleLocationSelected = (location) => {
   font-size: 0.875rem;
 }
 
+/* Input field padding to make space for icons */
 :deep(.p-inputtext),
-:deep(.p-dropdown),
 :deep(.p-multiselect),
 :deep(.p-calendar),
 :deep(.p-password) {
   height: 2.25rem !important;
+  padding-left: 2.5rem !important; /* Add padding to make room for the icon */
+}
+
+/* Force vertical centering for Dropdown components */
+:deep(.p-dropdown) {
+  height: 2.25rem !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+:deep(.p-dropdown-panel .p-dropdown-items-wrapper) {
+  padding: 0 !important;
+}
+
+:deep(.p-dropdown-panel .p-dropdown-items) {
+  padding: 0 !important;
+}
+
+:deep(.p-dropdown-panel .p-dropdown-item) {
+  padding: 0.5rem 1rem !important;
+  font-size: 0.875rem !important;
+}
+
+:deep(.p-dropdown .p-dropdown-clear-icon) {
+  right: 2.5rem !important;
+}
+
+/* Direct targeting for the label element */
+:deep(.p-dropdown .p-dropdown-label) {
+  border: none !important;
+  box-shadow: none !important;
+  padding-left: 2.5rem !important;
+  margin: 0 !important;
+  text-align: left !important;
+  height: 100% !important;
+  line-height: normal !important;
+  font-size: 0.875rem !important;
+  top: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+/* Specific styling for placeholder state */
+:deep(.p-dropdown .p-dropdown-label.p-placeholder) {
+  padding-left: 2.5rem !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  color: #9ca3af !important;
+  font-size: 0.875rem !important;
+}
+
+/* Fix the right-side trigger position */
+:deep(.p-dropdown .p-dropdown-trigger) {
+  border: none !important;
+  box-shadow: none !important;
+  width: 2.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  margin: auto !important;
+}
+
+:deep(.p-dropdown:not(.p-disabled).p-focus) {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 1px rgba(var(--primary-rgb), 0.4) !important;
 }
 
 :deep(.p-inputtext-sm) {
@@ -844,6 +929,7 @@ const handleLocationSelected = (location) => {
 :deep(.p-password-input) {
   border: 1px solid #e2e8f0 !important;
   border-radius: 0.375rem !important;
+  padding-left: 2.5rem !important;
 }
 
 :deep(.p-password-input:hover) {
@@ -920,8 +1006,6 @@ const handleLocationSelected = (location) => {
   display: flex;
   align-items: center;
   line-height: 1;
-  padding-top: 0;
-  padding-bottom: 0;
   height: 2.75rem;
 }
 
@@ -969,6 +1053,7 @@ const handleLocationSelected = (location) => {
 :deep(.p-password .p-password-input) {
   width: 100% !important;
   padding: 0.75rem 1rem !important;
+  padding-left: 2.5rem !important;
 }
 
 /* Remove focus outlines and box shadows */
@@ -1082,6 +1167,7 @@ const handleLocationSelected = (location) => {
 :deep(.custom-password .p-password-input) {
   width: 100%;
   padding: 0.75rem 1rem;
+  padding-left: 2.5rem !important;
   border: 1px solid #e2e8f0;
   border-radius: 0.375rem;
   transition: all 0.3s;
@@ -1104,6 +1190,7 @@ const handleLocationSelected = (location) => {
 :deep(.custom-calendar .p-inputtext) {
   width: 100%;
   padding: 0.75rem 1rem;
+  padding-left: 2.5rem !important;
   border: 1px solid #e2e8f0;
   border-radius: 0.375rem;
   transition: all 0.3s;
@@ -1122,6 +1209,7 @@ const handleLocationSelected = (location) => {
 
 :deep(.p-multiselect.custom-multiselect .p-multiselect-label) {
   padding: 0.75rem 1rem;
+  padding-left: 2.5rem !important;
 }
 
 :deep(.p-dropdown.p-component) {
@@ -1131,6 +1219,7 @@ const handleLocationSelected = (location) => {
 
 :deep(.p-dropdown .p-dropdown-label) {
   padding: 0.75rem 1rem;
+  padding-left: 2.5rem !important;
   height: auto;
   min-height: 3rem;
   line-height: 1.5;
@@ -1163,6 +1252,7 @@ const handleLocationSelected = (location) => {
   width: 100%;
   line-height: 1.5;
   padding: 0.75rem 1rem;
+  padding-left: 2.5rem !important;
 }
 
 :deep(.p-dropdown.custom-dropdown),
@@ -1181,7 +1271,6 @@ const handleLocationSelected = (location) => {
   border: 1px solid #e2e8f0;
   border-radius: 0.375rem;
   transition: all 0.3s;
-  padding: 0 !important;
   width: 100%;
   height: auto;
 }
@@ -1190,6 +1279,7 @@ const handleLocationSelected = (location) => {
     .p-calendar-label
   ) {
   padding: 0.75rem 1rem;
+  padding-left: 2.5rem !important;
 }
 
 :deep(.p-inputtext:hover),
@@ -1225,11 +1315,18 @@ const handleLocationSelected = (location) => {
 /* Make sure textareas don't get restricted */
 :deep(textarea.p-inputtext) {
   height: auto !important;
+  padding: 0.75rem 1rem !important;
+  padding-left: 2.5rem !important;
+  display: block !important;
+  align-items: flex-start !important;
 }
 
 /* Fix for calendar display */
 :deep(.p-calendar .p-inputtext) {
   height: 100% !important;
+  display: flex;
+  align-items: center;
+  padding-left: 2.5rem !important;
 }
 
 /* Make dropdown size consistent */
@@ -1253,6 +1350,7 @@ const handleLocationSelected = (location) => {
 :deep(textarea.p-inputtext) {
   display: block;
   padding: 0.75rem 1rem;
+  padding-left: 2.5rem !important;
   height: auto !important;
   min-height: 6rem;
 }
@@ -1261,7 +1359,33 @@ const handleLocationSelected = (location) => {
 :deep(.p-dropdown .p-dropdown-label:not(.p-placeholder)) {
   color: #1e293b;
   font-weight: 500;
-  padding-left: 1rem;
+}
+
+/* Fix placeholder alignment in all inputs */
+:deep(.p-inputtext::placeholder) {
+  line-height: normal;
+  vertical-align: middle;
+}
+
+:deep(.p-dropdown .p-dropdown-label.p-placeholder) {
+  display: flex;
+  align-items: center;
+}
+
+/* Fix specific input vertical alignment */
+:deep(.p-inputtext) {
+  line-height: normal;
+}
+
+:deep(.p-dropdown .p-dropdown-label) {
+  display: flex;
+  align-items: center;
+}
+
+:deep(.p-password .p-password-input) {
+  line-height: normal;
+  display: flex;
+  align-items: center;
 }
 
 /* Custom steps indicator */

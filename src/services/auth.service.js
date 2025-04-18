@@ -58,7 +58,7 @@ class AuthService {
   async candidateLogin(username, password) {
     console.log('AuthService: candidateLogin called');
     try {
-      const response = await apiClient.post('/api/auth/candidate/login', {
+      const response = await apiClient.post('/auth/candidate/login', {
         username,
         password,
       });
@@ -193,7 +193,7 @@ class AuthService {
   async recruiterLogin(username, password) {
     console.log('AuthService: recruiterLogin called');
     try {
-      const response = await apiClient.post('/api/auth/recruiter/login', {
+      const response = await apiClient.post('/auth/recruiter/login', {
         username,
         password,
       });
@@ -334,7 +334,7 @@ class AuthService {
   async registerCandidate(candidateData) {
     try {
       const response = await apiClient.post(
-        '/api/candidate/register',
+        '/candidate/register',
         candidateData
       );
       console.log('Registration successful:', response);
@@ -353,7 +353,7 @@ class AuthService {
   async registerRecruiter(recruiterData) {
     try {
       const response = await apiClient.post(
-        '/api/recruiter/register',
+        '/recruiter/register',
         recruiterData
       );
       return response;

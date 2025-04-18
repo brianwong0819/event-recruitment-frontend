@@ -6,11 +6,10 @@
     <header class="pt-4 pb-2">
       <div class="container px-4">
         <router-link to="/" class="inline-block">
-          <img
-            src="@/assets/logo.png"
-            alt="Event Recruitment Logo"
-            class="h-10"
-          />
+          <div class="text-2xl font-extrabold tracking-tight">
+            <span class="text-primary-700">Crew</span
+            ><span class="text-gray-800">Connect</span>
+          </div>
         </router-link>
       </div>
     </header>

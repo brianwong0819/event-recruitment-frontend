@@ -1,9 +1,14 @@
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-6 py-12">
+  <div
+    class="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-6 py-12"
+  >
     <div class="text-center">
       <div class="flex justify-center mb-4">
         <router-link to="/">
-          <img src="@/assets/logo.png" alt="CrewLink Logo" class="h-16" />
+          <div class="text-4xl font-extrabold tracking-tight">
+            <span class="text-primary-700">Crew</span
+            ><span class="text-gray-800">Connect</span>
+          </div>
         </router-link>
       </div>
       <h1 class="text-8xl font-bold text-primary-600 mb-4">404</h1>

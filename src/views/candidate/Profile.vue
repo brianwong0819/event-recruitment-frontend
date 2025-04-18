@@ -4203,7 +4203,7 @@ const fetchAvailability = async () => {
 const loadExperiencesAndAvailability = async () => {
   // Try to fetch experiences
   try {
-    const expResponse = await apiClient.get('/api/candidate/experiences');
+    const expResponse = await apiClient.get('/candidate/experiences');
     if (
       expResponse.data &&
       (expResponse.data.data || expResponse.data.length)
@@ -4217,7 +4217,7 @@ const loadExperiencesAndAvailability = async () => {
 
   // Try to fetch availability
   try {
-    const availResponse = await apiClient.get('/api/candidate/availability');
+    const availResponse = await apiClient.get('/candidate/availability');
     if (
       availResponse.data &&
       (availResponse.data.data || availResponse.data.length)
