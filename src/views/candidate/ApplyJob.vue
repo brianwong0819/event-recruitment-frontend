@@ -972,9 +972,9 @@ onMounted(async () => {
                 scheduleDate.jobLocations.length > 0
               ) {
                 scheduleDate.jobLocations.forEach((jobLocation) => {
-                  // Only add locations that have available positions and are OPEN
                   if (
-                    jobLocation.status === 'OPEN' &&
+                    (jobLocation.status === 'OPEN' ||
+                      jobLocation.status === 'PARTIAL_FILLED') &&
                     jobLocation.positionsNeeded > jobLocation.positionsFilled
                   ) {
                     if (!locations.has(jobLocation.locationId)) {
@@ -1183,7 +1183,8 @@ const availableDatesForLocation = computed(() => {
       const hasLocation = scheduleDate.jobLocations.some(
         (jobLocation) =>
           jobLocation.locationId.toString() === locationId.toString() &&
-          jobLocation.status === 'OPEN' &&
+          (jobLocation.status === 'OPEN' ||
+            jobLocation.status === 'PARTIAL_FILLED') &&
           jobLocation.positionsFilled < jobLocation.positionsNeeded
       );
 
@@ -1409,7 +1410,10 @@ const toggleDateSelection = (day) => {
 
           // Find the matching location
           const matchingLocation = scheduleDate.jobLocations.find(
-            (loc) => Number(loc.locationId) === Number(locationId)
+            (loc) =>
+              Number(loc.locationId) === Number(locationId) &&
+              (loc.status === 'OPEN' || loc.status === 'PARTIAL_FILLED') &&
+              loc.positionsFilled < loc.positionsNeeded
           );
 
           if (matchingLocation) {
@@ -1523,7 +1527,10 @@ const selectAllDates = () => {
         if (apiDateStr === dateStr) {
           // Find matching location
           const matchingLocation = scheduleDate.jobLocations.find(
-            (loc) => Number(loc.locationId) === Number(locationId)
+            (loc) =>
+              Number(loc.locationId) === Number(locationId) &&
+              (loc.status === 'OPEN' || loc.status === 'PARTIAL_FILLED') &&
+              loc.positionsFilled < loc.positionsNeeded
           );
 
           if (matchingLocation) {

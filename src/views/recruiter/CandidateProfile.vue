@@ -386,7 +386,7 @@
                       class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-start p-3"
                     >
                       <div class="text-white text-sm font-medium">
-                        Comp Card Photo {{ index + 1 }}
+                        Comp Card or Self Photos {{ index + 1 }}
                       </div>
                     </div>
                   </template>

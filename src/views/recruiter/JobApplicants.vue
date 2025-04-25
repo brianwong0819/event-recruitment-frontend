@@ -446,7 +446,11 @@
                 <div class="flex flex-col items-start">
                   <div class="flex items-center gap-2">
                     <Rating
-                      :modelValue="Math.round(data.finalScore / 22)"
+                      :modelValue="
+                        Math.round(
+                          (data.finalScore - data.reputationScore) * 0.4
+                        )
+                      "
                       readonly
                       :cancel="false"
                     />
@@ -622,7 +626,13 @@
               <h4 class="font-semibold text-indigo-900">Final Score</h4>
               <div class="flex items-center">
                 <Rating
-                  :modelValue="Math.round(selectedCandidate.finalScore / 22)"
+                  :modelValue="
+                    Math.round(
+                      (selectedCandidate.finalScore -
+                        selectedCandidate.reputationScore) *
+                        0.4
+                    )
+                  "
                   readonly
                   :cancel="false"
                   class="mr-2"
@@ -698,7 +708,16 @@
                     </p>
                   </div>
                 </div>
-                <span class="font-semibold text-blue-600">
+                <span
+                  class="font-semibold"
+                  :class="{
+                    'text-green-600': selectedCandidate.experienceScore >= 8,
+                    'text-orange-500':
+                      selectedCandidate.experienceScore >= 5 &&
+                      selectedCandidate.experienceScore < 8,
+                    'text-red-600': selectedCandidate.experienceScore < 5,
+                  }"
+                >
                   {{ selectedCandidate.experienceScore.toFixed(1) }}/10
                 </span>
               </div>
@@ -724,7 +743,16 @@
                     </p>
                   </div>
                 </div>
-                <span class="font-semibold text-green-600">
+                <span
+                  class="font-semibold"
+                  :class="{
+                    'text-green-600': selectedCandidate.skillsScore >= 8,
+                    'text-orange-500':
+                      selectedCandidate.skillsScore >= 5 &&
+                      selectedCandidate.skillsScore < 8,
+                    'text-red-600': selectedCandidate.skillsScore < 5,
+                  }"
+                >
                   {{ selectedCandidate.skillsScore.toFixed(1) }}/10
                 </span>
               </div>
@@ -750,9 +778,22 @@
                     </p>
                   </div>
                 </div>
-                <span class="font-semibold text-red-600">
-                  {{ selectedCandidate.locationScore.toFixed(1) }} km
+                <span
+                  v-if="selectedCandidate.distanceToJob !== null"
+                  class="font-semibold"
+                  :class="{
+                    'text-green-600': selectedCandidate.distanceToJob < 15,
+                    'text-orange-500':
+                      selectedCandidate.distanceToJob >= 15 &&
+                      selectedCandidate.distanceToJob <= 20,
+                    'text-red-600': selectedCandidate.distanceToJob > 20,
+                  }"
+                >
+                  {{ selectedCandidate.distanceToJob.toFixed(1) }} km
                 </span>
+                <span v-else class="font-semibold text-gray-500"
+                  >No location set</span
+                >
               </div>
             </div>
           </div>
@@ -762,9 +803,13 @@
             class="mt-3 mb-3 text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-start"
           >
             <i class="pi pi-info-circle mr-2 text-gray-500 mt-0.5"></i>
-            <p>
+            <p v-if="selectedCandidate.distanceToJob !== null">
               Distance calculated based on longitude/latitude coordinates.
               Actual travel time may vary (e.g., public transport options).
+            </p>
+            <p v-else>
+              This candidate hasn't set their location yet. Distance cannot be
+              calculated.
             </p>
           </div>
 
@@ -785,7 +830,16 @@
                     <p class="text-xs text-gray-500">Schedule alignment</p>
                   </div>
                 </div>
-                <span class="font-semibold text-purple-600">
+                <span
+                  class="font-semibold"
+                  :class="{
+                    'text-green-600': selectedCandidate.availabilityScore >= 8,
+                    'text-orange-500':
+                      selectedCandidate.availabilityScore >= 5 &&
+                      selectedCandidate.availabilityScore < 8,
+                    'text-red-600': selectedCandidate.availabilityScore < 5,
+                  }"
+                >
                   {{ selectedCandidate.availabilityScore.toFixed(1) }}/10
                 </span>
               </div>
@@ -1087,7 +1141,6 @@ const filters = ref({
 const statusOptions = [
   { label: 'All Statuses', value: '' },
   { label: 'Pending', value: 'PENDING' },
-  { label: 'Shortlisted', value: 'SHORTLISTED' },
   { label: 'Hired', value: 'HIRED' },
   { label: 'Rejected', value: 'REJECTED' },
   { label: 'Withdrawn', value: 'WITHDRAWN' },
@@ -1425,7 +1478,8 @@ const showScoreDetails = (candidate) => {
     finalScore: candidate.finalScore || 0,
     experienceScore: candidate.experienceScore || 0,
     skillsScore: candidate.skillsScore || 0,
-    locationScore: candidate.locationScore || 0,
+    locationScore: candidate.distanceToJob, // Use the original distanceToJob value
+    distanceToJob: candidate.distanceToJob, // Store the raw distanceToJob value as well
     availabilityScore: candidate.availabilityScore || 0,
     reputationScore: candidate.reputationScore || 0,
     aiFeedback: candidate.aiFeedback?.replace(/\\n/g, '\n') || '',

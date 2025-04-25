@@ -334,7 +334,7 @@ class AuthService {
   async registerCandidate(candidateData) {
     try {
       const response = await apiClient.post(
-        '/candidate/register',
+        '/candidates/register',
         candidateData
       );
       console.log('Registration successful:', response);

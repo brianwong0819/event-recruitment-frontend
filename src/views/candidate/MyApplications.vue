@@ -23,16 +23,10 @@
       class="bg-white rounded-xl shadow-md p-6 mb-8 transition-all duration-300 hover:shadow-lg sticky-filters"
       :class="{
         'sticky-active': isScrolled,
-        collapsed: isScrolledFar && !isFilterHovered,
       }"
-      @mouseenter="isFilterHovered = true"
-      @mouseleave="isFilterHovered = false"
     >
-      <!-- Main filters - collapsed when scrolled far -->
-      <div
-        class="main-filters transition-all duration-300"
-        :class="{ 'hidden-filters': isScrolledFar && !isFilterHovered }"
-      >
+      <!-- Main filters -->
+      <div class="main-filters transition-all duration-300">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           <!-- Search input -->
           <div class="relative">
@@ -127,22 +121,11 @@
         </div>
       </div>
 
-      <!-- Jump to section (always visible) -->
+      <!-- Jump to section -->
       <div
-        class="flex items-center justify-between transition-all duration-300 jump-to-container"
-        :class="{
-          'pt-0': isScrolledFar && !isFilterHovered,
-          'pt-3 border-t border-gray-100': !isScrolledFar || isFilterHovered,
-        }"
+        class="flex items-center justify-between transition-all duration-300 pt-3 border-t border-gray-100"
       >
-        <div>
-          <Button
-            v-if="isScrolledFar && !isFilterHovered"
-            icon="pi pi-filter"
-            class="p-button-text p-button-sm text-indigo-600 mr-2"
-            @click="isFilterHovered = true"
-          />
-        </div>
+        <div></div>
 
         <!-- Jump to section dropdown -->
         <div v-if="hasApplications" class="flex items-center ml-auto">
@@ -991,8 +974,6 @@ const showOtherReasonError = ref(false);
 
 // New state for filter collapse behavior
 const isScrolled = ref(false);
-const isScrolledFar = ref(false);
-const isFilterHovered = ref(false);
 
 // Pagination related
 const paginationEnabled = ref(true);
@@ -1604,7 +1585,6 @@ const jumpToSection = () => {
 // Function to handle scroll event
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 150;
-  isScrolledFar.value = window.scrollY > 250;
   showScrollTopButton.value = window.scrollY > 300;
 };
 
@@ -1934,41 +1914,6 @@ const getImagePath = (url) => {
   border: 1px solid rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(16px);
   background-color: rgba(255, 255, 255, 0.9);
-}
-
-/* New styles for collapsed filter */
-.sticky-filters.collapsed {
-  padding: 0.75rem 1.5rem;
-}
-
-.sticky-filters .main-filters {
-  max-height: 500px;
-  opacity: 1;
-  overflow: hidden;
-  transition: all 0.3s ease-in-out;
-}
-
-.sticky-filters .main-filters.hidden-filters {
-  max-height: 0;
-  opacity: 0;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
-
-.jump-to-container {
-  transition: all 0.3s ease;
-}
-
-/* Status section transitions */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* Pagination styling */

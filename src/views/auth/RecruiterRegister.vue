@@ -354,6 +354,7 @@
                     id="companyDescription"
                     v-model="form.companyDescription"
                     rows="3"
+                    maxlength="255"
                     :placeholder="
                       showCompanyNameField
                         ? 'Describe your company, culture, and what makes it special...'
@@ -363,17 +364,22 @@
                     :class="{ 'p-invalid': hasError('companyDescription') }"
                   />
                 </div>
-                <small
-                  v-if="hasError('companyDescription')"
-                  class="p-error text-xs"
-                >
-                  {{
-                    showCompanyNameField
-                      ? 'Company description'
-                      : 'Professional bio'
-                  }}
-                  is required
-                </small>
+                <div class="flex justify-between">
+                  <small
+                    v-if="hasError('companyDescription')"
+                    class="p-error text-xs"
+                  >
+                    {{
+                      showCompanyNameField
+                        ? 'Company description'
+                        : 'Professional bio'
+                    }}
+                    is required
+                  </small>
+                  <small class="text-gray-500 text-xs ml-auto">
+                    {{ form.companyDescription.length }}/255
+                  </small>
+                </div>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
