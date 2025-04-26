@@ -894,7 +894,6 @@ const selectedLocationNotes = ref(null);
 const currentMonth = ref(new Date().getMonth());
 const currentYear = ref(new Date().getFullYear());
 
-// Add this constant for the base API URL
 const API_BASE_URL = 'http://localhost:8080/api';
 
 // After the applicationReference ref, replace the mock profile stats with a simple empty initialization
@@ -909,13 +908,10 @@ const profileStats = ref({
   },
 });
 
-// Add this with the other ref declarations
 const applicationNotes = ref('');
 
-// After other ref declarations, add this new one
 const selectedDateToJobLocationMap = ref(new Map());
 
-// Add a ref for the confirmation dialog
 const confirmDialogVisible = ref(false);
 
 // Replace the onMounted function
@@ -1095,8 +1091,6 @@ onMounted(async () => {
   }
 });
 
-// After the onMounted method and before the selectLocation method
-// Watch for changes in selected location to clear selected dates that are no longer available
 watch(
   selectedLocations,
   (newSelectedLocations) => {
@@ -1120,7 +1114,6 @@ watch(
   { deep: true }
 );
 
-// Add a computed property to check if profile is complete
 const isProfileComplete = computed(() => {
   const stats = profileStats.value.data;
   return (
@@ -1189,7 +1182,6 @@ const availableDatesForLocation = computed(() => {
       );
 
       if (hasLocation) {
-        // Add this date to available dates
         availableDates.push(new Date(scheduleDate.workDate));
       }
     });
@@ -1349,13 +1341,11 @@ const toggleDateSelection = (day) => {
   const formattedDate = formatDate(newDate);
 
   // Create consistent date string for API comparison (YYYY-MM-DD format)
-  // We need to handle the timezone offset properly to get the correct string
   const year = newDate.getFullYear();
   const month = String(newDate.getMonth() + 1).padStart(2, '0');
   const dayStr = String(newDate.getDate()).padStart(2, '0');
   const dateStr = `${year}-${month}-${dayStr}`;
 
-  // Debug the date we're working with
   console.log(
     `Working with date: day=${day}, month=${currentMonth.value + 1}, year=${
       currentYear.value
@@ -1378,7 +1368,6 @@ const toggleDateSelection = (day) => {
   let jobLocationId = null;
 
   if (locationId && job.value?.jobSchedules) {
-    // Log what we're looking for
     console.log(
       `Searching for job location ID for date=${dateStr} and locationId=${locationId}`
     );
@@ -1426,11 +1415,10 @@ const toggleDateSelection = (day) => {
         }
       }
 
-      if (jobLocationId) break; // Stop searching if we found a match
+      if (jobLocationId) break; 
     }
   }
 
-  // Now handle adding or removing the date
   if (index >= 0) {
     // Remove date
     console.log(`Removing date: ${formattedDate}`);
@@ -1791,7 +1779,6 @@ const submitApplication = async () => {
       );
     }
 
-    // Ensure we have the correct number of IDs (one per selected date)
     if (jobLocationIds.length !== selectedDates.value.length) {
       console.warn(
         `Mismatch between selected dates (${selectedDates.value.length}) and job location IDs (${jobLocationIds.length})`
@@ -1889,7 +1876,6 @@ const goToProfile = () => {
   });
 };
 
-// Add to the existing ref declarations
 const locationDetailDialog = ref(false);
 const selectedLocation = ref(null);
 const loadingLocation = ref(false);
@@ -1901,12 +1887,10 @@ const showLocationDetails = async (locationId) => {
   loadingLocation.value = true;
   locationDetailDialog.value = true;
 
-  // First check if we already have the location details from our available locations
   selectedLocation.value = availableLocations.value.find(
     (loc) => loc.id === locationId
   );
 
-  // If we have the location ID but need more details, fetch them from the API
   if (
     selectedLocation.value &&
     (!selectedLocation.value.address ||
@@ -1927,7 +1911,6 @@ const showLocationDetails = async (locationId) => {
       );
       if (response.data && response.data.data) {
         const locationDetails = response.data.data;
-        // Update our existing location object with the new details
         selectedLocation.value = {
           ...selectedLocation.value,
           address: locationDetails.address || selectedLocation.value.address,
@@ -1937,7 +1920,6 @@ const showLocationDetails = async (locationId) => {
           notes: locationDetails.notes || selectedLocation.value.notes,
         };
 
-        // Also update the location in the availableLocations array
         const index = availableLocations.value.findIndex(
           (loc) => loc.id === locationId
         );
@@ -1953,7 +1935,6 @@ const showLocationDetails = async (locationId) => {
   loadingLocation.value = false;
 };
 
-// Add this helper method to the script section after other methods
 const formatSalaryType = (salaryType) => {
   if (!salaryType) return '';
 

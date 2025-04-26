@@ -1,5 +1,4 @@
 import axios from 'axios';
-// Removing direct router import to avoid circular dependency
 // import router from '../router';
 import {
   showTokenExpirationNotice,
@@ -74,7 +73,6 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Track if we're currently refreshing the token
 let isRefreshingToken = false;
 // Store all requests that should be retried after token refresh
 let refreshSubscribers = [];
@@ -114,7 +112,6 @@ const handleAuthLogout = () => {
     message: 'Your session has expired. Redirecting to login...',
   });
 
-  // Redirect to login page - using window.location instead of router
   window.location.href = '/login';
 };
 
@@ -146,7 +143,6 @@ apiClient.interceptors.response.use(
       skipAuthRefresh: originalRequest?.skipAuthRefresh,
     });
 
-    // Check if this is a login request (we should not redirect or refresh token for login attempts)
     const isAuthRequest =
       originalRequest?.url &&
       (originalRequest.url.includes('/login') ||
@@ -164,7 +160,6 @@ apiClient.interceptors.response.use(
       // Show notification to the user that we're refreshing their session
       showTokenExpirationNotice({ isRefreshing: true });
 
-      // If we're already refreshing, queue this request
       if (isRefreshingToken) {
         return new Promise((resolve, reject) => {
           subscribeTokenRefresh((newToken) => {
@@ -175,7 +170,6 @@ apiClient.interceptors.response.use(
         });
       }
 
-      // Mark that we've tried refreshing for this request
       originalRequest._retry = true;
       isRefreshingToken = true;
 
@@ -245,20 +239,17 @@ apiClient.interceptors.response.use(
 
     // Handle other errors
     if (status === 401 || status === 403) {
-      // Check if this is a password validation error (not a token issue)
       if (
         error.isPasswordError ||
         (status === 401 &&
           originalRequest.url &&
           originalRequest.url.includes('/change-password'))
       ) {
-        // Don't redirect to login for password validation errors
         console.log('Password validation error, not redirecting to login');
         return Promise.reject(error);
       }
 
       if (isAuthRequest) {
-        // For auth requests with 401/403, just reject without redirection
         return Promise.reject(error);
       } else {
         // For other endpoints with 401/403 when we've already tried refreshing, logout

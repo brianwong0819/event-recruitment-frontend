@@ -527,7 +527,6 @@ const fetchAvailability = async () => {
     if (response.data && response.data.data) {
       const availData = response.data.data;
 
-      // Ensure we're using the correct enum values
       availabilityType.value =
         mapToCorrectEnumValues(availData.availabilityType) || '';
 
@@ -537,7 +536,6 @@ const fetchAvailability = async () => {
       ) {
         customDates.value = availData.customDates;
 
-        // Also set the selected dates for the form
         selectedDates.value = customDates.value.map(
           (dateStr) => new Date(dateStr)
         );
@@ -597,7 +595,6 @@ const saveAvailability = async () => {
     );
 
     if (response.data && response.data.statusCode === 200) {
-      // Update local state with the new values
       availabilityType.value = selectedType.value;
 
       if (selectedType.value === 'CUSTOM_DATES') {

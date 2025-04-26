@@ -761,7 +761,6 @@ onMounted(() => {
   fetchJobData();
 });
 
-// Update the formatBenefits function to better handle formatting
 const formatBenefits = (benefits) => {
   if (!benefits) return [];
   return benefits
@@ -910,7 +909,6 @@ const formatBenefits = (benefits) => {
   }
 }
 
-/* Fix InputNumber component styling to prevent duplication */
 :deep(.p-inputnumber) {
   display: block;
   width: 100% !important;
@@ -923,7 +921,6 @@ const formatBenefits = (benefits) => {
   padding: 0.75rem !important;
 }
 
-/* Remove default formatting to prevent duplicate rendering */
 :deep(.p-inputnumber .p-inputnumber-button) {
   display: none;
 }
@@ -993,7 +990,6 @@ const formatBenefits = (benefits) => {
   overflow: auto;
 }
 
-/* Make placeholder text clearly visible */
 :deep(.p-textarea::placeholder) {
   color: #94a3b8;
   opacity: 1;
@@ -1001,7 +997,6 @@ const formatBenefits = (benefits) => {
   font-size: 0.95rem;
 }
 
-/* Add a specific media query for larger screens */
 @media (min-width: 768px) {
   :deep(.large-textarea),
   :deep(.p-inputtextarea),
@@ -1011,7 +1006,6 @@ const formatBenefits = (benefits) => {
   }
 }
 
-/* Preserve text formatting in preview dialog */
 .preserve-format {
   white-space: pre-line !important;
   word-wrap: break-word;
@@ -1025,7 +1019,6 @@ const formatBenefits = (benefits) => {
   max-height: 80vh;
 }
 
-/* Improved styling for preview sections */
 .job-preview .preserve-format {
   padding: 1rem;
   background-color: #fff;
@@ -1033,7 +1026,6 @@ const formatBenefits = (benefits) => {
   border: 1px solid #e5e7eb;
 }
 
-/* Make sure dialog has enough space */
 :deep(.p-dialog) {
   max-width: 800px;
   width: 90vw !important;

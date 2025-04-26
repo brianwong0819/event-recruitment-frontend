@@ -121,7 +121,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Optional: Add some custom styling for the success page */
 .bg-gradient-to-br {
   animation: gradient-shift 10s ease infinite;
 }

@@ -2178,7 +2178,6 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value;
 };
 
-// Safely check window size on client side only
 const updateWindowWidth = () => {
   if (isClient.value) {
     windowWidth.value = window?.innerWidth || 0;
@@ -2189,7 +2188,6 @@ const updateWindowWidth = () => {
   }
 };
 
-// Add resize event listener on component mount, and set isClient
 onMounted(() => {
   isClient.value = true;
   updateWindowWidth(); // Initial check
@@ -2215,7 +2213,6 @@ onBeforeUnmount(() => {
   }
 });
 
-// Add this at the start of the script, after variable declarations but before onMounted
 // Preload any cached profile picture
 onBeforeMount(() => {
   const cachedProfilePicUrl = localStorage.getItem('cachedProfilePictureUrl');
@@ -2300,7 +2297,6 @@ const experienceForm = ref({ jobType: null, experienceText: '' });
 const savingExperience = ref(false);
 const editingExperienceIndex = ref(-1);
 
-// After the other refs
 const compcardFileInput = ref(null);
 const compcardPhotos = ref([]);
 const loadingPhotos = ref(false);
@@ -2310,8 +2306,7 @@ const currentPhoto = ref(null);
 const currentPhotoIndex = ref(0);
 const uploadingPhoto = ref(false);
 
-// Add these reactive variables to the component's script setup
-// Place this alongside other reactive state declarations
+
 const workingPhotos = ref([]);
 const loadingWorkingPhotos = ref(false);
 const workingPhotoInput = ref(null);
@@ -2322,7 +2317,6 @@ const selectedWorkingPhoto = ref(null);
 const workingPhotoDialogVisible = ref(false);
 const workingPhotoPreviewIndex = ref(0);
 
-// Add this next to other refs
 const selectedLocation = ref([]);
 
 // Load profile data on component mount
@@ -2346,7 +2340,6 @@ onMounted(async () => {
         console.log('Profile data received:', response.data);
         profile.value = response.data.data || response.data;
 
-        // Check if we have a profile picture URL, and if it's a relative path
         // Try to load from assets if needed
         if (profile.value && !profile.value.profilePictureUrl) {
           // Check for cached profile picture URL
@@ -2375,7 +2368,6 @@ onMounted(async () => {
                   console.log('Found profile picture:', imgUrl);
                   break;
                 } catch (e) {
-                  // Continue trying other formats
                 }
               }
             }
@@ -2384,14 +2376,12 @@ onMounted(async () => {
           // Use getImageUrl to resolve and possibly cache the profile picture
           const resolvedUrl = getImageUrl(profile.value.profilePictureUrl);
           if (resolvedUrl) {
-            // This will also cache the URL in localStorage if needed
             profile.value.profilePictureUrl = resolvedUrl;
           }
         }
 
         loadExperiencesAndAvailability();
 
-        // Ensure we set loading to false even if there's an issue loading experiences
         loading.value = false;
         return;
       }
@@ -2415,7 +2405,6 @@ onMounted(async () => {
         console.log('Profile data received via direct fetch:', data);
         profile.value = data.data || data;
 
-        // Check if we have a profile picture URL, and if it's a relative path
         if (profile.value && !profile.value.profilePictureUrl) {
           // Check for cached profile picture URL
           const cachedProfilePicUrl = localStorage.getItem(
@@ -2747,7 +2736,6 @@ const changePassword = async () => {
         </div>
       `;
 
-      // Add the success card to the overlay
       overlay.appendChild(successCard);
 
       // Get references to dynamic elements
@@ -2779,7 +2767,6 @@ const changePassword = async () => {
         }, 300); // Match this with CSS transition duration
       };
 
-      // Add event listener to the Logout Now button
       logoutNowBtn.addEventListener('click', performLogout);
 
       // Start the countdown
@@ -2796,7 +2783,6 @@ const changePassword = async () => {
         }
       }, 1000);
 
-      // Add a CSS transition for smooth fade-out
       overlay.style.transition = 'opacity 300ms ease-out';
     }
   } catch (error) {
@@ -2953,7 +2939,6 @@ const formatResumeUploadDate = () => {
 // Format image URLs properly
 const getImageUrl = (url) => {
   if (!url) {
-    // Check if we have a cached profile picture URL in localStorage
     const cachedProfilePicUrl = localStorage.getItem('cachedProfilePictureUrl');
     if (cachedProfilePicUrl) {
       console.debug('Using cached profile picture URL from localStorage');
@@ -2981,7 +2966,6 @@ const getImageUrl = (url) => {
     return ''; // Return empty string to avoid broken images
   }
 
-  // Use the fileService to get the proper URL based on the new backend structure
   return fileService.getFileUrl(url);
 };
 
@@ -3219,14 +3203,12 @@ const saveBasicInfo = async () => {
         responseData = requestData;
       }
 
-      // Make sure languages from the form are properly set in the profile
       // This ensures the UI updates immediately even if the response doesn't include languages
       const updatedProfile = {
         ...profile.value,
         ...responseData,
       };
 
-      // Ensure languages are properly set from the form data if not in the response
       if (
         (!updatedProfile.languages || updatedProfile.languages.length === 0) &&
         editForm.value.languages &&
@@ -3503,7 +3485,6 @@ const deleteResume = async () => {
     profile.value = { ...profile.value, resumeUrl: null };
   } catch (error) {
     console.error('Error deleting resume:', error);
-    // Show error toast or notification here
   }
 };
 
@@ -3539,7 +3520,6 @@ const handleProfilePictureUpload = async (event) => {
         profilePictureUrl: localUrl,
       };
 
-      // Then, in the background, resolve the server URL
       setTimeout(() => {
         // Get the resolved URL from the server response
         const resolvedUrl = fileService.getFileUrl(profilePictureUrl);
@@ -3599,7 +3579,6 @@ const fetchCompcardPhotos = async () => {
       // Process each photo to ensure correct URL format
       photos = photos.map((photo) => {
         if (photo.comcardUrl) {
-          // Just use the service method - we've updated it to use the direct path
           const url = candidateService.getCompcardFromAssets(photo.comcardUrl);
           console.log(`Resolved URL for photo ${photo.id}: ${url}`);
           return {
@@ -3827,8 +3806,6 @@ const handlePhotoError = (event, photo, index) => {
   }
 };
 
-// Add these methods alongside other component methods
-// Place this with other lifecycle hooks like onMounted
 const fetchWorkingPhotos = async () => {
   console.log('Fetching working photos...');
   if (loadingWorkingPhotos.value) return;
@@ -3861,7 +3838,6 @@ const fetchWorkingPhotos = async () => {
 
     // Map the photos to include URLs - only use fileService URLs directly from backend
     workingPhotos.value = photos.map((photo, index) => {
-      // Log the photo object structure for debugging
       console.log(`Processing photo ${index}:`, photo);
 
       let filename = null;
@@ -3884,7 +3860,6 @@ const fetchWorkingPhotos = async () => {
         ...photo,
         // Override all URL fields to ensure they point to the backend
         url,
-        // Make sure these don't contain any reference to 5173
         photoUrl: url,
         imageUrl: url,
         backupUrl: null,
@@ -3994,13 +3969,10 @@ const uploadWorkingPhoto = async () => {
 
     console.log('Extracted photo data:', photoData);
 
-    // Check if we can find the image URL in the response
     if (photoData) {
       // Log the properties of the photo data
       console.log('Photo data properties:', Object.keys(photoData));
 
-      // If we received the photo data directly, we can add it to our local state
-      // instead of having to re-fetch all photos
       if (photoData.id) {
         console.log('Adding new photo to local state without re-fetching');
 
@@ -4029,7 +4001,6 @@ const uploadWorkingPhoto = async () => {
           ...photoData,
           description: workingPhotoDescription.value,
           url: url,
-          // Make sure these don't contain references to 5173
           photoUrl: url,
           imageUrl: url,
           backupUrl: null,
@@ -4037,7 +4008,6 @@ const uploadWorkingPhoto = async () => {
 
         console.log('Created new photo object:', newPhoto);
 
-        // Add to local state
         workingPhotos.value.push(newPhoto);
 
         toast.add({
@@ -4050,19 +4020,16 @@ const uploadWorkingPhoto = async () => {
         // Close the dialog
         showWorkingPhotoUploadDialog.value = false;
       } else {
-        // If we didn't get the photo data directly, we need to re-fetch
         console.log('Photo data missing ID, refreshing all photos');
         fetchWorkingPhotos();
       }
     } else {
-      // If we didn't get the photo data at all, we need to re-fetch
       console.log('No photo data in response, refreshing all photos');
       fetchWorkingPhotos();
     }
   } catch (error) {
     console.error('Error uploading working photo:', error);
 
-    // Detailed error logging for debugging
     if (error.response) {
       console.error('Error response:', error.response);
       console.error('Error response data:', error.response.data);
@@ -4115,7 +4082,6 @@ const deleteWorkingPhoto = async (photoId) => {
       life: 3000,
     });
 
-    // Remove the photo from the local state
     workingPhotos.value = workingPhotos.value.filter((p) => p.id !== photoId);
   } catch (error) {
     console.error('Error deleting working photo:', error);
@@ -4198,8 +4164,6 @@ const fetchAvailability = async () => {
   }
 };
 
-// Let's define the loadExperiencesAndAvailability function outside of onMounted
-// Add this after the fetchAvailability function
 const loadExperiencesAndAvailability = async () => {
   // Try to fetch experiences
   try {
@@ -4230,7 +4194,6 @@ const loadExperiencesAndAvailability = async () => {
   }
 };
 
-// Enhance the getObjectURL function with better error handling
 const getObjectURL = (file) => {
   try {
     if (!file) return '';
@@ -4245,11 +4208,9 @@ const getObjectURL = (file) => {
   }
 };
 
-// Add this function to handle working photo errors
 const handleWorkingPhotoError = (event, photo, index) => {
   console.error(`Error loading working photo at index ${index}:`, photo);
 
-  // Log all available information
   console.log('Photo details:', {
     id: photo.id,
     photoUrl: photo.photoUrl,
@@ -4351,7 +4312,6 @@ const editProfile = () => {
   }
 };
 
-// Add this computed property after other computed properties
 const profilePictureSource = computed(() => {
   // First try to get from profile
   if (profile.value?.profilePictureUrl) {
@@ -4365,7 +4325,6 @@ const profilePictureSource = computed(() => {
   // If not in profile or invalid, try local storage
   const cachedUrl = localStorage.getItem('cachedProfilePictureUrl');
   if (cachedUrl && cachedUrl.trim() !== '') {
-    // Ensure we update the profile value for consistency
     if (profile.value) {
       profile.value.profilePictureUrl = cachedUrl;
     }
@@ -4376,21 +4335,16 @@ const profilePictureSource = computed(() => {
   return '';
 });
 
-// Add this computed property to check if we should show the profile picture
 const hasValidProfilePicture = computed(() => {
   return !!profilePictureSource.value;
 });
 
-// Add this after the computed properties
-// Handle profile image error when it fails to load
 const handleProfileImageError = (event) => {
   console.debug(
     'Profile image failed to load, removing invalid URL from cache'
   );
-  // Remove the invalid URL from cache
   localStorage.removeItem('cachedProfilePictureUrl');
 
-  // Remove the URL from the profile to trigger the fallback
   if (profile.value) {
     profile.value.profilePictureUrl = '';
   }
@@ -4399,7 +4353,6 @@ const handleProfileImageError = (event) => {
   event.target.onerror = null;
 };
 
-// Add this computed property for the comp card example image
 const compCardExampleUrl = computed(() => {
   return fileService.getSampleImageUrl('comp-card-example.jpg');
 });
@@ -4434,7 +4387,6 @@ const compCardExampleUrl = computed(() => {
 
 /* Seamless sidebar gradient transition */
 @media (min-width: 768px) {
-  /* Remove negative margin since we have gradients now */
   [class*='md:border-l'] {
     border-left: none !important;
     margin-left: 0 !important;
@@ -4564,7 +4516,6 @@ const compCardExampleUrl = computed(() => {
     max-width: 95vw !important;
   }
 
-  /* Fix small buttons on mobile */
   :deep(.p-button-sm) {
     padding: 0.4rem 0.75rem !important;
     font-size: 0.75rem !important;
@@ -4589,10 +4540,9 @@ const compCardExampleUrl = computed(() => {
 
   .md\:w-72,
   .md\:w-80 {
-    width: 260px !important; /* Slightly narrower sidebar */
+    width: 260px !important; 
   }
 
-  /* Adjust dialog size for tablets */
   :deep(.p-dialog) {
     width: 90% !important;
     max-width: 90vw !important;
@@ -4600,7 +4550,6 @@ const compCardExampleUrl = computed(() => {
 }
 
 @media (min-width: 1025px) {
-  /* Desktop adjustments - maintain original design */
   .flex-1 {
     flex: 1 1 0% !important;
   }
@@ -4614,7 +4563,6 @@ const compCardExampleUrl = computed(() => {
   }
 }
 
-/* Additional responsive fixes for all screen sizes */
 .flex-wrap {
   flex-wrap: wrap !important;
 }
@@ -4667,7 +4615,6 @@ const compCardExampleUrl = computed(() => {
   font-size: 0.75rem !important;
 }
 
-/* ... existing styles ... */
 
 .working-photo-upload-dialog .p-dialog-header {
   background: linear-gradient(
@@ -4695,7 +4642,6 @@ const compCardExampleUrl = computed(() => {
   border-bottom-right-radius: 0.5rem;
 }
 
-/* Remove dropdown inner border and make consistent sizing */
 :deep(.p-dropdown .p-dropdown-label.p-inputtext) {
   border: none !important;
   box-shadow: none !important;

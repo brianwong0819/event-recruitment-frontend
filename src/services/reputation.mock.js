@@ -1,4 +1,4 @@
-// Mock data for candidate reputation
+// Mock data for candidate reputation for fallback
 export const mockReputationData = {
   score: 4.7,
   level: "Trusted",

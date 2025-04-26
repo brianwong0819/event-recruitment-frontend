@@ -97,13 +97,19 @@
                   <i class="pi pi-tag text-primary-400 mr-2"></i>
                   Job Title <span class="text-red-500">*</span>
                 </label>
-                <InputText
-                  id="jobTitle"
-                  v-model="job.title"
-                  class="w-full"
-                  placeholder="e.g. Drypers Promoter Needed"
-                  :class="{ 'p-invalid': v$.title.$invalid && submitted }"
-                />
+                <div class="relative">
+                  <InputText
+                    id="jobTitle"
+                    v-model="job.title"
+                    class="w-full"
+                    placeholder="e.g. Drypers Promoter Needed"
+                    :class="{ 'p-invalid': v$.title.$invalid && submitted }"
+                    maxlength="50"
+                  />
+                  <div class="text-xs text-gray-500 mt-1 flex justify-end">
+                    {{ job.title ? job.title.length : 0 }}/50 characters
+                  </div>
+                </div>
                 <small v-if="v$.title.$invalid && submitted" class="p-error">
                   {{ v$.title.$errors[0].$message }}
                 </small>
@@ -217,12 +223,19 @@
                   <i class="pi pi-calendar-plus text-primary-400 mr-2"></i>
                   Payment Terms
                 </label>
-                <InputText
-                  id="paymentTerms"
-                  v-model="job.paymentTerms"
-                  class="w-full"
-                  placeholder="e.g. Payment within 14 days after event"
-                />
+                <div class="relative">
+                  <InputText
+                    id="paymentTerms"
+                    v-model="job.paymentTerms"
+                    class="w-full"
+                    placeholder="e.g. Payment within 14 days after event"
+                    maxlength="100"
+                  />
+                  <div class="text-xs text-gray-500 mt-1 flex justify-end">
+                    {{ job.paymentTerms ? job.paymentTerms.length : 0 }}/100
+                    characters
+                  </div>
+                </div>
               </div>
 
               <!-- Benefits -->
@@ -399,13 +412,81 @@
                 Start Time <span class="text-red-500">*</span>
               </label>
               <div class="relative">
-                <Calendar
-                  v-model="job.startTime"
-                  timeOnly
-                  hourFormat="12"
-                  placeholder="Select start time"
-                  class="w-full"
-                />
+                <div
+                  class="time-picker-container border border-gray-300 rounded"
+                >
+                  <div
+                    class="time-picker-inputs flex items-center justify-center h-10"
+                  >
+                    <div class="flex items-center px-2">
+                      <button
+                        type="button"
+                        @click="incrementStartHours"
+                        class="p-1 hover:text-primary-500"
+                      >
+                        <i class="pi pi-chevron-up"></i>
+                      </button>
+                      <select v-model="startHours" class="time-select">
+                        <option v-for="h in 12" :key="`h-${h}`" :value="h">
+                          {{ h.toString().padStart(2, '0') }}
+                        </option>
+                      </select>
+                      <button
+                        type="button"
+                        @click="decrementStartHours"
+                        class="p-1 hover:text-primary-500"
+                      >
+                        <i class="pi pi-chevron-down"></i>
+                      </button>
+                    </div>
+                    <div class="text-gray-600 font-medium">:</div>
+                    <div class="flex items-center px-2">
+                      <button
+                        type="button"
+                        @click="incrementStartMinutes"
+                        class="p-1 hover:text-primary-500"
+                      >
+                        <i class="pi pi-chevron-up"></i>
+                      </button>
+                      <select v-model="startMinutes" class="time-select">
+                        <option
+                          v-for="m in minuteOptions"
+                          :key="`m-${m}`"
+                          :value="m"
+                        >
+                          {{ m.toString().padStart(2, '0') }}
+                        </option>
+                      </select>
+                      <button
+                        type="button"
+                        @click="decrementStartMinutes"
+                        class="p-1 hover:text-primary-500"
+                      >
+                        <i class="pi pi-chevron-down"></i>
+                      </button>
+                    </div>
+                    <div class="flex items-center px-2">
+                      <button
+                        type="button"
+                        @click="toggleStartAmPm"
+                        class="p-1 hover:text-primary-500"
+                      >
+                        <i class="pi pi-chevron-up"></i>
+                      </button>
+                      <select v-model="startAmPm" class="time-select-ampm">
+                        <option value="am">am</option>
+                        <option value="pm">pm</option>
+                      </select>
+                      <button
+                        type="button"
+                        @click="toggleStartAmPm"
+                        class="p-1 hover:text-primary-500"
+                      >
+                        <i class="pi pi-chevron-down"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="text-sm text-gray-500 mt-1">
                 Daily start time for this job
@@ -420,13 +501,81 @@
                 End Time <span class="text-red-500">*</span>
               </label>
               <div class="relative">
-                <Calendar
-                  v-model="job.endTime"
-                  timeOnly
-                  hourFormat="12"
-                  placeholder="Select end time"
-                  class="w-full"
-                />
+                <div
+                  class="time-picker-container border border-gray-300 rounded"
+                >
+                  <div
+                    class="time-picker-inputs flex items-center justify-center h-10"
+                  >
+                    <div class="flex items-center px-2">
+                      <button
+                        type="button"
+                        @click="incrementEndHours"
+                        class="p-1 hover:text-primary-500"
+                      >
+                        <i class="pi pi-chevron-up"></i>
+                      </button>
+                      <select v-model="endHours" class="time-select">
+                        <option v-for="h in 12" :key="`h-${h}`" :value="h">
+                          {{ h.toString().padStart(2, '0') }}
+                        </option>
+                      </select>
+                      <button
+                        type="button"
+                        @click="decrementEndHours"
+                        class="p-1 hover:text-primary-500"
+                      >
+                        <i class="pi pi-chevron-down"></i>
+                      </button>
+                    </div>
+                    <div class="text-gray-600 font-medium">:</div>
+                    <div class="flex items-center px-2">
+                      <button
+                        type="button"
+                        @click="incrementEndMinutes"
+                        class="p-1 hover:text-primary-500"
+                      >
+                        <i class="pi pi-chevron-up"></i>
+                      </button>
+                      <select v-model="endMinutes" class="time-select">
+                        <option
+                          v-for="m in minuteOptions"
+                          :key="`m-${m}`"
+                          :value="m"
+                        >
+                          {{ m.toString().padStart(2, '0') }}
+                        </option>
+                      </select>
+                      <button
+                        type="button"
+                        @click="decrementEndMinutes"
+                        class="p-1 hover:text-primary-500"
+                      >
+                        <i class="pi pi-chevron-down"></i>
+                      </button>
+                    </div>
+                    <div class="flex items-center px-2">
+                      <button
+                        type="button"
+                        @click="toggleEndAmPm"
+                        class="p-1 hover:text-primary-500"
+                      >
+                        <i class="pi pi-chevron-up"></i>
+                      </button>
+                      <select v-model="endAmPm" class="time-select-ampm">
+                        <option value="am">am</option>
+                        <option value="pm">pm</option>
+                      </select>
+                      <button
+                        type="button"
+                        @click="toggleEndAmPm"
+                        class="p-1 hover:text-primary-500"
+                      >
+                        <i class="pi pi-chevron-down"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="text-sm text-gray-500 mt-1">
                 Daily end time for this job
@@ -788,7 +937,7 @@
                 >
                   <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
                     <div class="font-medium text-gray-800 flex items-center">
-                      <i class="pi pi-calendar-plus text-primary-500 mr-2"></i>
+                      <i class="pi pi-calendar text-primary-500 mr-2"></i>
                       Schedule Section {{ sectionIndex + 1 }}
                     </div>
                   </div>
@@ -903,7 +1052,7 @@ import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useVuelidate } from '@vuelidate/core';
-import { required, minValue } from '@vuelidate/validators';
+import { required, minValue, maxLength } from '@vuelidate/validators';
 
 // PrimeVue components
 import Button from 'primevue/button';
@@ -992,7 +1141,10 @@ const isLoading = ref(false);
 
 // Validation rules
 const rules = computed(() => ({
-  title: { required },
+  title: {
+    required,
+    maxLength: maxLength(50),
+  },
   jobScope: { required },
   requirements: { required },
   salary: { required, minValue: minValue(1) },
@@ -1656,6 +1808,183 @@ const formatDateForAPI = (date) => {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+
+// Add these refs after other refs in the script setup section
+const startHours = ref(8);
+const startMinutes = ref(0);
+const startAmPm = ref('am');
+const endHours = ref(5);
+const endMinutes = ref(0);
+const endAmPm = ref('pm');
+const minuteOptions = ref([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]);
+
+// Add these methods after other methods
+const incrementStartHours = () => {
+  startHours.value = startHours.value === 12 ? 1 : startHours.value + 1;
+  updateStartTime();
+};
+
+const decrementStartHours = () => {
+  startHours.value = startHours.value === 1 ? 12 : startHours.value - 1;
+  updateStartTime();
+};
+
+const incrementStartMinutes = () => {
+  const currentIndex = minuteOptions.value.findIndex(
+    (m) => m === startMinutes.value
+  );
+  const nextIndex = (currentIndex + 1) % minuteOptions.value.length;
+  startMinutes.value = minuteOptions.value[nextIndex];
+  updateStartTime();
+};
+
+const decrementStartMinutes = () => {
+  const currentIndex = minuteOptions.value.findIndex(
+    (m) => m === startMinutes.value
+  );
+  const prevIndex =
+    currentIndex === 0 ? minuteOptions.value.length - 1 : currentIndex - 1;
+  startMinutes.value = minuteOptions.value[prevIndex];
+  updateStartTime();
+};
+
+const toggleStartAmPm = () => {
+  startAmPm.value = startAmPm.value === 'am' ? 'pm' : 'am';
+  updateStartTime();
+};
+
+const incrementEndHours = () => {
+  endHours.value = endHours.value === 12 ? 1 : endHours.value + 1;
+  updateEndTime();
+};
+
+const decrementEndHours = () => {
+  endHours.value = endHours.value === 1 ? 12 : endHours.value - 1;
+  updateEndTime();
+};
+
+const incrementEndMinutes = () => {
+  const currentIndex = minuteOptions.value.findIndex(
+    (m) => m === endMinutes.value
+  );
+  const nextIndex = (currentIndex + 1) % minuteOptions.value.length;
+  endMinutes.value = minuteOptions.value[nextIndex];
+  updateEndTime();
+};
+
+const decrementEndMinutes = () => {
+  const currentIndex = minuteOptions.value.findIndex(
+    (m) => m === endMinutes.value
+  );
+  const prevIndex =
+    currentIndex === 0 ? minuteOptions.value.length - 1 : currentIndex - 1;
+  endMinutes.value = minuteOptions.value[prevIndex];
+  updateEndTime();
+};
+
+const toggleEndAmPm = () => {
+  endAmPm.value = endAmPm.value === 'am' ? 'pm' : 'am';
+  updateEndTime();
+};
+
+const updateStartTime = () => {
+  // Convert to 24 hour format for the Date object
+  let hours = startHours.value;
+  if (startAmPm.value === 'pm' && hours < 12) {
+    hours += 12;
+  } else if (startAmPm.value === 'am' && hours === 12) {
+    hours = 0;
+  }
+
+  const date = new Date();
+  date.setHours(hours, startMinutes.value, 0);
+  job.startTime = date;
+};
+
+const updateEndTime = () => {
+  // Convert to 24 hour format for the Date object
+  let hours = endHours.value;
+  if (endAmPm.value === 'pm' && hours < 12) {
+    hours += 12;
+  } else if (endAmPm.value === 'am' && hours === 12) {
+    hours = 0;
+  }
+
+  const date = new Date();
+  date.setHours(hours, endMinutes.value, 0);
+  job.endTime = date;
+};
+
+// Add these watchers to initialize the time selectors from job time values
+watch(
+  () => job.startTime,
+  (newVal) => {
+    if (newVal) {
+      const date = new Date(newVal);
+      let hours = date.getHours();
+      const minutes = date.getMinutes();
+      const closestMinuteOption = minuteOptions.value.reduce((prev, curr) => {
+        return Math.abs(curr - minutes) < Math.abs(prev - minutes)
+          ? curr
+          : prev;
+      });
+
+      // Convert to 12-hour format
+      const ampm = hours >= 12 ? 'pm' : 'am';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour '0' should be '12'
+
+      startHours.value = hours;
+      startMinutes.value = closestMinuteOption;
+      startAmPm.value = ampm;
+    }
+  },
+  { immediate: true }
+);
+
+watch(
+  () => job.endTime,
+  (newVal) => {
+    if (newVal) {
+      const date = new Date(newVal);
+      let hours = date.getHours();
+      const minutes = date.getMinutes();
+      const closestMinuteOption = minuteOptions.value.reduce((prev, curr) => {
+        return Math.abs(curr - minutes) < Math.abs(prev - minutes)
+          ? curr
+          : prev;
+      });
+
+      // Convert to 12-hour format
+      const ampm = hours >= 12 ? 'pm' : 'am';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour '0' should be '12'
+
+      endHours.value = hours;
+      endMinutes.value = closestMinuteOption;
+      endAmPm.value = ampm;
+    }
+  },
+  { immediate: true }
+);
+
+// Add initialization on mounted
+onMounted(() => {
+  // ... existing code ...
+
+  // Initialize time values if not already set
+  if (!job.startTime) {
+    const defaultStartTime = new Date();
+    defaultStartTime.setHours(8, 0, 0); // 8:00 AM default
+    job.startTime = defaultStartTime;
+  }
+
+  if (!job.endTime) {
+    const defaultEndTime = new Date();
+    defaultEndTime.setHours(17, 0, 0); // 5:00 PM default
+    job.endTime = defaultEndTime;
+  }
+});
 </script>
 
 <style scoped>
@@ -2090,5 +2419,67 @@ const formatDateForAPI = (date) => {
 
 .custom-input-number-wrapper:hover {
   /* This class is no longer used */
+}
+
+/* Time picker styling */
+.time-picker-container {
+  width: 100%;
+  overflow: hidden;
+}
+
+.time-picker-inputs {
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-picker-container:hover {
+  border-color: var(--primary-color);
+}
+
+.time-select,
+.time-select-ampm {
+  appearance: none;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.25rem 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.time-select {
+  width: 2rem;
+}
+
+.time-select-ampm {
+  width: 2.5rem;
+}
+
+.time-select:focus,
+.time-select-ampm:focus {
+  color: var(--primary-color);
+}
+
+.time-picker-inputs button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  padding: 0;
+  margin: 0 0.1rem;
+}
+
+.time-picker-inputs button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--primary-color);
 }
 </style>

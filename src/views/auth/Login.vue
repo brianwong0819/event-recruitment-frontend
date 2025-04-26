@@ -296,9 +296,7 @@ onMounted(() => {
     registrationSuccess.value = true;
   }
 
-  // This ensures we see any success message set by the registration process
   setTimeout(() => {
-    // We don't immediately clear it in case it was just set during navigation
   }, 500);
 });
 </script>

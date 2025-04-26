@@ -1532,12 +1532,10 @@ const cancelCancellation = () => {
   border-left: none !important;
 }
 
-/* Remove separator between options */
 :deep(.p-dropdown-panel .p-dropdown-items .p-dropdown-item) {
   border-bottom: none !important;
 }
 
-/* Remove focus outlines */
 :deep(.p-dropdown:focus),
 :deep(.p-dropdown-item:focus),
 :deep(.p-dropdown-items:focus) {

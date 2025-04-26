@@ -609,12 +609,7 @@ const profileComplete = computed(() => {
 const fetchJobData = async () => {
   loading.value = true;
   try {
-    // For now, use mock data
-    // In production, this would be replaced with an actual API call
-    // const response = await JobService.getJobById(props.jobId);
-    // job.value = response.data;
-
-    // Mock data with a slight delay to simulate API call
+    // mock data for fallback
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     job.value = {

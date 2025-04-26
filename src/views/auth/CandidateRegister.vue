@@ -778,7 +778,6 @@ const submitForm = async () => {
   }
 };
 
-// Add an onMounted hook
 onMounted(() => {
   console.log('Component mounted');
   console.log('Current step value:', currentStep.value);

@@ -1,5 +1,5 @@
 /**
- * Mock data for recruiters and companies
+ * Mock data for recruiters and companies for fallback
  */
 const mockRecruiters = [
   {

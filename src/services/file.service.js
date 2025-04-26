@@ -23,8 +23,6 @@ class FileService {
         return path;
       }
 
-      // For any URLs that aren't pointing to our backend (including localhost:5173),
-      // extract just the filename and use our backend URL
       const filename = path.split('/').pop();
 
       // Determine the type of file from the path
@@ -48,30 +46,22 @@ class FileService {
       }
     }
 
-    // If the path contains blob: prefix, it's a blob URL that should be used as is
     if (path.includes('blob:')) return path;
 
-    // If it's already a path that starts with /api, add the base domain
     if (path.startsWith('/api')) {
-      // Remove the /api prefix if the API_URL already includes it
       const cleanPath = path.startsWith('/api/') ? path.substring(4) : path;
-      // Ensure we don't have double slashes by removing trailing slash from API_URL
       return `${API_URL.replace(/\/$/, '')}/${cleanPath.replace(/^\//, '')}`;
     }
 
-    // For paths that start with /files
     if (path.startsWith('/files/')) {
-      // Ensure we don't have double slashes
       return `${API_URL.replace(/\/$/, '')}${path}`;
     }
 
-    // Convert frontend sample paths to backend sample paths
     if (path.includes('/assets/samples/')) {
       const filename = path.split('/').pop();
       return this.getSampleImageUrl(filename);
     }
 
-    // For legacy paths that use the /assets structure, convert to new API path
     if (path.includes('/profile-pictures/')) {
       const filename = path.split('/').pop();
       return `${API_URL}/files/profile-pictures/${filename}`;
@@ -102,12 +92,10 @@ class FileService {
       return `${API_URL}/files/resumes/${filename}`;
     }
 
-    // If it's a relative path, assume it's relative to API files endpoint
     if (!path.startsWith('/')) {
       return `${API_URL}/files/${path}`;
     }
 
-    // Default case: ensure we don't have double slashes when joining paths
     return `${API_URL.replace(/\/$/, '')}${path}`;
   }
 
@@ -119,20 +107,16 @@ class FileService {
   getProfilePictureUrl(filename) {
     if (!filename) return null;
 
-    // If it's a blob URL, return it as is
     if (filename.includes('blob:')) return filename;
 
-    // If it's an already formed URL from another domain, extract just the filename
     if (filename.startsWith('http') && !filename.includes('localhost:8080')) {
       filename = filename.split('/').pop();
     }
 
-    // For full paths that already contain profile-pictures
     if (filename.includes('profile-pictures/')) {
       return this.getFileUrl(filename);
     }
 
-    // For just filenames
     return this.getFileUrl(`files/profile-pictures/${filename}`);
   }
 

@@ -798,7 +798,6 @@ const handleDetailScroll = (event) => {
 onMounted(async () => {
   await fetchJobs();
 
-  // Add scroll event listeners
   if (jobListContainer.value) {
     jobListContainer.value.addEventListener('scroll', handleJobListScroll);
   }
@@ -898,7 +897,6 @@ onMounted(async () => {
   background: #6366f1;
 }
 
-/* Remove dropdown inner borders */
 :deep(.p-dropdown-label),
 :deep(.p-dropdown-trigger),
 :deep(.p-dropdown.p-component) {
@@ -910,7 +908,6 @@ onMounted(async () => {
   border-left: none;
 }
 
-/* Fix dropdown height and alignment */
 :deep(.p-dropdown .p-component) {
   height: 42px !important;
 }

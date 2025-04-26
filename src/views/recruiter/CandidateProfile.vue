@@ -509,7 +509,6 @@ const photoModalVisible = ref(false);
 const selectedPhotoUrl = ref('');
 const photoModalTitle = ref('');
 
-// Add pagination for experiences
 const EXPERIENCES_PER_PAGE = 3;
 const currentExpPage = ref(1);
 const totalExpPages = computed(() => {
@@ -668,7 +667,6 @@ const getWorkingPhotoUrl = (photo) => {
   return null;
 };
 
-// Fix the method to handle different data types
 const getCompcardUrl = (photo) => {
   // If the photo is already a string (the URL), use it directly
   if (typeof photo === 'string') {

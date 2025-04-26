@@ -1455,7 +1455,6 @@ watch(
   { deep: true }
 );
 
-// Add prevFilters variable to track filter changes
 const prevFilters = ref({
   search: '',
   status: '',
@@ -1690,7 +1689,6 @@ const updateApplicationStatus = async (applicant, newStatus) => {
       }
     );
 
-    // Log the response
     console.log('API Response:', response.data);
 
     if (response.data && response.data.statusCode === 200) {

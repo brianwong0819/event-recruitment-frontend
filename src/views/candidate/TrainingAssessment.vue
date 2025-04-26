@@ -442,7 +442,6 @@ const downloadTrainingMaterial = async (material) => {
     // Get the file from the API
     const token = authService.getToken();
 
-    // Use the correct API endpoint for downloading materials
     const downloadUrl = `http://localhost:8080/api/training/materials/${material.id}`;
 
     // Open the URL in a new tab with the token for authentication
@@ -455,7 +454,6 @@ const downloadTrainingMaterial = async (material) => {
       life: 3000,
     });
 
-    // Removed automatic marking as completed
   } catch (err) {
     console.error('Error downloading material:', err);
     toast.add({
@@ -469,7 +467,6 @@ const downloadTrainingMaterial = async (material) => {
 
 // Function to start an assessment
 const startAssessment = async (assessment) => {
-  // For in-progress assessments, just continue without showing generation screen
   if (assessment.status === 'in_progress') {
     const index = assessments.value.findIndex((a) => a.id === assessment.id);
     if (index !== -1) {
@@ -579,7 +576,6 @@ const startAssessment = async (assessment) => {
 
 // Function to close the assessment dialog
 const closeAssessment = () => {
-  // Simply close the dialog regardless of status
   assessmentDialogVisible.value = false;
 
   // Only clear the active assessment after a small delay to prevent UI glitches
@@ -694,8 +690,6 @@ const completeAssessment = async (result) => {
 
 // Function to view assessment results
 const viewAssessmentResults = (assessment) => {
-  // In a real app, this would show a results page or dialog
-  // For now, just show a toast
   toast.add({
     severity: 'info',
     summary: 'Assessment Results',
@@ -771,7 +765,6 @@ const fetchTrainingData = async () => {
     const token = authService.getToken();
     const jobId = route.params.jobId;
 
-    // Call real API to get training materials
     const response = await axios.get(
       `http://localhost:8080/api/candidates/jobs/${jobId}/training`,
       {
@@ -843,7 +836,6 @@ const fetchTrainingData = async () => {
           : null,
       };
 
-      // Check if we have any training materials
       hasTraining.value = true;
     }
   } catch (err) {
@@ -885,11 +877,9 @@ const goBack = () => {
 };
 
 const contactRecruiter = () => {
-  // Navigate to RecruiterInfo page
-  // This would need actual recruiter ID from the job data
   router.push({
     name: 'RecruiterInfo',
-    params: { recruiterId: '1' }, // Should be the actual recruiter ID
+    params: { recruiterId: '1' }, 
     query: {
       source: 'training',
       action: 'contact',
@@ -898,14 +888,12 @@ const contactRecruiter = () => {
   });
 };
 
-// Add a new function specifically for retrying a failed assessment
 const retryAssessment = async (assessment) => {
   // Always show the "Generating Assessment" state for retries
   activeAssessment.value = { ...assessment, isGenerating: true };
   assessmentDialogVisible.value = true;
 
   try {
-    // Call the API to generate real questions
     const token = authService.getToken();
 
     console.log('Generating new assessment questions for retry');
@@ -935,7 +923,6 @@ const retryAssessment = async (assessment) => {
     console.log('Quiz API response for retry:', response.data);
 
     if (response.data.statusCode === 200) {
-      // Map the API questions to our format
       const apiQuestions = response.data.data.questions;
 
       const formattedQuestions = apiQuestions.map((q) => {

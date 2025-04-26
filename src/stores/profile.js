@@ -3,7 +3,6 @@ import { ref, computed } from 'vue';
 import { useAuthStore } from './auth';
 import candidateService from '../services/candidate.service';
 import recruiterService from '../services/recruiter.service';
-// Recruiter service will be added later when needed
 
 export const useProfileStore = defineStore('profile', () => {
   // State
@@ -85,7 +84,6 @@ export const useProfileStore = defineStore('profile', () => {
         );
       }
 
-      // Set profile data if we have something
       if (profileData) {
         profile.value = profileData;
         console.log('Profile store data after assignment:', profile.value);

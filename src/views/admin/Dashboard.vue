@@ -166,8 +166,13 @@
                   @click="viewRecruiter(data)"
                   v-tooltip.top="'View Details'"
                 />
+                <!-- Create a unique menu for each row -->
                 <Menu
-                  ref="statusMenu"
+                  :ref="
+                    (el) => {
+                      if (data) menuRefs[data.id] = el;
+                    }
+                  "
                   :model="getStatusMenuItems(data)"
                   :popup="true"
                 />
@@ -177,7 +182,7 @@
                   text
                   rounded
                   aria-label="Change Status"
-                  @click="toggleStatusMenu($event, data)"
+                  @click="(event) => toggleStatusMenuForRecruiter(event, data)"
                   v-tooltip.top="'Change Status'"
                 />
               </div>
@@ -304,7 +309,13 @@
               :severity="getStatusButtonSeverity(status)"
               :outlined="selectedRecruiter.verificationStatus !== status"
               :disabled="selectedRecruiter.verificationStatus === status"
-              @click="changeStatus(selectedRecruiter, status)"
+              @click="
+                changeStatus(
+                  JSON.parse(JSON.stringify(selectedRecruiter)),
+                  status,
+                  true
+                )
+              "
               size="small"
               class="mr-2 mb-2"
             />
@@ -356,6 +367,8 @@ const loading = ref(false);
 const detailsVisible = ref(false);
 const selectedRecruiter = ref(null);
 const statusFilter = ref(null);
+// Create a map to store menu refs for each recruiter
+const menuRefs = ref({});
 
 // Status options for filtering
 const statusOptions = [
@@ -449,7 +462,6 @@ const loadRecruiters = async () => {
         'isAdmin:',
         authStore.isAdmin
       );
-      // We'll continue anyway since mock data will be used as fallback
     }
 
     // Call API to get recruiters list - updated URL format
@@ -530,7 +542,6 @@ const loadRecruiters = async () => {
           verificationStatus: 'REJECTED',
           createdAt: '2025-05-22T11:32:18.270048',
         },
-        // ... other mock recruiters
       ];
     }
 
@@ -555,7 +566,6 @@ const loadRecruiters = async () => {
         verificationStatus: 'PENDING',
         createdAt: '2025-04-15T14:52:32.170048',
       },
-      // ... other mock recruiters
     ];
   }
 };
@@ -569,19 +579,44 @@ const viewRecruiter = (recruiter) => {
   });
 };
 
-// Toggle status menu popup
-const toggleStatusMenu = (event, recruiter) => {
-  // Store current recruiter reference for the menu
-  selectedRecruiterForMenu.value = recruiter;
-  // Show menu at event position
-  statusMenu.value.toggle(event);
+// Open the detail dialog with a recruiter
+const openRecruiterDetails = (recruiter) => {
+  // Create deep copy of the recruiter object to ensure no reference issues
+  selectedRecruiter.value = JSON.parse(JSON.stringify(recruiter));
+  detailsVisible.value = true;
 };
 
-// Create menu items for status actions
-const selectedRecruiterForMenu = ref(null);
-const statusMenu = ref(null);
+// Use this function instead of toggleStatusMenu
+const toggleStatusMenuForRecruiter = (event, recruiter) => {
+  // Log the exact recruiter being used
+  console.log(
+    'Toggle status menu for recruiter:',
+    JSON.stringify({
+      id: recruiter.id,
+      name: recruiter.recruiterRepName,
+      company: recruiter.companyName,
+    })
+  );
+
+  // Get the specific menu for this recruiter
+  const menu = menuRefs.value[recruiter.id];
+  if (menu) {
+    // Show the menu at the event position
+    menu.toggle(event);
+  } else {
+    console.error(`Menu ref not found for recruiter ID: ${recruiter.id}`);
+  }
+};
 
 const getStatusMenuItems = (recruiter) => {
+  const recruiterCopy = JSON.parse(JSON.stringify(recruiter));
+
+  console.log(
+    'Creating menu items for recruiter:',
+    recruiterCopy.id,
+    recruiterCopy.companyName
+  );
+
   return [
     {
       label: 'Change Status To',
@@ -590,51 +625,86 @@ const getStatusMenuItems = (recruiter) => {
           label: 'Pending',
           icon: 'pi pi-clock',
           class:
-            recruiter.verificationStatus === 'PENDING'
+            recruiterCopy.verificationStatus === 'PENDING'
               ? 'text-gray-400 cursor-not-allowed'
               : '',
-          disabled: recruiter.verificationStatus === 'PENDING',
-          command: () => changeStatus(recruiter, 'PENDING'),
+          disabled: recruiterCopy.verificationStatus === 'PENDING',
+          command: () => {
+            console.log(
+              'Changing status to PENDING for recruiter:',
+              recruiterCopy.id,
+              recruiterCopy.companyName
+            );
+            changeStatus(recruiterCopy, 'PENDING');
+          },
         },
         {
           label: 'Verified',
           icon: 'pi pi-check-circle',
           class:
-            recruiter.verificationStatus === 'VERIFIED'
+            recruiterCopy.verificationStatus === 'VERIFIED'
               ? 'text-gray-400 cursor-not-allowed'
               : '',
-          disabled: recruiter.verificationStatus === 'VERIFIED',
-          command: () => changeStatus(recruiter, 'VERIFIED'),
+          disabled: recruiterCopy.verificationStatus === 'VERIFIED',
+          command: () => {
+            console.log(
+              'Changing status to VERIFIED for recruiter:',
+              recruiterCopy.id,
+              recruiterCopy.companyName
+            );
+            changeStatus(recruiterCopy, 'VERIFIED');
+          },
         },
         {
           label: 'Rejected',
           icon: 'pi pi-times-circle',
           class:
-            recruiter.verificationStatus === 'REJECTED'
+            recruiterCopy.verificationStatus === 'REJECTED'
               ? 'text-gray-400 cursor-not-allowed'
               : '',
-          disabled: recruiter.verificationStatus === 'REJECTED',
-          command: () => changeStatus(recruiter, 'REJECTED'),
+          disabled: recruiterCopy.verificationStatus === 'REJECTED',
+          command: () => {
+            console.log(
+              'Changing status to REJECTED for recruiter:',
+              recruiterCopy.id,
+              recruiterCopy.companyName
+            );
+            changeStatus(recruiterCopy, 'REJECTED');
+          },
         },
         {
           label: 'Under Review',
           icon: 'pi pi-search',
           class:
-            recruiter.verificationStatus === 'UNDER_REVIEW'
+            recruiterCopy.verificationStatus === 'UNDER_REVIEW'
               ? 'text-gray-400 cursor-not-allowed'
               : '',
-          disabled: recruiter.verificationStatus === 'UNDER_REVIEW',
-          command: () => changeStatus(recruiter, 'UNDER_REVIEW'),
+          disabled: recruiterCopy.verificationStatus === 'UNDER_REVIEW',
+          command: () => {
+            console.log(
+              'Changing status to UNDER_REVIEW for recruiter:',
+              recruiterCopy.id,
+              recruiterCopy.companyName
+            );
+            changeStatus(recruiterCopy, 'UNDER_REVIEW');
+          },
         },
         {
           label: 'Suspended',
           icon: 'pi pi-ban',
           class:
-            recruiter.verificationStatus === 'SUSPENDED'
+            recruiterCopy.verificationStatus === 'SUSPENDED'
               ? 'text-gray-400 cursor-not-allowed'
               : '',
-          disabled: recruiter.verificationStatus === 'SUSPENDED',
-          command: () => changeStatus(recruiter, 'SUSPENDED'),
+          disabled: recruiterCopy.verificationStatus === 'SUSPENDED',
+          command: () => {
+            console.log(
+              'Changing status to SUSPENDED for recruiter:',
+              recruiterCopy.id,
+              recruiterCopy.companyName
+            );
+            changeStatus(recruiterCopy, 'SUSPENDED');
+          },
         },
       ],
     },
@@ -645,23 +715,61 @@ const getStatusMenuItems = (recruiter) => {
 const changeStatus = async (recruiter, newStatus, closeDialog = false) => {
   try {
     loading.value = true;
+
+    console.log('========== STATUS CHANGE START ==========');
+    console.log('Full recruiter object:', JSON.stringify(recruiter));
+    console.log('Target recruiter ID:', recruiter.id);
+    console.log('ID type:', typeof recruiter.id);
+    console.log('Target company name:', recruiter.companyName);
+    console.log('Target recruiter name:', recruiter.recruiterRepName);
+    console.log('Current status:', recruiter.verificationStatus);
+    console.log('New status:', newStatus);
+
+    const recruiterCopy = JSON.parse(JSON.stringify(recruiter));
+
+    // Ensure the ID is properly preserved
+    console.log('After deep copy - recruiter ID:', recruiterCopy.id);
     console.log(
-      'Changing status for recruiter:',
-      recruiter.id,
-      'from',
-      recruiter.verificationStatus,
-      'to',
-      newStatus
+      'API payload:',
+      JSON.stringify({
+        recruiterId: recruiterCopy.id,
+        verificationStatus: newStatus,
+      })
     );
 
     // Call API to update recruiter status with the correct endpoint and request format
     await apiClient.put('/admin/recruiters/verification', {
-      recruiterId: recruiter.id,
+      recruiterId: recruiterCopy.id,
       verificationStatus: newStatus,
     });
 
-    // Update local state
-    recruiter.verificationStatus = newStatus;
+    const updatedRecruiters = recruiters.value.map((r) => {
+      if (r.id === recruiterCopy.id) {
+        // Create a new object with updated status for this specific recruiter
+        console.log(
+          `Updating recruiter ${r.id} (${r.companyName}) status to ${newStatus}`
+        );
+        return { ...r, verificationStatus: newStatus };
+      }
+      // Return other recruiters unchanged
+      return r;
+    });
+
+    recruiters.value = updatedRecruiters;
+
+    if (
+      selectedRecruiter.value &&
+      selectedRecruiter.value.id === recruiterCopy.id
+    ) {
+      selectedRecruiter.value = {
+        ...selectedRecruiter.value,
+        verificationStatus: newStatus,
+      };
+    }
+
+    console.log('Status updated successfully');
+    console.log('Updated recruiters array with new status');
+    console.log('========== STATUS CHANGE END ==========');
 
     // Close dialog if needed
     if (closeDialog) {
@@ -673,15 +781,14 @@ const changeStatus = async (recruiter, newStatus, closeDialog = false) => {
       severity: 'success',
       summary: 'Status Changed',
       detail: `${
-        recruiter.recruiterRepName
+        recruiterCopy.recruiterRepName
       }'s status has been changed to ${formatStatus(newStatus)}`,
       life: 5000,
     });
   } catch (error) {
     console.error('Error updating recruiter status:', error);
-    // Don't update the local state if API call fails
+    console.log('========== STATUS CHANGE FAILED ==========');
 
-    // Show error message
     toast.add({
       severity: 'error',
       summary: 'Status Change Failed',
@@ -733,7 +840,6 @@ const getStatusButtonSeverity = (status) => {
   }
 };
 
-// Add these helper functions to handle company logos correctly
 const getCompanyLogoUrl = (logoPath) => {
   if (!logoPath) return null;
   return fileService.getCompanyLogoUrl(logoPath);
@@ -762,7 +868,6 @@ const handleLogout = async () => {
     authStore.authenticated = false;
 
     try {
-      // Try API logout, but don't wait for it or depend on its success
       authStore.logout().catch((e) => {
         console.log('API logout failed, but continuing with local logout');
       });

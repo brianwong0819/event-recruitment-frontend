@@ -200,13 +200,11 @@ class AuthService {
 
       console.log('AuthService: Login API response:', response.data);
 
-      // Debug the full response structure
       console.log('Full response structure:');
       console.log(JSON.stringify(response, null, 2));
 
       if (response.data) {
-        // Based on your console logs, the jwToken appears to be in the data field
-        // Log each key in the response to find where the token is
+
         console.log('Response data keys:', Object.keys(response.data));
 
         // Check if response has a data property with the token
@@ -217,20 +215,16 @@ class AuthService {
           console.log('Data object keys:', Object.keys(response.data.data));
         }
 
-        // Direct check for jwToken in data object
         let jwToken = '';
 
-        // Based on the logs, we saw the token was in data.jwToken
         if (hasData && response.data.data.jwToken) {
           console.log('Found jwToken in data.jwToken');
           jwToken = response.data.data.jwToken;
         }
-        // Or it might be directly in the response.data.jwToken
         else if (response.data.jwToken) {
           console.log('Found jwToken in response.jwToken');
           jwToken = response.data.jwToken;
         }
-        // Check for accessToken too
         else if (hasData && response.data.data.accessToken) {
           console.log('Found accessToken in data.accessToken');
           jwToken = response.data.data.accessToken;
@@ -238,7 +232,6 @@ class AuthService {
           console.log('Found accessToken in response.accessToken');
           jwToken = response.data.accessToken;
         }
-        // Additional check for token in the data object
         else {
           // Loop through each field in response.data to find the JWT token
           console.log('Searching all response fields for JWT-like value:');
@@ -299,7 +292,6 @@ class AuthService {
           ...(hasData ? response.data.data : {}),
         };
 
-        // If we have a JWT token, try to extract user info from it
         if (jwToken) {
           const tokenPrefix = jwToken.startsWith('Bearer ') ? '' : 'Bearer ';
           const tokenUser = this.extractUserFromToken(
@@ -310,7 +302,6 @@ class AuthService {
           }
         }
 
-        // Ensure there's always a user object in the response
         if (!response.data.user) {
           response.data.user = userData;
         }
@@ -507,7 +498,6 @@ class AuthService {
     if (accessToken) {
       console.log('Found access token in response');
 
-      // Add the Bearer prefix if it's not already there
       const tokenValue = accessToken.startsWith('Bearer ')
         ? accessToken
         : `Bearer ${accessToken}`;
@@ -521,7 +511,6 @@ class AuthService {
       console.error(
         'No access token found in response. Authentication will fail!'
       );
-      // Do NOT set a dummy token as it will cause authorization errors
     }
 
     // Store refresh token if available
@@ -581,7 +570,6 @@ class AuthService {
         preferredLocation,
       };
 
-      // Remove undefined fields
       Object.keys(extractedData).forEach((key) => {
         if (extractedData[key] === undefined) {
           delete extractedData[key];
@@ -594,7 +582,6 @@ class AuthService {
       }
     }
 
-    // Ensure some required fields have values
     if (!userData.username && data.username) {
       userData.username = data.username;
     }
@@ -657,26 +644,22 @@ class AuthService {
    */
   extractUserFromToken(token) {
     try {
-      // JWT tokens have 3 parts separated by dots
       const parts = token.split('.');
       if (parts.length !== 3) {
         console.error('Invalid JWT token format');
         return null;
       }
 
-      // Decode the payload (middle part)
       const payload = JSON.parse(atob(parts[1]));
       console.log('Token payload:', payload);
 
       // Extract common user fields from payload
       return {
-        // Most JWT tokens include these fields
         id: payload.sub || payload.id || payload.userId || '',
         username:
           payload.username || payload.email || payload.preferred_username || '',
         role: payload.role || 'CANDIDATE', // Default to CANDIDATE
         email: payload.email || '',
-        // Add any other fields that might be in the token
       };
     } catch (error) {
       console.error('Error extracting user from token:', error);

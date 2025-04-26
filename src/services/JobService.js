@@ -36,11 +36,6 @@ class JobService {
         params.location = filters.location;
       }
 
-      // Don't send keywords to backend - we'll filter on client side
-      // if (filters.keywords) {
-      //   params.keywords = filters.keywords;
-      // }
-
       if (filters.startDate) {
         params.startDate = this.formatDate(filters.startDate);
       }
@@ -49,14 +44,12 @@ class JobService {
         params.endDate = this.formatDate(filters.endDate);
       }
 
-      // Add date posted filter (handle at the frontend)
       if (filters.datePosted?.value) {
         const today = new Date();
         let startDateFilter = new Date();
 
         switch (filters.datePosted.value) {
           case 'today':
-            // Just use today's date as startDate, which is already set
             params.startDate = this.formatDate(startDateFilter);
             break;
           case 'yesterday':
@@ -78,7 +71,6 @@ class JobService {
         }
       }
 
-      // Use a different endpoint if distance filter is active and greater than 0
       let apiJobs = [];
       if (filters.distance && filters.distance > 0) {
         const token = this.getAuthToken();
@@ -100,7 +92,6 @@ class JobService {
             apiJobs = response.data.data.content || [];
           }
         } else {
-          // Make the API call with the auth token (without 'Bearer' prefix)
           const headers = { Authorization: token };
 
           try {
@@ -246,7 +237,6 @@ class JobService {
         return [];
       }
 
-      // Make the API call with the auth token (without 'Bearer' prefix)
       const headers = { Authorization: token };
 
       console.log('Using token for near-me API:', token);
@@ -356,11 +346,6 @@ class JobService {
       if (filters.location) {
         params.location = filters.location;
       }
-
-      // Don't send keywords to backend - we'll filter on client side
-      // if (filters.keywords) {
-      //   params.keywords = filters.keywords;
-      // }
 
       if (filters.startDate) {
         params.startDate = this.formatDate(filters.startDate);
@@ -547,10 +532,8 @@ class JobService {
   // Apply for a job
   static async applyForJob(jobId, candidateData) {
     try {
-      // This will be implemented when we have the apply endpoint
       console.log('Applying for job', jobId, 'with data', candidateData);
 
-      // For now, return a mock success response
       return { success: true, message: 'Application submitted successfully' };
     } catch (error) {
       console.error('Error applying for job:', error);

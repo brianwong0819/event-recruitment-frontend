@@ -127,7 +127,6 @@ class CandidateService {
     const formData = new FormData();
     formData.append('file', file);
 
-    // Upload to the new backend endpoint
     return apiClient.post('/candidate/file/profile-picture', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -204,13 +203,11 @@ class CandidateService {
     } catch (error) {
       console.error('Error downloading resume:', error);
 
-      // Try a fallback to get the URL directly
       try {
         const urlResponse = await apiClient.get('/candidate/file/resume', {
           responseType: 'json',
         });
 
-        // If we get a URL back, open it
         if (urlResponse.data && urlResponse.data.url) {
           window.open(urlResponse.data.url, '_blank');
           return urlResponse;
@@ -291,15 +288,12 @@ class CandidateService {
   getCompcardFromAssets(filename) {
     if (!filename || filename === 'undefined') return null;
 
-    // Log the original filename for debugging
     console.log('Resolving image path for:', filename);
 
-    // Extract just the filename regardless of path format
     const filenameOnly = filename.includes('/')
       ? filename.split('/').pop()
       : filename;
 
-    // Log the extracted filename
     console.log('Extracted filename:', filenameOnly);
 
     const url = fileService.getCompcardUrl(filenameOnly);
@@ -314,7 +308,6 @@ class CandidateService {
    * @returns {Promise} - Response with deletion status
    */
   async deleteCompcardPhoto(photoId) {
-    // Use path parameter format as expected by the backend controller
     console.log(`Deleting photo with ID: ${photoId}`);
     return apiClient.delete(`/candidate/file/comcard/${photoId}`);
   }
@@ -334,12 +327,9 @@ class CandidateService {
         {
           currentPassword,
           newPassword,
-          // confirmPassword removed from request body
         },
         {
-          // This will prevent automatic token refresh on 401 errors for this specific request
           skipAuthRefresh: true,
-          // Option to not retry this request if it fails
           shouldRetry: false,
         }
       );
@@ -347,14 +337,12 @@ class CandidateService {
     } catch (error) {
       console.error('Error changing password:', error.message);
 
-      // If the error is "Current password is incorrect", handle it specifically
       if (
         error.response?.status === 401 ||
         error.response?.data?.message === 'Current password is incorrect' ||
         (error.response?.data?.message &&
           error.response?.data?.message.includes('password'))
       ) {
-        // Throw a custom error that won't trigger the auth refresh mechanism
         throw {
           ...error,
           isPasswordError: true,
@@ -415,7 +403,6 @@ class CandidateService {
     if (!filename || filename === 'undefined') return null;
 
     try {
-      // Log the original filename for debugging
       console.log('Resolving working image path for:', filename);
 
       // Clean up the filename by removing any path prefixes
@@ -434,13 +421,10 @@ class CandidateService {
         cleanFilename = filename.split('/').pop();
       }
 
-      // Ensure we have a clean filename
       cleanFilename = cleanFilename.replace(/^\/+/, '');
 
-      // Log the extracted filename
       console.log('Extracted filename for working photo:', cleanFilename);
 
-      // Use the fileService to get the URL
       const url = fileService.getWorkingPhotoUrl(cleanFilename);
 
       console.log('Final working photo URL:', url);

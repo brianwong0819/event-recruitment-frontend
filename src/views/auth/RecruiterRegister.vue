@@ -736,7 +736,6 @@ const prevStep = () => {
   }
 };
 
-// Add an onMounted hook
 onMounted(() => {
   console.log('Component mounted');
   console.log('Current step value:', activeStep.value);
@@ -759,11 +758,10 @@ const submitForm = async () => {
   error.value = '';
 
   try {
-    // Remove terms field and confirmPassword as they're not needed for the API
     const formData = { ...form };
     delete formData.terms;
     delete formData.confirmPassword;
-    delete formData.companyLocation; // Remove the text field as we'll use companyLocationId instead
+    delete formData.companyLocation; 
 
     // If recruiter type is individual, clear the company name
     if (formData.recruiterType === 'INDIVIDUAL') {
@@ -817,7 +815,6 @@ const handleLocationSelected = (location) => {
   width: 100%;
 }
 
-/* Add this new class for icon positioning */
 .input-icon {
   @apply absolute left-3 z-10 text-gray-500 text-sm;
   top: 50%;
@@ -847,7 +844,7 @@ const handleLocationSelected = (location) => {
 :deep(.p-calendar),
 :deep(.p-password) {
   height: 2.25rem !important;
-  padding-left: 2.5rem !important; /* Add padding to make room for the icon */
+  padding-left: 2.5rem !important;
 }
 
 /* Force vertical centering for Dropdown components */
@@ -901,7 +898,6 @@ const handleLocationSelected = (location) => {
   font-size: 0.875rem !important;
 }
 
-/* Fix the right-side trigger position */
 :deep(.p-dropdown .p-dropdown-trigger) {
   border: none !important;
   box-shadow: none !important;
@@ -926,12 +922,10 @@ const handleLocationSelected = (location) => {
   @apply text-sm py-2;
 }
 
-/* Fix text areas */
 :deep(textarea.p-inputtext) {
   min-height: 5rem;
 }
 
-/* Password specific fixes */
 :deep(.p-password-input) {
   border: 1px solid #e2e8f0 !important;
   border-radius: 0.375rem !important;
@@ -1062,7 +1056,6 @@ const handleLocationSelected = (location) => {
   padding-left: 2.5rem !important;
 }
 
-/* Remove focus outlines and box shadows */
 :deep(.p-dropdown:not(.p-disabled):hover),
 :deep(.p-dropdown:not(.p-disabled).p-focus),
 :deep(.p-calendar:not(.p-disabled):hover),
@@ -1110,7 +1103,6 @@ const handleLocationSelected = (location) => {
   }
 }
 
-/* Remove the step item click styling */
 :deep(.p-steps .p-steps-item) {
   cursor: default;
 }
@@ -1123,7 +1115,6 @@ const handleLocationSelected = (location) => {
   background: transparent;
 }
 
-/* Fix for step indicator to ensure it updates properly */
 :deep(.p-steps) {
   position: relative;
   z-index: 1;
@@ -1304,7 +1295,6 @@ const handleLocationSelected = (location) => {
   outline: none;
 }
 
-/* Fix for input field height consistency */
 :deep(.p-inputtext),
 :deep(.p-dropdown),
 :deep(.p-multiselect),
@@ -1327,7 +1317,6 @@ const handleLocationSelected = (location) => {
   align-items: flex-start !important;
 }
 
-/* Fix for calendar display */
 :deep(.p-calendar .p-inputtext) {
   height: 100% !important;
   display: flex;
@@ -1340,7 +1329,6 @@ const handleLocationSelected = (location) => {
   min-width: 100% !important;
 }
 
-/* Fix text alignment in selected items */
 :deep(.p-dropdown-items .p-dropdown-item.p-highlight) {
   background-color: #f1f5f9;
   color: #334155;
@@ -1352,7 +1340,6 @@ const handleLocationSelected = (location) => {
   padding: 0.75rem 1.5rem;
 }
 
-/* Fix for text areas */
 :deep(textarea.p-inputtext) {
   display: block;
   padding: 0.75rem 1rem;
@@ -1361,13 +1348,11 @@ const handleLocationSelected = (location) => {
   min-height: 6rem;
 }
 
-/* Further fixes for dropdown value alignment */
 :deep(.p-dropdown .p-dropdown-label:not(.p-placeholder)) {
   color: #1e293b;
   font-weight: 500;
 }
 
-/* Fix placeholder alignment in all inputs */
 :deep(.p-inputtext::placeholder) {
   line-height: normal;
   vertical-align: middle;
@@ -1378,7 +1363,6 @@ const handleLocationSelected = (location) => {
   align-items: center;
 }
 
-/* Fix specific input vertical alignment */
 :deep(.p-inputtext) {
   line-height: normal;
 }

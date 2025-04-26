@@ -332,7 +332,6 @@
             </div>
           </div>
 
-          <!-- Add a bottom Add Section button for convenience -->
           <div
             v-if="scheduleSections.length > 0"
             class="flex justify-center mt-8"
@@ -675,14 +674,12 @@ const formatScheduleForEdit = async (scheduleData) => {
           return;
         }
 
-        // If we have a complete location object, use it
         if (jobLocation.location && jobLocation.location.id) {
           if (!locationMap.has(jobLocation.location.id)) {
             newSection.locations.push(jobLocation.location);
             locationMap.set(jobLocation.location.id, true);
           }
         }
-        // If we have locationId and locationName, create basic location object
         else if (jobLocation.locationId && jobLocation.locationName) {
           const basicLocation = {
             id: jobLocation.locationId,
@@ -696,7 +693,6 @@ const formatScheduleForEdit = async (scheduleData) => {
             locationIdsToFetch.add(jobLocation.locationId);
           }
         }
-        // If we only have location ID, we need to fetch the full details
         else if (jobLocation.locationId) {
           locationIdsToFetch.add(jobLocation.locationId);
         }
@@ -733,7 +729,6 @@ const formatScheduleForEdit = async (scheduleData) => {
         const locationId = jobLocation.locationId || jobLocation.location?.id;
 
         if (locationId && locationMap.has(locationId)) {
-          // Add schedule details for this location and date
           newSection.scheduleData[dateStr][locationId] = {
             locationId: locationId,
             positionsNeeded:
@@ -747,7 +742,6 @@ const formatScheduleForEdit = async (scheduleData) => {
     }
   });
 
-  // Add the section to the schedule sections
   scheduleSections.value.push(newSection);
 };
 
@@ -985,7 +979,6 @@ const submitForm = async () => {
     const updateData = {
       jobId: parseInt(route.params.jobId, 10),
       scheduleDates: allScheduleDates,
-      // Add required fields
       numPositions: scheduleSettings.value.numPositions,
       startTime: formatTimeForAPI(scheduleSettings.value.startTime),
       endTime: formatTimeForAPI(scheduleSettings.value.endTime),
@@ -1033,7 +1026,6 @@ onMounted(() => {
   fetchData();
 });
 
-// Add a schedule section
 const addScheduleSection = () => {
   scheduleSections.value.push({
     dates: [],
@@ -1042,7 +1034,6 @@ const addScheduleSection = () => {
   });
 };
 
-// Remove a schedule section
 const removeScheduleSection = (index) => {
   scheduleSections.value.splice(index, 1);
 };

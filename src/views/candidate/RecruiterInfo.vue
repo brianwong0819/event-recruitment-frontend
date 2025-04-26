@@ -665,7 +665,6 @@ const getImageUrl = (url) => {
     return url;
   }
 
-  // If it's a path we know is for a company logo, use the company logo service
   if (
     url.includes('/profile-pictures/') ||
     (recruiter.value && recruiter.value.companyLogoUrl === url)
@@ -859,8 +858,6 @@ const viewPortfolioDetails = async (portfolioId) => {
       throw new Error('Invalid response format');
     }
 
-    // Here you would navigate to the portfolio detail page or open a modal
-    // For simplicity in this implementation, we're just logging the data
     console.log('Portfolio details:', selectedPortfolio.value);
     router.push({
       name: 'PortfolioDetail',
@@ -943,7 +940,6 @@ const onPortfolioImageError = (event, portfolio) => {
     fallbackDiv.className =
       'w-full h-full bg-gradient-to-br from-indigo-600 to-indigo-900 flex items-center justify-center';
 
-    // Add the event name
     fallbackDiv.innerHTML = `
       <div class="relative w-full h-full overflow-hidden">
         <div class="absolute top-3 right-3 w-12 h-12 rounded-full bg-white/10"></div>
@@ -968,7 +964,6 @@ const fetchRecruiterData = async () => {
   loading.value = true;
   error.value = null;
 
-  // Debugging logs
   console.log('Route params:', route.params);
   console.log('recruiterId from route:', recruiterId.value);
   console.log('recruiterId type:', typeof recruiterId.value);

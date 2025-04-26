@@ -450,20 +450,15 @@ export const useAuthStore = defineStore('auth', {
         return;
       }
 
-      // Check if token is expired (this would typically be done by checking JWT expiry)
-      // This is a simple implementation - in production you might want to decode the JWT
+
       try {
-        // Try to get user profile to verify token validity
         await this.getUserProfile();
       } catch (error) {
         if (error.response?.status === 401 && refreshToken) {
           try {
-            // Try to refresh the token
             await AuthService.refreshToken(refreshToken);
-            // Retry getting user profile
             await this.getUserProfile();
           } catch (refreshError) {
-            // If refresh fails, logout
             this.logout();
           }
         } else {
@@ -477,8 +472,7 @@ export const useAuthStore = defineStore('auth', {
      * Get user profile from backend
      */
     async getUserProfile() {
-      // This would be implemented by calling your user API service
-      // For now, we'll assume it's just for token validation
+
     },
 
     /**

@@ -38,13 +38,12 @@ onMounted(() => {
   if (!jobId) {
     router.push({ name: 'FindJobs' });
   }
-  // Removed redirection to RecruiterInfo
 });
 </script>
 
 <style scoped>
 .job-application-view {
-  min-height: calc(100vh - 64px); /* Adjust based on your header height */
+  min-height: calc(100vh - 64px);
   background-color: #f9fafb;
 }
 </style>
