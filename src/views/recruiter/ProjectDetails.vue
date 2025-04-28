@@ -372,32 +372,44 @@
               <div
                 class="flex justify-between items-center border-t border-gray-100 pt-4 mt-2"
               >
+                <!-- Show only View button for cancelled jobs with full width -->
                 <Button
+                  v-if="job.status === 'CANCELLED'"
                   icon="pi pi-eye"
                   label="View"
-                  class="p-button-text flex-1 mr-1"
+                  class="p-button-text w-full"
                   @click="viewJobDetails(job)"
                 />
-                <Button
-                  v-if="!isDeletedProject"
-                  icon="pi pi-pencil"
-                  label="Edit"
-                  class="p-button-outlined p-button-secondary flex-1 mx-1"
-                  @click="editJob(job)"
-                />
-                <div class="relative">
+
+                <!-- Show all buttons for active jobs -->
+                <template v-else>
+                  <Button
+                    icon="pi pi-eye"
+                    label="View"
+                    class="p-button-text flex-1 mr-1"
+                    @click="viewJobDetails(job)"
+                  />
                   <Button
                     v-if="!isDeletedProject"
-                    icon="pi pi-users"
-                    label=""
-                    class="p-button-outlined p-button-primary ml-1 applicants-btn"
-                    @click="viewJobApplicants(job)"
-                    v-tooltip="'View Applicants'"
+                    icon="pi pi-pencil"
+                    label="Edit"
+                    class="p-button-outlined p-button-secondary flex-1 mx-1"
+                    @click="editJob(job)"
                   />
-                  <span class="custom-badge">{{
-                    jobApplicantCounts.get(job.id) || 0
-                  }}</span>
-                </div>
+                  <div class="relative">
+                    <Button
+                      v-if="!isDeletedProject"
+                      icon="pi pi-users"
+                      label=""
+                      class="p-button-outlined p-button-primary ml-1 applicants-btn"
+                      @click="viewJobApplicants(job)"
+                      v-tooltip="'View Applicants'"
+                    />
+                    <span class="custom-badge">{{
+                      jobApplicantCounts.get(job.id) || 0
+                    }}</span>
+                  </div>
+                </template>
               </div>
             </div>
           </div>
@@ -1183,11 +1195,17 @@ const trashProject = async (projectId, projectName) => {
     }
   } catch (error) {
     console.error('Error moving project to trash:', error);
+
+    // Extract the specific error message from the response if available
+    const errorMessage =
+      error.response?.data?.message ||
+      'An error occurred while moving project to trash';
+
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: 'An error occurred while moving project to trash',
-      life: 3000,
+      detail: errorMessage,
+      life: 5000,
     });
   }
 };

@@ -673,11 +673,13 @@ const deleteProject = async (project) => {
     }
   } catch (error) {
     console.error('Error deleting project:', error);
-    showCustomToast(
-      'error',
-      'Error',
-      'An error occurred while deleting the project'
-    );
+
+    // Extract the specific error message from the response if available
+    const errorMessage =
+      error.response?.data?.message ||
+      'An error occurred while deleting the project';
+
+    showCustomToast('error', 'Error', errorMessage);
   } finally {
     // Reset the flag after deletion process completes
     isConfirmingDelete = false;

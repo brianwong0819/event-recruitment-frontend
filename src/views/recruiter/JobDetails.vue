@@ -75,49 +75,103 @@
     </div>
 
     <!-- Main content -->
-    <div v-else class="container mx-auto px-6 py-8">
+    <div
+      v-else
+      class="container mx-auto px-6 py-8 relative"
+      :class="{ 'cancelled-job-container': job && job.status === 'CANCELLED' }"
+    >
+      <!-- Read-only overlay for cancelled jobs -->
+      <div
+        v-if="job && job.status === 'CANCELLED'"
+        class="absolute inset-0 bg-gray-200 bg-opacity-40 backdrop-filter backdrop-blur-[1px] z-10 pointer-events-none"
+      ></div>
+
+      <!-- Cancelled job notice -->
+      <div
+        v-if="job && job.status === 'CANCELLED'"
+        class="mb-6 bg-red-50 border-l-4 border-red-400 p-4 z-20 relative shadow-sm rounded-r-md"
+      >
+        <div class="flex items-center">
+          <i class="pi pi-ban text-red-600 mr-3 text-xl"></i>
+          <div>
+            <p class="text-red-700 font-medium text-lg">
+              This job has been cancelled
+            </p>
+            <p class="text-red-600 text-sm mt-1">
+              This job is no longer active and is in view-only mode. No changes
+              can be made.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- Quick action buttons -->
       <div class="flex flex-wrap gap-3 mb-6">
-        <Button
-          label="Edit Details"
-          icon="pi pi-pencil"
-          class="p-button-outlined"
-          @click="editJob"
-        />
-        <Button
-          v-if="jobSchedule"
-          label="Edit Schedule"
-          icon="pi pi-calendar"
-          class="p-button-outlined"
-          @click="editSchedule"
-        />
-        <Button
-          v-else
-          label="Create Schedule"
-          icon="pi pi-calendar-plus"
-          class="p-button-outlined"
-          @click="createSchedule"
-        />
-        <Button
-          label="View Applicants"
-          icon="pi pi-users"
-          class="p-button-outlined"
-          @click="viewApplicants"
-          :badge="applicantCount.toString()"
-          badge-class="p-badge-info"
-        />
-        <Button
-          label="Change Status"
-          icon="pi pi-sync"
-          class="p-button-outlined"
-          @click="openStatusDialog"
-        />
-        <Button
-          label="Manage Training"
-          icon="pi pi-book"
-          class="p-button-outlined"
-          @click="manageTraining"
-        />
+        <!-- Only show Go Back button for cancelled jobs -->
+        <template v-if="job && job.status === 'CANCELLED'">
+          <Button
+            label="Go Back"
+            icon="pi pi-arrow-left"
+            class="p-button-primary"
+            @click="goBack"
+          />
+          <Button
+            label="View Details"
+            icon="pi pi-eye"
+            class="p-button-outlined p-button-secondary"
+            @click="viewCancelledJobDetails"
+            v-tooltip="'This job is in read-only mode'"
+          />
+        </template>
+
+        <!-- Show all action buttons for non-cancelled jobs -->
+        <template v-else>
+          <Button
+            label="Edit Details"
+            icon="pi pi-pencil"
+            class="p-button-outlined"
+            @click="editJob"
+          />
+          <Button
+            v-if="
+              jobSchedule &&
+              !loadingSchedule &&
+              job &&
+              job.status !== 'CANCELLED'
+            "
+            label="Edit Schedule"
+            icon="pi pi-calendar"
+            class="p-button-outlined"
+            @click="editSchedule"
+          />
+          <Button
+            v-else
+            label="Create Schedule"
+            icon="pi pi-calendar-plus"
+            class="p-button-outlined"
+            @click="createSchedule"
+          />
+          <Button
+            label="View Applicants"
+            icon="pi pi-users"
+            class="p-button-outlined"
+            @click="viewApplicants"
+            :badge="applicantCount.toString()"
+            badge-class="p-badge-info"
+          />
+          <Button
+            label="Change Status"
+            icon="pi pi-sync"
+            class="p-button-outlined"
+            @click="openStatusDialog"
+          />
+          <Button
+            label="Manage Training"
+            icon="pi pi-book"
+            class="p-button-outlined"
+            @click="manageTraining"
+          />
+        </template>
       </div>
 
       <div class="grid grid-cols-12 gap-6">
@@ -229,7 +283,12 @@
                   Working Schedule
                 </h2>
                 <Button
-                  v-if="jobSchedule && !loadingSchedule"
+                  v-if="
+                    jobSchedule &&
+                    !loadingSchedule &&
+                    job &&
+                    job.status !== 'CANCELLED'
+                  "
                   icon="pi pi-pencil"
                   class="p-button-rounded p-button-text p-button-sm"
                   @click="editSchedule"
@@ -264,11 +323,15 @@
                     This job doesn't have a schedule defined yet.
                   </p>
                   <Button
+                    v-if="job && job.status !== 'CANCELLED'"
                     label="Create Schedule"
                     icon="pi pi-plus"
                     class="p-button-primary"
                     @click="createSchedule"
                   />
+                  <p v-else class="text-red-500 italic">
+                    Cannot create schedule for a cancelled job
+                  </p>
                 </div>
 
                 <div v-else>
@@ -321,7 +384,10 @@
                     Working Dates
                   </h3>
 
-                  <Accordion :activeIndex="0" class="custom-accordion">
+                  <Accordion
+                    :activeIndex="job.status === 'CANCELLED' ? 0 : null"
+                    class="custom-accordion"
+                  >
                     <AccordionTab
                       v-for="(scheduleDate, index) in jobSchedule.scheduleDates"
                       :key="index"
@@ -401,6 +467,7 @@
                     class="text-base mr-3"
                   />
                   <Button
+                    v-if="job.status !== 'CANCELLED'"
                     icon="pi pi-pencil"
                     class="p-button-rounded p-button-text p-button-sm"
                     @click="openStatusDialog"
@@ -988,6 +1055,16 @@ const goBack = () => {
   } else {
     router.push({ name: 'ManageJobs' });
   }
+};
+
+// Function to handle View Details click for cancelled jobs (just a no-op placeholder)
+const viewCancelledJobDetails = () => {
+  toast.add({
+    severity: 'info',
+    summary: 'Cancelled Job',
+    detail: 'This job has been cancelled and is in read-only mode',
+    life: 3000,
+  });
 };
 
 // Action handlers
@@ -1626,5 +1703,70 @@ const cancelCancellation = () => {
 
 :deep(.cancellation-dialog .bg-red-50) {
   background-color: #fef2f2;
+}
+
+/* Cancelled Job Styling */
+.cancelled-job-container {
+  position: relative;
+}
+
+.cancelled-job-container :deep(.p-card),
+.cancelled-job-container :deep(.p-datatable),
+.cancelled-job-container :deep(.p-accordion) {
+  opacity: 0.9;
+  filter: grayscale(20%);
+}
+
+.cancelled-job-container :deep(.p-card:hover) {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  transform: none !important;
+}
+
+/* Disable interaction for all buttons in cancelled jobs */
+.cancelled-job-container :deep(.p-button:not(.p-button-primary)) {
+  pointer-events: none !important;
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+.cancelled-job-container :deep(.p-button:not(.p-button-primary):hover) {
+  background-color: inherit !important;
+  border-color: inherit !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Make the job section accordions non-interactive */
+.cancelled-job-container :deep(.p-accordion-header-link) {
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+/* Disable the click effects on all cards and data tables */
+.cancelled-job-container :deep(.p-selectable-row),
+.cancelled-job-container :deep(.p-datatable-row),
+.cancelled-job-container :deep(.clickable) {
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+/* Disable all pencil edit icons in cancelled jobs */
+.cancelled-job-container :deep(.pi-pencil) {
+  display: none !important;
+}
+
+/* Additional styling for the accordion tabs to indicate they're not expandable */
+.cancelled-job-container :deep(.p-accordion-header) {
+  opacity: 0.9;
+}
+
+.cancelled-job-container :deep(.p-accordion-header-link) {
+  background-color: #f8fafc !important;
+}
+
+/* Disable any tooltips in cancelled jobs */
+.cancelled-job-container :deep([data-pr-tooltip]) {
+  pointer-events: none !important;
 }
 </style>
